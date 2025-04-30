@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/core/menu/menu_item.dart';
+import 'package:inventarium/controllers/auth_controller.dart';
 
 class DrawerMenu extends StatelessWidget {
   final GlobalKey<ScaffoldState> scafoldKey;
@@ -9,6 +10,8 @@ class DrawerMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final username = AuthController.currentUser?.username ?? 'Invitado';
+
     return Drawer(
       child: Column(
         children: [
@@ -29,6 +32,62 @@ class DrawerMenu extends StatelessWidget {
                 );
               },
             ),
+          ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                const Icon(Icons.person),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    username,
+                    style: const TextStyle(fontStyle: FontStyle.italic),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('Cerrar sesión'),
+            subtitle: const Text('Salir del sistema'),
+            onTap: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Confirmar cierre de sesión'),
+                      content: const Text(
+                        '¿Estás seguro de que querés cerrar sesión?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed:
+                              () =>
+                                  Navigator.of(context).pop(false), // Cancelar
+                          child: const Text('Cancelar'),
+                        ),
+                        ElevatedButton(
+                          onPressed:
+                              () =>
+                                  Navigator.of(context).pop(true), // Confirmar
+                          child: const Text('Cerrar sesión'),
+                        ),
+                      ],
+                    ),
+              );
+
+              // Verificar si el contexto sigue montado antes de proceder
+              if (!context.mounted) return;
+
+              // Si el usuario confirma, proceder con el logout
+              if (confirmed == true) {
+                context.go('/auth/logout'); // Redirige al logout
+              }
+            },
           ),
         ],
       ),
