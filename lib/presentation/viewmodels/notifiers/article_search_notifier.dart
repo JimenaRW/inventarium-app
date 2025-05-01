@@ -10,13 +10,10 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
 
   Future<void> loadArticles() async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final articles = await _repository.getAllArticles();
-      state = state.copyWith(
-        articles: articles,
-        isLoading: false,
-      );
+      state = state.copyWith(articles: articles, isLoading: false);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -31,10 +28,22 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
 
   List<Article> get filteredArticles {
     if (state.searchQuery.isEmpty) return state.articles;
-    
-    return state.articles.where((article) {
-      return article.sku.toLowerCase().contains(state.searchQuery.toLowerCase()) ||
-             article.descripcion.toLowerCase().contains(state.searchQuery.toLowerCase());
-    }).toList();
+
+    final query = state.searchQuery.toLowerCase();
+    final terms = query.split(' ').where((t) => t.isNotEmpty).toList();
+
+    if (terms.isEmpty) return state.articles;
+
+    List<Article> filtro =
+        state.articles.where((article) {
+          final searchableContent = [
+            article.descripcion.toLowerCase(),
+            article.sku.toLowerCase(),
+            article.codigoBarras?.toLowerCase() ?? '',
+          ].join(' ');
+
+          return terms.every((term) => searchableContent.contains(term));
+        }).toList();
+    return filtro;
   }
 }
