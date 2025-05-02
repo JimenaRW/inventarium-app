@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inventarium/controllers/auth_controller.dart'; // Asegurate de importar esto
 
 class MenuItem {
   final String title;
   final String subtitle;
   final IconData icon;
   final String route;
+  final bool isLogout;
 
   const MenuItem({
     required this.title,
     required this.subtitle,
     required this.icon,
     required this.route,
+    this.isLogout = false,
   });
 }
 
@@ -21,12 +24,6 @@ const List<MenuItem> appMenuItems = [
     subtitle: 'Inicio',
     icon: Icons.home_outlined,
     route: '/',
-  ),
-  MenuItem(
-    title: "Login",
-    subtitle: 'Login',
-    icon: Icons.supervised_user_circle_outlined,
-    route: '/auth/login',
   ),
   MenuItem(
     title: 'Artículos',
@@ -41,6 +38,15 @@ const List<MenuItem> appMenuItems = [
     route: '/categories',
   ),
 ];
+
+// Este item lo podés seguir teniendo si querés usarlo manualmente
+const logoutMenuItem = MenuItem(
+  title: 'Cerrar sesión',
+  subtitle: 'Salir del sistema',
+  icon: Icons.logout,
+  route: '/auth/logout',
+  isLogout: true,
+);
 
 class MenuTile extends StatelessWidget {
   final MenuItem item;
@@ -63,7 +69,14 @@ class MenuTile extends StatelessWidget {
       title: Text(item.title, style: titleStyle),
       subtitle: Text(item.subtitle, style: subtitleStyle),
       trailing: const Icon(Icons.chevron_right),
-      onTap: () => context.push(item.route),
+      onTap: () {
+        if (item.isLogout) {
+          AuthController.logout();
+          context.go(item.route); // Redirige al login
+        } else {
+          context.push(item.route);
+        }
+      },
     );
   }
 }
