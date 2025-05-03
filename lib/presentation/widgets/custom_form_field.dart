@@ -8,6 +8,7 @@ class CustomFormField extends StatelessWidget {
   final TextInputType? keyboardType;
   final String? Function(String?)? customValidator;
   final int? maxLines;
+  final int? minLines;
 
   const CustomFormField({
     super.key,
@@ -18,6 +19,7 @@ class CustomFormField extends StatelessWidget {
     this.keyboardType,
     this.customValidator,
     this.maxLines = 1,
+    this.minLines = 1,
   });
 
   @override
@@ -28,12 +30,13 @@ class CustomFormField extends StatelessWidget {
         child: TextFormField(
           controller: controller,
           decoration: InputDecoration(
-            labelText: isRequired ? '$labelText*' : labelText,
+            labelText: isRequired ? '$labelText*'.toLowerCase() : labelText.toLowerCase(),
             hintText: hintText,
             border: const OutlineInputBorder(),
           ),
           keyboardType: keyboardType,
           maxLines: maxLines,
+          minLines: minLines,
           validator:
               customValidator ??
               (value) {

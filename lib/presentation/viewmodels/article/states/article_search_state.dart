@@ -26,6 +26,10 @@ class ArticleSearchState {
       searchQuery: searchQuery ?? this.searchQuery,
     );
   }
+
+  factory ArticleSearchState.initial() {
+    return ArticleSearchState();
+  }
 }
 
 
