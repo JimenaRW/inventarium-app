@@ -86,13 +86,14 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               labelText: 'SKU',
               hintText: 'Ingrese el código SKU',
               minLines: 3,
-              
+              maxLines: 200,
             ),
             CustomFormField(
               controller: _descripcionController,
               labelText: 'Descripción',
               hintText: 'Ingrese la descripción del artículo',
               minLines: 3,
+              maxLines: 200,
             ),
             CustomFormField(
               controller: _codigoBarrasController,
@@ -100,24 +101,28 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               hintText: 'Ingrese el código de barras (opcional)',
               isRequired: false,
               minLines: 3,
+              maxLines: 200,
             ),
             CustomFormField(
               controller: _categoriaController,
               labelText: 'Categoría',
               hintText: 'Ingrese la categoría del artículo',
               minLines: 3,
+              maxLines: 200,
             ),
             CustomFormField(
               controller: _ubicacionController,
               labelText: 'Ubicación',
               hintText: 'Ingrese la ubicación del artículo',
               minLines: 3,
+              maxLines: 200,
             ),
             CustomFormField(
               controller: _fabricanteController,
               labelText: 'Fabricante',
               hintText: 'Ingrese el nombre del fabricante',
               minLines: 3,
+              maxLines: 200,
             ),
             CustomFormField(
               controller: _stockInicialController,
@@ -133,7 +138,6 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
                 }
                 return null;
               },
-              minLines: 3,
             ),
             const SizedBox(height: 24),
             ElevatedButton(

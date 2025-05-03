@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/domain/article.dart';
-import 'package:inventarium/presentation/viewmodels/states/article_search_state.dart';
+import 'package:inventarium/presentation/viewmodels/article/states/article_search_state.dart';
 
 class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
   final ArticleRepository _repository;

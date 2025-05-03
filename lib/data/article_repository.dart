@@ -66,10 +66,12 @@ class ArticleRepository implements IArticleRepository {
   Future<Article> addArticle(Article article) async {
     try {
       final doc = db.collection('articles').doc();
+      
+      final articleFinal = article.copyWith(id: doc.id);
 
-      await doc.set(article.toFirestore());
+      await doc.set(articleFinal.toFirestore());
 
-      return article;
+      return articleFinal;
     } catch (e) {
       print(e);
       rethrow;
@@ -146,5 +148,18 @@ class ArticleRepository implements IArticleRepository {
     throw UnimplementedError();
   }
 
-  getArticles() {}
+  Future<List<Article>> getArticles() async {
+    final docs = db
+        .collection('articles')
+        .withConverter<Article>(
+          fromFirestore: Article.fromFirestore,
+          toFirestore: (Article article, _) => article.toFirestore(),
+        );
+
+    final articles = await docs.get();
+
+    final _articles = articles.docs.map((doc) => doc.data()).toList();
+
+    return _articles;
+  }
 }

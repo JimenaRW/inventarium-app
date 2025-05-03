@@ -4,7 +4,7 @@ import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/presentation/viewmodels/article/notifiers/article_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_state.dart';
 
-late final FirebaseFirestore db;
+final FirebaseFirestore db = FirebaseFirestore.instance;
 
 Provider<ArticleRepository> articleRepositoryProvider = Provider<ArticleRepository>(
   (ref) => ArticleRepository(db),
