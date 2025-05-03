@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:inventarium/presentation/screens/articles/article_create_screen.dart';
+import 'package:inventarium/presentation/screens/articles/create_article_screen.dart';
 import 'package:inventarium/presentation/screens/articles/articles_screen.dart';
 import 'package:inventarium/presentation/screens/auth/login_screen.dart';
 import 'package:inventarium/presentation/screens/auth/password_reset_screen.dart';
@@ -46,9 +46,9 @@ final appRouter = GoRouter(
       builder: (context, state) => ArticlesScreen(),
     ),
     GoRoute(
-      name: ArticleCreateScreen.name,
+      name: CreateArticleScreen.name,
       path: '/articles/create',
-      builder: (context, state) => ArticleCreateScreen(),
+      builder: (context, state) => CreateArticleScreen(),
     ),
   ],
 );

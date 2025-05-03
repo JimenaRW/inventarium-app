@@ -1,0 +1,25 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "inventarium-th3-2025",
+                    "appId": "1:107187973562:android:f5f384a431c17c6da40183",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "inventarium-th3-2025",
+                    "configurations": {
+                        "android": "1:107187973562:android:f5f384a431c17c6da40183",
+                        "ios": "1:107187973562:ios:999141d3905c3824a40183",
+                        "macos": "1:107187973562:ios:999141d3905c3824a40183",
+                        "web": "1:107187973562:web:b09484fd82374b63a40183",
+                        "windows": "1:107187973562:web:d5af204ba8c98ab9a40183"
+                    }
+                }
+            }
+        }
+    }
+}
