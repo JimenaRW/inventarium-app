@@ -6,5 +6,5 @@ abstract interface class ICategoryRepository {
   Future<void> addCategory(Category category);
   Future<void> updateCategory(Category category);
   Future<void> deleteCategory(int id);
-  Future<List<Category?>> searchCategory(String query);
+  Future<List<Category>> searchCategory(String query);
 }
