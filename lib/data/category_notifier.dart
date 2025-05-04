@@ -21,33 +21,29 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
   }
 
   Future<void> addCategory(String description) async {
-  try {
-    // Generar ID único basado en timestamp
     final newId = DateTime.now().millisecondsSinceEpoch;
-    final newCategory = Category(
-      categoryId: newId, // ID temporal único
-      description: description,
-    );
+    try {
+      final newCategory = Category(categoryId: newId, description: description);
 
-    // Agregar inmediatamente al estado
-    state = AsyncValue.data([...?state.value, newCategory]);
+      state = AsyncValue.data([...?state.value, newCategory]);
 
-    // Llamar al repositorio
-    await _repository.addCategory(newCategory);
-  } catch (e) {
-    // Revertir en caso de error
-    state = AsyncValue.data([...?state.value?.where((c) => c.description != description)]);
-    rethrow;
+      await _repository.addCategory(newCategory);
+    } catch (e) {
+      state = AsyncValue.data([
+        ...?state.value?.where((c) => c.categoryId != newId),
+      ]);
+      rethrow;
+    }
   }
-}
 
   Future<void> deleteCategory(int id) async {
     try {
       await _repository.deleteCategory(id);
-      state.whenData((categories) => 
-        state = AsyncValue.data(
-          categories.where((c) => c.categoryId != id).toList()
-        )
+      state.whenData(
+        (categories) =>
+            state = AsyncValue.data(
+              categories.where((c) => c.categoryId != id).toList(),
+            ),
       );
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
@@ -60,7 +56,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
       await loadCategories();
       return;
     }
-    
+
     state = const AsyncValue.loading();
     try {
       final results = await _repository.searchCategory(query);
