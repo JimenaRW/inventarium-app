@@ -37,28 +37,37 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     final notifier = ref.read(articleNotifierProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Artículos'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => context.push('/articles/create'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.mode_edit_outline),
-            onPressed: () => context.push('/articles/edit'),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Artículos'), actions: []),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _ActionButton(
+                  icon: Icons.add_circle_outline,
+                  label: 'CREAR\nARTÍCULO',
+                  onTap: () => context.push('/articles/create'),
+                ),
+                _ActionButton(
+                  icon: Icons.upload_file,
+                  label: 'IMPORTAR\nCSV',
+                  onTap: () {},
+                ),
+                _ActionButton(
+                  icon: Icons.save_alt,
+                  label: 'EXPORTAR\nCSV',
+                  onTap: () {},
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 24,
+            ), // Espacio entre los botones y el buscador
             _buildSearchField(notifier),
             const SizedBox(height: 16),
-            Expanded(
-              child: _buildContent(state),
-            ),
+            Expanded(child: _buildContent(state)),
           ],
         ),
       ),
@@ -97,7 +106,9 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
             Text('Error: ${state.error}'),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => ref.read(articleNotifierProvider.notifier).loadArticles(),
+              onPressed:
+                  () =>
+                      ref.read(articleNotifierProvider.notifier).loadArticles(),
               child: const Text('Reintentar'),
             ),
           ],
@@ -118,24 +129,105 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
           DataColumn(label: Text('Stock'), numeric: true),
           DataColumn(label: Text('Precio1'), numeric: true),
         ],
-        rows: state.filteredArticles.map((article) {
-          return DataRow(
-            cells: [
-              DataCell(Text(article.sku)),
-              DataCell(
-                Text(article.descripcion),
-                onTap: () => _navigateToDetail(context, article),
-              ),
-              DataCell(Text(article.stock.toString())),
-              DataCell(Text('\$${article.precio1?.toStringAsFixed(2)}')),
-            ],
-          );
-        }).toList(),
+        rows:
+            state.filteredArticles.map((article) {
+              return DataRow(
+                cells: [
+                  DataCell(Text(article.sku)),
+                  DataCell(
+                    Text(article.descripcion),
+                    onTap: () => _showArticleDetails(context, article),
+                  ),
+                  DataCell(Text(article.stock.toString())),
+                  DataCell(Text('\$${article.precio1?.toStringAsFixed(2)}')),
+                ],
+              );
+            }).toList(),
       ),
     );
   }
 
-  void _navigateToDetail(BuildContext context, Article article) {
-    context.push('/articles/${article.sku}');
+  // void _navigateToDetail(BuildContext context, Article article) {
+  //   context.push('/articles/${article.sku}');
+  // }
+}
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Icon(icon, size: 40, color: Colors.blue),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
   }
+}
+
+void _showArticleDetails(BuildContext context, Article article) {
+  showModalBottomSheet(
+    context: context,
+    builder: (BuildContext bc) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        child: Wrap(
+          children: <Widget>[
+            Column(
+              children: [
+                Text(
+                  'Descripción: ${article.descripcion}',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text('SKU: ${article.sku}'),
+                Text('Stock: ${article.stock}'),
+                Text('Precio: \$${article.precio1?.toStringAsFixed(2)}'),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    ElevatedButton(
+                      onPressed: () {
+                        // TODO: implementar ir a pantalla de edición de artículo
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Editar'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        // TODO: implementar pegue para borrar artículo en Firebase
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Eliminar'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }
