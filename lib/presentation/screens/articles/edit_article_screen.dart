@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 class EditArticleScreen extends StatelessWidget {
-  static const String name = 'articles_screen';
+  static const String name = 'edit_articles_screen';
 
   const EditArticleScreen({super.key});
 
