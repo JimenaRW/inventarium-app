@@ -190,44 +190,81 @@ void _showArticleDetails(BuildContext context, Article article) {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         child: Wrap(
           children: <Widget>[
-            Column(
-              children: [
-                Text(
-                  'Descripción: ${article.descripcion}',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w500,
+            SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Detalles del Artículo',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                Text('SKU: ${article.sku}'),
-                Text('Stock: ${article.stock}'),
-                Text('Precio: \$${article.precio1?.toStringAsFixed(2)}'),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    ElevatedButton(
-                      onPressed: () {
-                        // TODO: implementar ir a pantalla de edición de artículo
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Editar'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        // TODO: implementar pegue para borrar artículo en Firebase
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Eliminar'),
-                    ),
-                  ],
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  _buildDetailRow('SKU', article.sku),
+                  _buildDetailRow('Categoría', article.categoria),
+                  _buildDetailRow(
+                    'Código de Barras',
+                    article.codigoBarras != null
+                        ? 'Sin Código de Barras'
+                        : article.codigoBarras!,
+                  ),
+                  _buildDetailRow('Descripción', article.descripcion),
+                  _buildDetailRow('Fabricante', article.fabricante),
+                  _buildDetailRow('IVA', article.iva.toString()),
+                  _buildDetailRow(
+                    'Precio 1',
+                    '\$${article.precio1?.toStringAsFixed(2)}',
+                  ),
+                  _buildDetailRow(
+                    'Precio 2',
+                    '\$${article.precio2?.toStringAsFixed(2)}',
+                  ),
+                  _buildDetailRow(
+                    'Precio 3',
+                    '\$${article.precio3?.toStringAsFixed(2)}',
+                  ),
+                  _buildDetailRow('Stock', article.stock.toString()),
+                  _buildDetailRow('Ubicación', article.ubicacion),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      ElevatedButton(
+                        onPressed: () {
+                          // TODO: implementar ir a pantalla de edición de artículo
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Editar'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          // TODO: implementar pegue para borrar artículo en Firebase
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Eliminar'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       );
     },
+  );
+}
+
+Widget _buildDetailRow(String label, String value) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 5),
+    child: Row(
+      children: [
+        Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(value),
+      ],
+    ),
   );
 }
