@@ -44,6 +44,10 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
             icon: const Icon(Icons.add),
             onPressed: () => context.push('/articles/create'),
           ),
+          IconButton(
+            icon: const Icon(Icons.mode_edit_outline),
+            onPressed: () => context.push('/articles/edit'),
+          ),
         ],
       ),
       body: Padding(

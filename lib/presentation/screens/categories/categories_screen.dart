@@ -7,11 +7,11 @@ class CategoriesScreen extends ConsumerStatefulWidget {
   static const String name = 'categories_screen';
   const CategoriesScreen({super.key});
 
-   @override
+  @override
   ConsumerState<CategoriesScreen> createState() => _CategoriesScreenState();
 }
 
- class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
+class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   final _searchController = TextEditingController();
 
   @override
@@ -27,9 +27,18 @@ class CategoriesScreen extends ConsumerStatefulWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Categorías')),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () => context.push('/categories/create')),
+      floatingActionButton: Column(
+        children: [
+          FloatingActionButton(
+            child: const Icon(Icons.add),
+            onPressed: () => context.push('/categories/create'),
+          ),
+          FloatingActionButton(
+            child: const Icon(Icons.mode_edit_outline),
+            onPressed: () => context.push('/categories/edit'),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
@@ -55,15 +64,14 @@ class CategoriesScreen extends ConsumerStatefulWidget {
             child: categories.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, stack) => Center(child: Text('Error: $error')),
-              data: (categories) => ListView.builder(
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  return ListTile(
-                    title: Text(category.description),
-                  );
-                },
-              ),
+              data:
+                  (categories) => ListView.builder(
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      return ListTile(title: Text(category.description));
+                    },
+                  ),
             ),
           ),
         ],
@@ -71,4 +79,3 @@ class CategoriesScreen extends ConsumerStatefulWidget {
     );
   }
 }
-

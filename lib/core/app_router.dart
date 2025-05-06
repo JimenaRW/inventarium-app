@@ -2,11 +2,13 @@ import 'package:go_router/go_router.dart';
 import 'package:inventarium/controllers/auth_controller.dart';
 import 'package:inventarium/presentation/screens/articles/create_article_screen.dart';
 import 'package:inventarium/presentation/screens/articles/articles_screen.dart';
+import 'package:inventarium/presentation/screens/articles/edit_article_screen.dart';
 import 'package:inventarium/presentation/screens/auth/login_screen.dart';
 import 'package:inventarium/presentation/screens/auth/password_reset_screen.dart';
 import 'package:inventarium/presentation/screens/auth/register_screen.dart';
 import 'package:inventarium/presentation/screens/categories/categories_screen.dart';
 import 'package:inventarium/presentation/screens/categories/category_create_screen.dart';
+import 'package:inventarium/presentation/screens/categories/edit_category_screen.dart';
 import 'package:inventarium/presentation/screens/home_screen.dart';
 
 final appRouter = GoRouter(
@@ -59,6 +61,11 @@ final appRouter = GoRouter(
       builder: (context, state) => const CategoryCreateScreen(),
     ),
     GoRoute(
+      name: EditCategoryScreen.name,
+      path: '/categories/edit',
+      builder: (context, state) => const EditCategoryScreen(),
+    ),
+    GoRoute(
       name: ArticlesScreen.name,
       path: '/articles',
       builder: (context, state) => const ArticlesScreen(),
@@ -67,6 +74,11 @@ final appRouter = GoRouter(
       name: CreateArticleScreen.name,
       path: '/articles/create',
       builder: (context, state) => const CreateArticleScreen(),
+    ),
+    GoRoute(
+      name: EditArticleScreen.name,
+      path: '/articles/edit',
+      builder: (context, state) => const EditArticleScreen(),
     ),
     GoRoute(
       path: '/auth/logout',
