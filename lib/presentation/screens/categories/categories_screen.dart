@@ -69,7 +69,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                     itemCount: categories.length,
                     itemBuilder: (context, index) {
                       final category = categories[index];
-                      return ListTile(title: Text(category.description));
+                      return ListTile(title: Text(category.descripcion));
                     },
                   ),
             ),

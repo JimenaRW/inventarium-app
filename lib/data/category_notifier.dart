@@ -21,28 +21,25 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
   }
 
   Future<void> addCategory(String description) async {
-    final newId = DateTime.now().millisecondsSinceEpoch;
     try {
-      final newCategory = Category(categoryId: newId, description: description);
+      final newCategory = Category(id: "", descripcion: description);
 
       state = AsyncValue.data([...?state.value, newCategory]);
 
       await _repository.addCategory(newCategory);
     } catch (e) {
-      state = AsyncValue.data([
-        ...?state.value?.where((c) => c.categoryId != newId),
-      ]);
+    
       rethrow;
     }
   }
 
-  Future<void> deleteCategory(int id) async {
+  Future<void> deleteCategory(String id) async {
     try {
       await _repository.deleteCategory(id);
       state.whenData(
         (categories) =>
             state = AsyncValue.data(
-              categories.where((c) => c.categoryId != id).toList(),
+              categories.where((c) => c.id != id).toList(),
             ),
       );
     } catch (e) {
