@@ -30,7 +30,7 @@ class Article extends Equatable {
     double? precio3,
     int? iva,
     bool? activo,
-  }) : id = id ?? null,
+  }) : id = id ?? "",
        precio1 = precio1 ?? 0.0,
        precio2 = precio2 ?? 0.0,
        precio3 = precio3 ?? 0.0,

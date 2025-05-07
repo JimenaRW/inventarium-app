@@ -73,7 +73,6 @@ class ArticleRepository implements IArticleRepository {
 
       return articleFinal;
     } catch (e) {
-      print(e);
       rethrow;
     }
   }
@@ -99,7 +98,6 @@ class ArticleRepository implements IArticleRepository {
 
       return articles.docs.map((doc) => doc.data()).toList();
     } catch (e) {
-      print(e);
       rethrow;
     }
   }

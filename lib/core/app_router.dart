@@ -8,7 +8,6 @@ import 'package:inventarium/presentation/screens/auth/password_reset_screen.dart
 import 'package:inventarium/presentation/screens/auth/register_screen.dart';
 import 'package:inventarium/presentation/screens/categories/categories_screen.dart';
 import 'package:inventarium/presentation/screens/categories/category_create_screen.dart';
-import 'package:inventarium/presentation/screens/categories/edit_category_screen.dart';
 import 'package:inventarium/presentation/screens/home_screen.dart';
 
 final appRouter = GoRouter(
@@ -61,11 +60,6 @@ final appRouter = GoRouter(
       builder: (context, state) => const CategoryCreateScreen(),
     ),
     GoRoute(
-      name: EditCategoryScreen.name,
-      path: '/categories/edit',
-      builder: (context, state) => const EditCategoryScreen(),
-    ),
-    GoRoute(
       name: ArticlesScreen.name,
       path: '/articles',
       builder: (context, state) => const ArticlesScreen(),
@@ -77,8 +71,10 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       name: EditArticleScreen.name,
-      path: '/articles/edit',
-      builder: (context, state) => const EditArticleScreen(),
+      path: '/articles/edit/:id',
+      builder: (context, state) => EditArticleScreen(
+        id: state.pathParameters['id'] ?? "",
+      ),
     ),
     GoRoute(
       path: '/auth/logout',
