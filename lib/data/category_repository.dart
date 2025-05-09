@@ -102,8 +102,9 @@ CategoryRepository(this.db) : super();
   }
 
   @override
-  Future<void> updateCategory(Category category) {
-    // TODO: implement updateCategory
-    throw UnimplementedError();
-  }
+ Future<void> updateCategory(Category category) async {
+  await db.collection('categories').doc(category.id).update({
+    'descripcion': category.descripcion,
+  });
+}
 }
