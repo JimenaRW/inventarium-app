@@ -78,7 +78,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               _ActionButton(
                 icon: Icons.edit,
                 label: 'EDITAR\nCATEGORÍA',
-                onTap: () => context.push('/categories/create'),
+                onTap: () => context.push(''),
                 fontSize: 10,
                 iconSize: 25,
               ),
@@ -86,7 +86,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               _ActionButton(
                 icon: Icons.delete,
                 label: 'BORRAR\nCATEGORÍA',
-                onTap: () => context.push('/categories/create'),
+                onTap: () => context.push(''),
                 fontSize: 10,
                 iconSize: 25,
               ),
