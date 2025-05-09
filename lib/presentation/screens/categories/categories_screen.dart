@@ -26,21 +26,31 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     final notifier = ref.read(categoriesNotifierProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Categorías')),
-      floatingActionButton: Column(
-        children: [
-          FloatingActionButton(
-            child: const Icon(Icons.add),
-            onPressed: () => context.push('/categories/create'),
-          ),
-          FloatingActionButton(
-            child: const Icon(Icons.mode_edit_outline),
-            onPressed: () => context.push('/categories/edit'),
-          ),
-        ],
-      ),
+
+      
+
+      appBar: AppBar(title: const Text('Categorías')), 
+
       body: Column(
         children: [
+          Text('ELIJA LA OPCIÓN',
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor)),
+          const SizedBox(height: 16),
+           Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _ActionButton(
+                  icon: Icons.add_circle_outline,
+                  label: 'CREAR\nCATEGORÍA',
+                  onTap: () => context.push('/categories/create'),
+                ),
+                
+              ],
+            ),
+
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
@@ -73,6 +83,36 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                     },
                   ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+   @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Icon(icon, size: 40, color: Colors.blue),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ],
       ),
