@@ -7,61 +7,6 @@ class ArticleRepository implements IArticleRepository {
 
   ArticleRepository(this.db) : super();
 
-  // final List<Article> _articles = [
-  //   Article(
-  //     sku: '123456',
-  //     descripcion: 'Articulo 1',
-  //     codigoBarras: '1234567890123',
-  //     categoria: 'Categoria 1',
-  //     ubicacion: 'Ubicacion 1',
-  //     fabricante: 'Fabricante 1',
-  //     stock: 10,
-  //     precio1: 100.0,
-  //     precio2: 200.0,
-  //     precio3: 300.0,
-  //     iva: 21,
-  //   ),
-  //   Article(
-  //     sku: '234567',
-  //     descripcion: 'Articulo 2',
-  //     codigoBarras: '2345678901234',
-  //     categoria: 'Categoria 2',
-  //     ubicacion: 'Ubicacion 2',
-  //     fabricante: 'Fabricante 2',
-  //     stock: 20,
-  //     precio1: 150.0,
-  //     precio2: 250.0,
-  //     precio3: 350.0,
-  //     iva: 21,
-  //   ),
-  //   Article(
-  //     sku: '345678',
-  //     descripcion: 'Articulo 3',
-  //     codigoBarras: '3456789012345',
-  //     categoria: 'Categoria 3',
-  //     ubicacion: 'Ubicacion 3',
-  //     fabricante: 'Fabricante 3',
-  //     stock: 30,
-  //     precio1: 200.0,
-  //     precio2: 300.0,
-  //     precio3: 400.0,
-  //     iva: 21,
-  //   ),
-  //   Article(
-  //     sku: '456789',
-  //     descripcion: 'Articulo 4',
-  //     codigoBarras: '4567890123456',
-  //     categoria: 'Categoria 4',
-  //     ubicacion: 'Ubicacion 4',
-  //     fabricante: 'Fabricante 4',
-  //     stock: 40,
-  //     precio1: 250.0,
-  //     precio2: 350.0,
-  //     precio3: 450.0,
-  //     iva: 21,
-  //   ),
-  // ];
-
   @override
   Future<Article> addArticle(Article article) async {
     try {
@@ -160,4 +105,41 @@ class ArticleRepository implements IArticleRepository {
 
     return _articles;
   }
+
+  Future<List<Article>> getArticlesPaginado({int page = 1, int limit = 20}) async {
+    try {
+      final int offset = (page - 1) * limit;
+      
+      final collectionRef = db.collection('articles')
+        .orderBy('createdAt', descending: true);
+
+      QuerySnapshot querySnapshot;
+      
+      if (page == 1) {
+        querySnapshot = await collectionRef.limit(limit).get();
+      } else {
+        final previousPageQuery = await collectionRef
+          .limit(offset)
+          .get();
+
+        if (previousPageQuery.docs.isEmpty) {
+          return [];
+        }
+
+        final lastVisible = previousPageQuery.docs.last;
+        
+        querySnapshot = await collectionRef
+          .startAfterDocument(lastVisible)
+          .limit(limit)
+          .get();
+      }
+
+      return querySnapshot.docs.map((doc) {
+        return Article.fromFirestore(doc as DocumentSnapshot<Map<String, dynamic>>, null);
+      }).toList();
+    } catch (e) {
+      throw Exception('Error fetching articles: $e');
+    }
+  }
+
 }

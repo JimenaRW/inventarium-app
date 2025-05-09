@@ -2,35 +2,56 @@ import 'package:inventarium/domain/article.dart';
 
 class ArticleSearchState {
   final List<Article> articles;
+  final List<Article> filteredArticles;
   final bool isLoading;
+  final bool isLoadingMore;
+  final bool isSearching;
+  final bool hasMore;
+  final int currentPage;
   final String? error;
   final String searchQuery;
 
   const ArticleSearchState({
     this.articles = const [],
+    this.filteredArticles = const [],
     this.isLoading = false,
+    this.isLoadingMore = false,
+    this.isSearching = false,
+    this.hasMore = false,
+    this.currentPage = 1,
     this.error,
     this.searchQuery = '',
   });
 
+  factory ArticleSearchState.initial() => ArticleSearchState(
+    articles: [],
+    filteredArticles: [],
+    isLoading: false,
+    isLoadingMore: false,
+    isSearching: false,
+    hasMore: true,
+    currentPage: 0,
+  );
+
   ArticleSearchState copyWith({
     List<Article>? articles,
+    List<Article>? filteredArticles,
     bool? isLoading,
+    bool? isLoadingMore,
+    bool? isSearching,
+    bool? hasMore,
+    int? currentPage,
     String? error,
-    String? searchQuery,
   }) {
     return ArticleSearchState(
       articles: articles ?? this.articles,
+      filteredArticles: filteredArticles ?? this.filteredArticles,
       isLoading: isLoading ?? this.isLoading,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      isSearching: isSearching ?? this.isSearching,
+      hasMore: hasMore ?? this.hasMore,
+      currentPage: currentPage ?? this.currentPage,
       error: error ?? this.error,
-      searchQuery: searchQuery ?? this.searchQuery,
     );
   }
-
-  factory ArticleSearchState.initial() {
-    return ArticleSearchState();
-  }
 }
-
-
-
