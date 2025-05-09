@@ -59,4 +59,24 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
       rethrow;
     }
   }
+
+  Future<List<Article>> getArticles({int page = 1, int limit = 20}) async {
+    try {
+      final articles = await _repository.getArticlesPaginado(page: page, limit: limit);
+      return articles;
+    } catch (e) {
+      throw Exception('Error al cargar artículos: ${e.toString()}');
+    }
+  }
+
+  Future<List<Article>> searchArticles(String query) async {
+    try {
+      final articles = await _repository.searchArticles(query);
+      return articles;
+    } catch (e) {
+      throw Exception('Error en búsqueda: ${e.toString()}');
+    }
+  }
+
+
 }

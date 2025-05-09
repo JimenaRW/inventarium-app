@@ -5,6 +5,8 @@ import 'package:inventarium/presentation/viewmodels/article/states/article_searc
 
 class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
 final ArticleNotifier _articleNotifier;
+  final int _currentPage = 1;
+  final int _itemsPerPage = 20;
 
   ArticleSearchNotifier(this._articleNotifier)
     : super(ArticleSearchState.initial());
@@ -22,10 +24,6 @@ final ArticleNotifier _articleNotifier;
         error: 'Error al cargar artículos: ${e.toString()}',
       );
     }
-  }
-
-  void setSearchQuery(String query) {
-    state = state.copyWith(searchQuery: query);
   }
 
   List<Article> get filteredArticles {
@@ -47,5 +45,65 @@ final ArticleNotifier _articleNotifier;
           return terms.every((term) => searchableContent.contains(term));
         }).toList();
     return filtro;
+  }
+
+  Future<void> loadInitialData() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final articles = await _articleNotifier.getArticles(page: _currentPage, limit: _itemsPerPage);
+      state = state.copyWith(
+        articles: articles,
+        isLoading: false,
+        hasMore: articles.length == _itemsPerPage,
+      );
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+    }
+  }
+
+   Future<void> loadMoreArticles() async {
+    if (state.isLoadingMore || !state.hasMore) return;
+
+    state = state.copyWith(isLoadingMore: true);
+    try {
+      final newArticles = await _articleNotifier.getArticles(
+        page: state.currentPage + 1,
+        limit: _itemsPerPage,
+      );
+      
+      state = state.copyWith(
+        articles: [...state.articles, ...newArticles],
+        filteredArticles: [...state.filteredArticles, ...newArticles],
+        isLoadingMore: false,
+        hasMore: newArticles.length == _itemsPerPage,
+        currentPage: state.currentPage + 1,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoadingMore: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  Future<void> searchArticles(String query) async {
+    if (query.isEmpty) {
+      state = state.copyWith(filteredArticles: state.articles);
+      return;
+    }
+
+    state = state.copyWith(isSearching: true);
+    try {
+      final results = await _articleNotifier.searchArticles(query);
+      state = state.copyWith(
+        filteredArticles: results,
+        isSearching: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isSearching: false,
+        error: e.toString(),
+      );
+    }
   }
 }

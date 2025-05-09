@@ -15,7 +15,18 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   final _searchController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(categoriesNotifierProvider.notifier).clearSearch();
+      ref.read(categoriesNotifierProvider.notifier).loadCategories();
+    });
+  }
+
+  @override
   void dispose() {
+    ref.read(categoriesNotifierProvider.notifier).clearSearch();
+    ref.read(categoriesNotifierProvider.notifier).loadCategories();
     _searchController.dispose();
     super.dispose();
   }
@@ -46,7 +57,12 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 icon: Icons.add_circle_outline,
                 label: 'CREAR\nCATEGORÍA',
                 iconSize: 50,
-                onTap: () => context.push('/categories/create'),
+                onTap: () async {
+                  await context.push('/categories/create');
+                  _searchController.clear();
+                  ref.read(categoriesNotifierProvider.notifier).clearSearch();
+                  ref.read(categoriesNotifierProvider.notifier).loadCategories();
+                },
               ),
             ],
           ),
@@ -65,6 +81,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
+                          ref.read(categoriesNotifierProvider.notifier).clearSearch();
                           notifier.loadCategories();
                         },
                       ),
@@ -73,14 +90,6 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                     onChanged: (value) => notifier.searchCategories(value),
                   ),
                 ),
-              ),
-              // Botones adicionales
-              _ActionButton(
-                icon: Icons.edit,
-                label: 'EDITAR\nCATEGORÍA',
-                onTap: () => context.push(''),
-                fontSize: 10,
-                iconSize: 25,
               ),
               SizedBox(width: 8),
               _ActionButton(
@@ -103,7 +112,16 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                     itemCount: categories.length,
                     itemBuilder: (context, index) {
                       final category = categories[index];
-                      return ListTile(title: Text(category.descripcion));
+                      return ListTile(
+                        title: Text(category.descripcion),
+                        onTap:
+                            () => _showCategoryDetails(
+                              context,
+                              category
+                                  .id, // Asegúrate de que tu modelo `Category` tenga un `id`
+                              category.descripcion,
+                            ),
+                      );
                     },
                   ),
             ),
@@ -149,4 +167,78 @@ class _ActionButton extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showCategoryDetails(
+  BuildContext context,
+  String categoryId,
+  String currentDescription,
+) {
+  final TextEditingController _editController = TextEditingController(
+    text: currentDescription,
+  );
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true, // Necesario para el ajuste del teclado
+    builder: (BuildContext bc) {
+      return Consumer(
+        builder: (context, ref, _) {
+          final notifier = ref.read(categoriesNotifierProvider.notifier);
+          
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              child: Column(
+          mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Editar Categoría',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _editController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nombre de la categoría',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancelar'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          final newDescription = _editController.text.trim();
+                          if (newDescription.isNotEmpty) {
+                            notifier.updateCategory(
+                              categoryId, 
+                              newDescription,
+                            );
+                            Navigator.pop(context);
+                          }
+                        },
+                        child: const Text('Guardar'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
 }
