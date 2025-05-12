@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
-import 'package:inventarium/presentation/viewmodels/article/states/article_update_state.dart';
 import 'package:inventarium/presentation/widgets/custom_form_field.dart';
 
 class ArticleEditForm extends ConsumerStatefulWidget {

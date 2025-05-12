@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository_provider.dart';
-import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/presentation/widgets/edit_article_form.dart';
 
 class EditArticleScreen extends ConsumerStatefulWidget {
