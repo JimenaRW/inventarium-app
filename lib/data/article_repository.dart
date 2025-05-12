@@ -11,7 +11,7 @@ class ArticleRepository implements IArticleRepository {
   Future<Article> addArticle(Article article) async {
     try {
       final doc = db.collection('articles').doc();
-      
+
       final articleFinal = article.copyWith(id: doc.id);
 
       await doc.set(articleFinal.toFirestore());
@@ -86,9 +86,15 @@ class ArticleRepository implements IArticleRepository {
   }
 
   @override
-  Future<void> updateArticle(Article article) {
-    // TODO: implement updateArticle
-    throw UnimplementedError();
+  Future<void> updateArticle(Article article) async {
+    try {
+      await db
+          .collection('articles')
+          .doc(article.id)
+          .set(article.toFirestore(), SetOptions(merge: true));
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<List<Article>> getArticles() async {
@@ -106,40 +112,45 @@ class ArticleRepository implements IArticleRepository {
     return _articles;
   }
 
-  Future<List<Article>> getArticlesPaginado({int page = 1, int limit = 20}) async {
+  Future<List<Article>> getArticlesPaginado({
+    int page = 1,
+    int limit = 20,
+  }) async {
     try {
       final int offset = (page - 1) * limit;
-      
-      final collectionRef = db.collection('articles')
-        .orderBy('createdAt', descending: true);
+
+      final collectionRef = db
+          .collection('articles')
+          .orderBy('createdAt', descending: true);
 
       QuerySnapshot querySnapshot;
-      
+
       if (page == 1) {
         querySnapshot = await collectionRef.limit(limit).get();
       } else {
-        final previousPageQuery = await collectionRef
-          .limit(offset)
-          .get();
+        final previousPageQuery = await collectionRef.limit(offset).get();
 
         if (previousPageQuery.docs.isEmpty) {
           return [];
         }
 
         final lastVisible = previousPageQuery.docs.last;
-        
-        querySnapshot = await collectionRef
-          .startAfterDocument(lastVisible)
-          .limit(limit)
-          .get();
+
+        querySnapshot =
+            await collectionRef
+                .startAfterDocument(lastVisible)
+                .limit(limit)
+                .get();
       }
 
       return querySnapshot.docs.map((doc) {
-        return Article.fromFirestore(doc as DocumentSnapshot<Map<String, dynamic>>, null);
+        return Article.fromFirestore(
+          doc as DocumentSnapshot<Map<String, dynamic>>,
+          null,
+        );
       }).toList();
     } catch (e) {
       throw Exception('Error fetching articles: $e');
     }
   }
-
 }

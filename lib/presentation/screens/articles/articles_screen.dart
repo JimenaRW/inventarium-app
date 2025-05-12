@@ -136,7 +136,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   DataCell(Text(article.sku)),
                   DataCell(
                     Text(article.descripcion),
-                    onTap: () => _showArticleDetails(context, article),
+                    onTap: () => _showArticleDetails(context, article, ref),
                   ),
                   DataCell(Text(article.stock.toString())),
                   DataCell(Text('\$${article.precio1?.toStringAsFixed(2)}')),
@@ -182,7 +182,7 @@ class _ActionButton extends StatelessWidget {
   }
 }
 
-void _showArticleDetails(BuildContext context, Article article) {
+void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
   showModalBottomSheet(
     context: context,
     builder: (BuildContext bc) {
@@ -233,8 +233,14 @@ void _showArticleDetails(BuildContext context, Article article) {
                     children: <Widget>[
                       ElevatedButton(
                         onPressed: () {
-                          // TODO: implementar ir a pantalla de edición de artículo
                           Navigator.pop(context);
+                          context.push('/articles/edit/${article.id}').then((
+                            _,
+                          ) {
+                            ref
+                                .read(articleNotifierProvider.notifier)
+                                .loadArticles();
+                          });
                         },
                         child: const Text('Editar'),
                       ),
