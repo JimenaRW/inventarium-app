@@ -75,8 +75,6 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
         stock: int.tryParse(_stockInicialController.text) ?? 0,
       );
 
-      // Aquí necesitarás un provider para actualizar el artículo
-      // Supongo que tienes algo como articleUpdateProvider
       await ref
           .read(articleUpdateProvider.notifier)
           .updateArticle(updatedArticle);
