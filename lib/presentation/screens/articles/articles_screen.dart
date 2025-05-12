@@ -185,76 +185,76 @@ class _ActionButton extends StatelessWidget {
 void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
   showModalBottomSheet(
     context: context,
+    isScrollControlled: true, // Agrega esta línea
     builder: (BuildContext bc) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         child: Wrap(
           children: <Widget>[
-            SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Detalles del Artículo',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w500,
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Detalles del Artículo',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _buildDetailRow('SKU', article.sku),
+                _buildDetailRow('Categoría', article.categoria),
+                _buildDetailRow(
+                  'Código de Barras',
+                  article.codigoBarras != null
+                      ? article.codigoBarras!
+                      : 'Sin Código de Barras',
+                ),
+                _buildDetailRow('Descripción', article.descripcion),
+                _buildDetailRow('Fabricante', article.fabricante),
+                _buildDetailRow('IVA', article.iva.toString()),
+                _buildDetailRow(
+                  'Precio 1',
+                  '\$${article.precio1?.toStringAsFixed(2)}',
+                ),
+                _buildDetailRow(
+                  'Precio 2',
+                  '\$${article.precio2?.toStringAsFixed(2)}',
+                ),
+                _buildDetailRow(
+                  'Precio 3',
+                  '\$${article.precio3?.toStringAsFixed(2)}',
+                ),
+                _buildDetailRow('Stock', article.stock.toString()),
+                _buildDetailRow('Ubicación', article.ubicacion),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        context.push('/articles/edit/${article.id}').then((_) {
+                          ref
+                              .read(articleNotifierProvider.notifier)
+                              .loadArticles();
+                        });
+                      },
+                      child: const Text('Editar'),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  _buildDetailRow('SKU', article.sku),
-                  _buildDetailRow('Categoría', article.categoria),
-                  _buildDetailRow(
-                    'Código de Barras',
-                    article.codigoBarras != null
-                        ? 'Sin Código de Barras'
-                        : article.codigoBarras!,
-                  ),
-                  _buildDetailRow('Descripción', article.descripcion),
-                  _buildDetailRow('Fabricante', article.fabricante),
-                  _buildDetailRow('IVA', article.iva.toString()),
-                  _buildDetailRow(
-                    'Precio 1',
-                    '\$${article.precio1?.toStringAsFixed(2)}',
-                  ),
-                  _buildDetailRow(
-                    'Precio 2',
-                    '\$${article.precio2?.toStringAsFixed(2)}',
-                  ),
-                  _buildDetailRow(
-                    'Precio 3',
-                    '\$${article.precio3?.toStringAsFixed(2)}',
-                  ),
-                  _buildDetailRow('Stock', article.stock.toString()),
-                  _buildDetailRow('Ubicación', article.ubicacion),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          context.push('/articles/edit/${article.id}').then((
-                            _,
-                          ) {
-                            ref
-                                .read(articleNotifierProvider.notifier)
-                                .loadArticles();
-                          });
-                        },
-                        child: const Text('Editar'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          // TODO: implementar pegue para borrar artículo en Firebase
-                          Navigator.pop(context);
-                        },
-                        child: const Text('Eliminar'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    ElevatedButton(
+                      onPressed: () {
+                        // TODO: implementar pegue para borrar artículo en Firebase
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Eliminar'),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ), // Agrega un poco de espacio extra al final
+              ],
             ),
           ],
         ),
