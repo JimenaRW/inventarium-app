@@ -21,7 +21,10 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
   late final TextEditingController _ubicacionController;
   late final TextEditingController _fabricanteController;
   late final TextEditingController _stockInicialController;
-
+  late final TextEditingController _precio1Controller;
+  late final TextEditingController _precio2Controller;
+  late final TextEditingController _precio3Controller;
+  late final TextEditingController _ivaController;
   @override
   void initState() {
     super.initState();
@@ -31,7 +34,11 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
     _categoriaController = TextEditingController();
     _ubicacionController = TextEditingController();
     _fabricanteController = TextEditingController();
+    _ivaController = TextEditingController();
     _stockInicialController = TextEditingController();
+    _precio1Controller = TextEditingController();
+    _precio2Controller = TextEditingController();
+    _precio3Controller = TextEditingController();
   }
 
   @override
@@ -42,7 +49,11 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
     _categoriaController.dispose();
     _ubicacionController.dispose();
     _fabricanteController.dispose();
+    _ivaController.dispose();
     _stockInicialController.dispose();
+    _precio1Controller.dispose();
+    _precio2Controller.dispose();
+    _precio3Controller.dispose();
     super.dispose();
   }
 
@@ -58,7 +69,11 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
         categoria: _categoriaController.text,
         ubicacion: _ubicacionController.text,
         fabricante: _fabricanteController.text,
+        iva: double.tryParse(_ivaController.text) ?? 0.00,
         stock: int.tryParse(_stockInicialController.text) ?? 0,
+        precio1: double.tryParse(_precio1Controller.text) ?? 0.00,
+        precio2: double.tryParse(_precio2Controller.text) ?? 0.00,
+        precio3: double.tryParse(_precio3Controller.text) ?? 0.00,
       );
 
       await ref.read(articleCreateProvider.notifier).submitForm(newArticle);
@@ -132,6 +147,22 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               maxLines: 200,
             ),
             CustomFormField(
+              controller: _ivaController,
+              labelText: 'Impuesto al Valor Agregado (IVA)',
+              hintText: 'Ingrese el porcentaje de IVA',
+              keyboardType: TextInputType.number,
+              customValidator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor ingrese el IVA';
+                }
+                if (double.tryParse(value) == null) {
+                  return 'Ingrese un número válido';
+                }
+                return null;
+              },
+            ),
+
+            CustomFormField(
               controller: _stockInicialController,
               labelText: 'Stock Inicial',
               hintText: 'Ingrese la cantidad inicial en stock',
@@ -146,6 +177,52 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
                 return null;
               },
             ),
+            CustomFormField(
+              controller: _precio1Controller,
+              labelText: 'Precio 1',
+              hintText: 'Ingrese el precio de la lista 1',
+              keyboardType: TextInputType.number,
+              customValidator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor ingrese el precio';
+                }
+                if (double.tryParse(value) == null) {
+                  return 'Ingrese un número válido';
+                }
+                return null;
+              },
+            ),
+            CustomFormField(
+              controller: _precio2Controller,
+              labelText: 'Precio 2',
+              hintText: 'Ingrese el precio de la lista 2',
+              keyboardType: TextInputType.number,
+              customValidator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor ingrese el precio';
+                }
+                if (double.tryParse(value) == null) {
+                  return 'Ingrese un número válido';
+                }
+                return null;
+              },
+            ),
+            CustomFormField(
+              controller: _precio3Controller,
+              labelText: 'Precio 3',
+              hintText: 'Ingrese el precio de la lista 3',
+              keyboardType: TextInputType.number,
+              customValidator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor ingrese el precio';
+                }
+                if (double.tryParse(value) == null) {
+                  return 'Ingrese un número válido';
+                }
+                return null;
+              },
+            ),
+
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: formState.isLoading ? null : _submitForm,
