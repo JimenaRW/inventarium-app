@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/core/menu/drawer_menu.dart';
-import 'package:inventarium/data/article_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/widgets/infinite_scroll_table.dart';
@@ -21,7 +20,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(articleNotifierProvider.notifier).loadArticles();
+      ref.read(articleSearchProvider.notifier).loadInitialData();
     });
   }
 
