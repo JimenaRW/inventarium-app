@@ -9,6 +9,8 @@ import 'package:inventarium/presentation/screens/auth/register_screen.dart';
 import 'package:inventarium/presentation/screens/categories/categories_screen.dart';
 import 'package:inventarium/presentation/screens/categories/category_create_screen.dart';
 import 'package:inventarium/presentation/screens/home_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:inventarium/presentation/screens/articles/upc_add_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/auth/login',
@@ -72,16 +74,22 @@ final appRouter = GoRouter(
     GoRoute(
       name: EditArticleScreen.name,
       path: '/articles/edit/:id',
-      builder: (context, state) => EditArticleScreen(
-        id: state.pathParameters['id'] ?? "",
-      ),
+      builder:
+          (context, state) =>
+              EditArticleScreen(id: state.pathParameters['id'] ?? ""),
     ),
+
     GoRoute(
       path: '/auth/logout',
       redirect: (context, state) {
         AuthController.logout();
         return '/auth/login';
       },
+    ),
+    GoRoute(
+      name: BarcodeScannerScreen.name,
+      path: '/barcode-scanner',
+      builder: (context, state) => BarcodeScannerScreen(),
     ),
   ],
 );

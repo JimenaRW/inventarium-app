@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/widgets/custom_form_field.dart';
 
 class ArticleForm extends ConsumerStatefulWidget {
-
   const ArticleForm({super.key});
 
   @override
@@ -62,7 +62,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
       );
 
       await ref.read(articleCreateProvider.notifier).submitForm(newArticle);
-      
+
       final state = ref.read(articleCreateProvider);
       if (state.isSuccess && mounted) {
         Navigator.pop(context);
@@ -100,8 +100,15 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               labelText: 'Código de Barras',
               hintText: 'Ingrese el código de barras (opcional)',
               isRequired: false,
-              minLines: 3,
-              maxLines: 200,
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.camera_alt),
+                onPressed: () async {
+                  final result = await context.push('/barcode-scanner');
+                  if (result != null) {
+                    _codigoBarrasController.text = result.toString();
+                  }
+                },
+              ),
             ),
             CustomFormField(
               controller: _categoriaController,
