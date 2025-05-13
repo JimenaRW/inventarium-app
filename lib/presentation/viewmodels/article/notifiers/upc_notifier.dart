@@ -16,14 +16,16 @@ class UPCNotifier extends StateNotifier<UPCState> {
   Future<void> scanUPC(BuildContext context) async {
     state = state.copyWith(isLoading: true);
 
+    String? result;
     try {
-      final result = await _repository.scanUPC(context);
+      result = await _repository.scanUPC(context);
       state = state.copyWith(scanResult: result, isLoading: false);
-      context.pop(
-        result,
-      ); // Vuelve a la pantalla anterior y pasa el resultado como parámetro
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
+    }
+
+    if (context.mounted && result != null) {
+      context.pop(result);
     }
   }
 }
