@@ -13,7 +13,7 @@ class Article extends Equatable {
   final double? precio1;
   final double? precio2;
   final double? precio3;
-  final int? iva;
+  final double? iva;
   final bool activo;
 
   const Article({
@@ -28,13 +28,13 @@ class Article extends Equatable {
     double? precio1,
     double? precio2,
     double? precio3,
-    int? iva,
+    double? iva,
     bool? activo,
   }) : id = id ?? "",
        precio1 = precio1 ?? 0.0,
        precio2 = precio2 ?? 0.0,
        precio3 = precio3 ?? 0.0,
-       iva = iva ?? 0,
+       iva = iva ?? 0.00,
        activo = activo ?? true;
 
   @override
@@ -66,7 +66,7 @@ class Article extends Equatable {
     double? precio1,
     double? precio2,
     double? precio3,
-    int? iva,
+    double? iva,
     bool? activo,
   }) {
     return Article(
@@ -82,11 +82,10 @@ class Article extends Equatable {
       precio2: precio2 ?? this.precio2,
       precio3: precio3 ?? this.precio3,
       iva: iva ?? this.iva,
-      activo: activo ??  this.activo,
+      activo: activo ?? this.activo,
     );
   }
 
-  
   Map<String, dynamic> toFirestore() {
     return {
       'id': id,
@@ -102,7 +101,7 @@ class Article extends Equatable {
       'price3': precio3,
       'iva': iva,
       'active': activo,
-      'createdAt' : DateTime.now(),
+      'createdAt': DateTime.now(),
     };
   }
 
