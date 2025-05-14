@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/core/menu/drawer_menu.dart';
-import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
-import 'package:inventarium/presentation/widgets/infinite_scroll_table.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   static const String name = 'home_screen';
