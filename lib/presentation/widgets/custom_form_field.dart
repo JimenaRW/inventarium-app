@@ -28,29 +28,39 @@ class CustomFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0),
-        child: TextFormField(
-          controller: controller,
-          decoration: InputDecoration(
-            labelText:
-                isRequired
-                    ? '$labelText*'.toLowerCase()
-                    : labelText.toLowerCase(),
-            hintText: hintText,
-            border: const OutlineInputBorder(),
-            suffixIcon: suffixIcon,
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 400, // Limita el ancho máximo
           ),
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          minLines: minLines,
-          validator:
-              customValidator ??
-              (value) {
-                if (isRequired && (value == null || value.isEmpty)) {
-                  return 'Por favor ingrese $labelText';
-                }
-                return null;
-              },
+          child: TextFormField(
+            controller: controller,
+            decoration: InputDecoration(
+              labelText:
+                  isRequired
+                      ? '$labelText*'.toLowerCase()
+                      : labelText.toLowerCase(),
+              hintText: hintText,
+              border: const OutlineInputBorder(),
+              suffixIcon: suffixIcon,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12.0,
+                vertical: 16.0,
+              ),
+              isDense: true, 
+            ),
+            keyboardType: keyboardType,
+            maxLines: maxLines,
+            minLines: minLines,
+            validator:
+                customValidator ??
+                (value) {
+                  if (isRequired && (value == null || value.isEmpty)) {
+                    return 'Por favor ingrese $labelText';
+                  }
+                  return null;
+                },
+          ),
         ),
       ),
     );

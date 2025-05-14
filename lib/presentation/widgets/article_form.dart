@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inventarium/data/category_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/widgets/custom_form_field.dart';
 
@@ -17,7 +19,8 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
   late final TextEditingController _skuController;
   late final TextEditingController _descripcionController;
   late final TextEditingController _codigoBarrasController;
-  late final TextEditingController _categoriaController;
+  // late final TextEditingController _categoriaController;
+  late final Category? _selectedCategoria;
   late final TextEditingController _ubicacionController;
   late final TextEditingController _fabricanteController;
   late final TextEditingController _stockInicialController;
@@ -31,7 +34,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
     _skuController = TextEditingController();
     _descripcionController = TextEditingController();
     _codigoBarrasController = TextEditingController();
-    _categoriaController = TextEditingController();
+    _selectedCategoria = null;
     _ubicacionController = TextEditingController();
     _fabricanteController = TextEditingController();
     _ivaController = TextEditingController();
@@ -46,7 +49,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
     _skuController.dispose();
     _descripcionController.dispose();
     _codigoBarrasController.dispose();
-    _categoriaController.dispose();
+    _selectedCategoria = null;
     _ubicacionController.dispose();
     _fabricanteController.dispose();
     _ivaController.dispose();
@@ -66,7 +69,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
             _codigoBarrasController.text.isNotEmpty
                 ? _codigoBarrasController.text
                 : null,
-        categoria: _categoriaController.text,
+        categoria: _selectedCategoria != null ? _selectedCategoria.id : "",
         ubicacion: _ubicacionController.text,
         fabricante: _fabricanteController.text,
         iva: double.tryParse(_ivaController.text) ?? 0.00,
@@ -88,9 +91,10 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(articleCreateProvider);
+    final categoriasAsync = ref.watch(categoriesNotifierProvider);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(1.0),
       child: Form(
         key: _formKey,
         child: Column(
@@ -100,8 +104,13 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               controller: _skuController,
               labelText: 'SKU',
               hintText: 'Ingrese el código SKU',
-              minLines: 3,
-              maxLines: 200,
+              customValidator: (value) {
+                if (value == null || value.isEmpty || value.length < 3) {
+                  return 'Por favor ingrese sku';
+                }
+                return null;
+              },
+              keyboardType: TextInputType.name,
             ),
             CustomFormField(
               controller: _descripcionController,
@@ -125,12 +134,40 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
                 },
               ),
             ),
-            CustomFormField(
-              controller: _categoriaController,
-              labelText: 'Categoría',
-              hintText: 'Ingrese la categoría del artículo',
-              minLines: 3,
-              maxLines: 200,
+            Material(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
+                child: DropdownButtonFormField<Category>(
+                  value: _selectedCategoria,
+                  decoration: const InputDecoration(
+                    hintText: 'Seleccione una categoría*',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: categoriasAsync.when(
+                    data:
+                        (categorias) =>
+                            categorias.map((categoria) {
+                              return DropdownMenuItem<Category>(
+                                value: categoria,
+                                child: Text(categoria.descripcion),
+                              );
+                            }).toList(),
+                    loading: () => [],
+                    error: (err, stack) => [],
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCategoria = value;
+                    });
+                  },
+                  validator:
+                      (value) =>
+                          value == null ? 'Seleccione una categoría' : null,
+                ),
+              ),
             ),
             CustomFormField(
               controller: _ubicacionController,

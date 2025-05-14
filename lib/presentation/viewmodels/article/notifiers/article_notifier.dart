@@ -42,15 +42,14 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
     state = state.copyWith(isLoading: true);
     try {
       final createdArticle = await _repository.addArticle(article);
-      
+
       final updatedArticles = [...state.articles, createdArticle];
-      
+
       state = state.copyWith(
         articles: updatedArticles,
         filteredArticles: updatedArticles,
         isLoading: false,
       );
-      
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -62,7 +61,10 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
 
   Future<List<Article>> getArticles({int page = 1, int limit = 20}) async {
     try {
-      final articles = await _repository.getArticlesPaginado(page: page, limit: limit);
+      final articles = await _repository.getArticlesPaginado(
+        page: page,
+        limit: limit,
+      );
       return articles;
     } catch (e) {
       throw Exception('Error al cargar artículos: ${e.toString()}');
@@ -78,5 +80,9 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
     }
   }
 
-
+  Future<void> exportArticles() async {
+    await Future.delayed(
+      const Duration(seconds: 2),
+    ); 
+  }
 }
