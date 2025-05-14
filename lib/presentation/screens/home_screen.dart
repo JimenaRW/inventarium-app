@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/core/menu/drawer_menu.dart';
-import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
-import 'package:inventarium/presentation/widgets/infinite_scroll_table.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   static const String name = 'home_screen';
@@ -26,15 +24,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(articleSearchProvider);
-    final notifier = ref.read(articleSearchProvider.notifier);
-
     return Scaffold(
       key: widget.scaffoldKey,
-      appBar: AppBar(
-        title: const Text("Inicio"),
-      ),
-      drawer: DrawerMenu(scafoldKey:  widget.scaffoldKey),
+      appBar: AppBar(title: const Text("Inicio")),
+      drawer: DrawerMenu(scaffoldKey: widget.scaffoldKey),
+
       // body: InfiniteScrollTable<Article>(
       //   items: state.articles,
       //   isLoading: state.isLoading,
@@ -59,7 +53,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       //     ],
       //   ),
       // ),
-    
     );
   }
 }

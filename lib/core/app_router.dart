@@ -1,5 +1,8 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:inventarium/controllers/auth_controller.dart';
 import 'package:inventarium/presentation/screens/articles/articles_exports_csv.dart';
 import 'package:inventarium/presentation/screens/articles/articles_share_csv.dart';
 import 'package:inventarium/presentation/screens/articles/create_article_screen.dart';
@@ -13,19 +16,38 @@ import 'package:inventarium/presentation/screens/categories/category_create_scre
 import 'package:inventarium/presentation/screens/home_screen.dart';
 import 'package:inventarium/presentation/screens/articles/upc_add_screen.dart';
 
+class AuthStreamListenable extends ChangeNotifier {
+  late StreamSubscription<User?> _subscription;
+
+  AuthStreamListenable() {
+    _subscription = FirebaseAuth.instance.authStateChanges().listen((user) {
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+
+final _authStreamListenable = AuthStreamListenable();
+
 final appRouter = GoRouter(
   initialLocation: '/auth/login',
+  refreshListenable: _authStreamListenable,
   redirect: (context, state) {
-    final isLoggedIn = AuthController.currentUser != null;
+    final user = FirebaseAuth.instance.currentUser;
     final location = state.uri.toString();
 
-    final loggingIn = location == '/auth/login' || location == '/auth/register';
+    final loggingIn = location.startsWith('/auth');
 
-    if (!isLoggedIn && !loggingIn) {
+    if (user == null && !loggingIn) {
       return '/auth/login';
     }
 
-    if (isLoggedIn && loggingIn) {
+    if (user != null && loggingIn) {
       return '/';
     }
 
@@ -35,12 +57,12 @@ final appRouter = GoRouter(
     GoRoute(
       name: LoginScreen.name,
       path: '/auth/login',
-      builder: (context, state) => const LoginScreen(),
+      builder: (context, state) => LoginScreen(),
     ),
     GoRoute(
       name: RegisterScreen.name,
       path: '/auth/register',
-      builder: (context, state) => const RegisterScreen(),
+      builder: (context, state) => RegisterScreen(),
     ),
     GoRoute(
       name: PasswordResetScreen.name,
@@ -88,13 +110,6 @@ final appRouter = GoRouter(
       path: '/articles/share-csv',
       name: ArticlesShareCsv.name,
       builder: (context, state) => const ArticlesShareCsv(),
-    ),
-    GoRoute(
-      path: '/auth/logout',
-      redirect: (context, state) {
-        AuthController.logout();
-        return '/auth/login';
-      },
     ),
     GoRoute(
       name: BarcodeScannerScreen.name,

@@ -4,14 +4,12 @@ import 'package:inventarium/data/category_notifier.dart';
 import 'package:inventarium/data/category_repository.dart';
 import 'package:inventarium/domain/category.dart';
 
-
 final FirebaseFirestore db = FirebaseFirestore.instance;
 
-Provider<CategoryRepository> categoryRepositoryProvider = Provider<CategoryRepository>(
-  (ref) => CategoryRepository(db),
-);
+Provider<CategoryRepository> categoryRepositoryProvider =
+    Provider<CategoryRepository>((ref) => CategoryRepository(db));
 
-
-final categoriesNotifierProvider = StateNotifierProvider<CategoryNotifier, AsyncValue<List<Category>>>(
-  (ref) => CategoryNotifier(ref.read(categoryRepositoryProvider)),
-);
+final categoriesNotifierProvider =
+    StateNotifierProvider<CategoryNotifier, AsyncValue<List<Category>>>(
+      (ref) => CategoryNotifier(ref.read(categoryRepositoryProvider)),
+    );

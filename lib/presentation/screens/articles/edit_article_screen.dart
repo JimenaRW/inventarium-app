@@ -26,10 +26,6 @@ class _EditArticleScreenState extends ConsumerState<EditArticleScreen> {
       (element) => element.id == widget.id,
     );
 
-    if (article == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
     return Scaffold(
       appBar: AppBar(title: const Text('Editar Artículo')),
       body: ArticleEditForm(article: article),

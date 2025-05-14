@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:inventarium/controllers/auth_controller.dart'; // Asegurate de importar esto
+import 'package:inventarium/data/auth_notifier_provider.dart';
 
 class MenuItem {
   final String title;
@@ -44,11 +45,11 @@ const logoutMenuItem = MenuItem(
   title: 'Cerrar sesión',
   subtitle: 'Salir del sistema',
   icon: Icons.logout,
-  route: '/auth/logout',
+  route: '/auth/login',
   isLogout: true,
 );
 
-class MenuTile extends StatelessWidget {
+class MenuTile extends ConsumerWidget {
   final MenuItem item;
   final Color? iconColor;
   final TextStyle? titleStyle;
@@ -63,15 +64,15 @@ class MenuTile extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ListTile(
       leading: Icon(item.icon, color: iconColor),
       title: Text(item.title, style: titleStyle),
       subtitle: Text(item.subtitle, style: subtitleStyle),
-      trailing: const Icon(Icons.chevron_right),
+      trailing: item.isLogout ? null : const Icon(Icons.chevron_right),
       onTap: () {
         if (item.isLogout) {
-          AuthController.logout();
+          ref.read(authStateProvider.notifier).signOut();
           context.go(item.route); // Redirige al login
         } else {
           context.push(item.route);
