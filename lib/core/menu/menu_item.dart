@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:inventarium/controllers/auth_controller.dart'; // Asegurate de importar esto
 
 class MenuItem {
   final String title;

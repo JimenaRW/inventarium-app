@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/core/menu/menu_item.dart';
-import 'package:inventarium/controllers/auth_controller.dart';
 
 class DrawerMenu extends StatelessWidget {
   final GlobalKey<ScaffoldState> scafoldKey;
