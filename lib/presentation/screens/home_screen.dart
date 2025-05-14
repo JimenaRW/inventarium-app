@@ -24,9 +24,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(articleSearchProvider);
-    final notifier = ref.read(articleSearchProvider.notifier);
-
     return Scaffold(
       key: widget.scaffoldKey,
       appBar: AppBar(title: const Text("Inicio")),
