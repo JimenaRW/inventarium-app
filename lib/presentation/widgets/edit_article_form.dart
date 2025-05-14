@@ -1,7 +1,10 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inventarium/data/category_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/widgets/custom_form_field.dart';
 
@@ -19,7 +22,7 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
   late final TextEditingController _skuController;
   late final TextEditingController _descripcionController;
   late final TextEditingController _codigoBarrasController;
-  late final TextEditingController _categoriaController;
+  Category? _selectedCategoria;
   late final TextEditingController _ubicacionController;
   late final TextEditingController _fabricanteController;
   late final TextEditingController _stockInicialController;
@@ -38,12 +41,10 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
     _codigoBarrasController = TextEditingController(
       text: widget.article.codigoBarras ?? '',
     );
-    _categoriaController = TextEditingController(
-      text: widget.article.categoria,
-    );
     _ubicacionController = TextEditingController(
       text: widget.article.ubicacion,
     );
+    _selectedCategoria = null;
     _fabricanteController = TextEditingController(
       text: widget.article.fabricante,
     );
@@ -67,7 +68,6 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
     _skuController.dispose();
     _descripcionController.dispose();
     _codigoBarrasController.dispose();
-    _categoriaController.dispose();
     _ubicacionController.dispose();
     _fabricanteController.dispose();
     _stockInicialController.dispose();
@@ -87,7 +87,8 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
             _codigoBarrasController.text.isNotEmpty
                 ? _codigoBarrasController.text
                 : null,
-        categoria: _categoriaController.text,
+        categoria:
+            _selectedCategoria != null ? _selectedCategoria!.id.toString() : "",
         ubicacion: _ubicacionController.text,
         fabricante: _fabricanteController.text,
         iva: double.tryParse(_ivaController.text) ?? 0.00,
@@ -111,6 +112,7 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(articleUpdateProvider);
+    final categoriasAsync = ref.watch(categoriesNotifierProvider);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -148,12 +150,53 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
                 },
               ),
             ),
-            CustomFormField(
-              controller: _categoriaController,
-              labelText: 'Categoría',
-              hintText: 'Ingrese la categoría del artículo',
-              minLines: 3,
-              maxLines: 200,
+            DropdownButtonFormField<Category>(
+              value:
+                  _selectedCategoria ?? categoriasAsync.when(
+                    data:
+                        (categorias) => categorias.firstWhereOrNull(
+                          (c) => c.id == widget.article.categoria,
+                        ),
+                    loading: () => null,
+                    error: (_, __) => null,
+                  ),
+
+              decoration: const InputDecoration(
+                hintText: 'Seleccione una categoría*',
+                border: OutlineInputBorder(),
+              ),
+              items: categoriasAsync.when(
+                data: (categorias) {
+                  if (_selectedCategoria == null) {
+                    final cat = categorias.firstWhereOrNull(
+                      (c) => c.id == widget.article.categoria,
+                    );
+                    if (cat != null) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        setState(() {
+                          _selectedCategoria = cat;
+                        });
+                      });
+                    }
+                  }
+
+                  return categorias.map((categoria) {
+                    return DropdownMenuItem<Category>(
+                      value: categoria,
+                      child: Text(categoria.descripcion),
+                    );
+                  }).toList();
+                },
+                loading: () => [],
+                error: (err, stack) => [],
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _selectedCategoria = value;
+                });
+              },
+              validator:
+                  (value) => value == null ? 'Seleccione una categoría' : null,
             ),
             CustomFormField(
               controller: _ubicacionController,

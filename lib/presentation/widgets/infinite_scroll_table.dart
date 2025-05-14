@@ -41,10 +41,12 @@ class InfiniteScrollTable<T> extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<InfiniteScrollTable<T>> createState() => _InfiniteScrollTableState<T>();
+  ConsumerState<InfiniteScrollTable<T>> createState() =>
+      _InfiniteScrollTableState<T>();
 }
 
-class _InfiniteScrollTableState<T> extends ConsumerState<InfiniteScrollTable<T>> {
+class _InfiniteScrollTableState<T>
+    extends ConsumerState<InfiniteScrollTable<T>> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -58,6 +60,7 @@ class _InfiniteScrollTableState<T> extends ConsumerState<InfiniteScrollTable<T>>
   }
 
   void _scrollListener() {
+    if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - 200 &&
         !widget.isLoadingMore &&
@@ -94,14 +97,23 @@ class _InfiniteScrollTableState<T> extends ConsumerState<InfiniteScrollTable<T>>
   void confirmMassDelete() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar eliminación'),
-        content: Text('¿Deseas eliminar ${selectedItems.length} elementos?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Confirmar')),
-        ],
-      ),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirmar eliminación'),
+            content: Text(
+              '¿Deseas eliminar ${selectedItems.length} elementos?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Confirmar'),
+              ),
+            ],
+          ),
     );
     if (confirmed == true && widget.onMassDelete != null) {
       widget.onMassDelete!(selectedItems.toList());
@@ -170,7 +182,8 @@ class _InfiniteScrollTableState<T> extends ConsumerState<InfiniteScrollTable<T>>
                 IconButton(
                   icon: const Icon(Icons.delete),
                   tooltip: 'Eliminar seleccionados',
-                  onPressed: selectedItems.isNotEmpty ? confirmMassDelete : null,
+                  onPressed:
+                      selectedItems.isNotEmpty ? confirmMassDelete : null,
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -181,31 +194,27 @@ class _InfiniteScrollTableState<T> extends ConsumerState<InfiniteScrollTable<T>>
             ],
           ),
         ),
-        Expanded(
-          child: NotificationListener<ScrollNotification>(
-            onNotification: (scrollInfo) {
-              _scrollListener();
-              return false;
-            },
-            child: Scrollbar(
-              thumbVisibility: true,
-              controller: _scrollController,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: DataTable2(
-                    columnSpacing: 12,
-                    horizontalMargin: 12,
-                    minWidth: 600,
-                    headingRowHeight: 48,
-                    dataRowHeight: 56,
-                    columns: [
-                      if (isSelectionMode)
-                        const DataColumn2(label: Text('')),
-                      ...widget.columns,
-                    ],
-                    rows: widget.items.map((item) {
+        Scrollbar(
+          thumbVisibility: true,
+          controller: _scrollController,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: MediaQuery.of(context).size.width,
+              ),
+              child: DataTable2(
+                columnSpacing: 12,
+                horizontalMargin: 12,
+                minWidth: 600,
+                headingRowHeight: 48,
+                dataRowHeight: 56,
+                columns: [
+                  if (isSelectionMode) const DataColumn2(label: Text('')),
+                  ...widget.columns,
+                ],
+                rows:
+                    widget.items.map((item) {
                       final row = widget.buildRow(item);
                       final cells = <DataCell>[];
                       if (isSelectionMode) {
@@ -221,22 +230,24 @@ class _InfiniteScrollTableState<T> extends ConsumerState<InfiniteScrollTable<T>>
                       }
                       for (int i = 0; i < row.cells.length; i++) {
                         final cell = row.cells[i];
-                        final isDescripcionColumn = widget.columns[i].label is Text &&
-                            (widget.columns[i].label as Text).data?.toLowerCase() == 'descripción';
+                        final isDescripcionColumn =
+                            widget.columns[i].label is Text &&
+                            (widget.columns[i].label as Text).data
+                                    ?.toLowerCase() ==
+                                'descripción';
 
                         cells.add(
                           isDescripcionColumn && widget.onViewDetails != null
                               ? DataCell(
-                                  cell.child!,
-                                  onTap: () => widget.onViewDetails!(context, item),
-                                )
+                                cell.child!,
+                                onTap:
+                                    () => widget.onViewDetails!(context, item),
+                              )
                               : cell,
                         );
                       }
                       return DataRow(cells: cells);
                     }).toList(),
-                  ),
-                ),
               ),
             ),
           ),

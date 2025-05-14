@@ -7,6 +7,7 @@ class Article extends Equatable {
   final String descripcion;
   final String? codigoBarras;
   final String categoria;
+  final String? categoriaDescripcion;
   final String ubicacion;
   final String fabricante;
   final int stock;
@@ -30,12 +31,14 @@ class Article extends Equatable {
     double? precio3,
     double? iva,
     bool? activo,
+    String? categoriaDescripcion,
   }) : id = id ?? "",
        precio1 = precio1 ?? 0.0,
        precio2 = precio2 ?? 0.0,
        precio3 = precio3 ?? 0.0,
        iva = iva ?? 0.00,
-       activo = activo ?? true;
+       activo = activo ?? true,
+       categoriaDescripcion = categoriaDescripcion ?? "";
 
   @override
   List<Object?> get props => [
@@ -60,6 +63,7 @@ class Article extends Equatable {
     String? descripcion,
     String? codigoBarras,
     String? categoria,
+    String? categoriaDescripcion,
     String? ubicacion,
     String? fabricante,
     int? stock,
@@ -75,6 +79,7 @@ class Article extends Equatable {
       descripcion: descripcion ?? this.descripcion,
       codigoBarras: codigoBarras ?? this.codigoBarras,
       categoria: categoria ?? this.categoria,
+      categoriaDescripcion: categoriaDescripcion ?? this.categoriaDescripcion,
       ubicacion: ubicacion ?? this.ubicacion,
       fabricante: fabricante ?? this.fabricante,
       stock: stock ?? this.stock,

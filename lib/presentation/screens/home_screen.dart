@@ -35,30 +35,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         title: const Text("Inicio"),
       ),
       drawer: DrawerMenu(scafoldKey:  widget.scaffoldKey),
-      body: InfiniteScrollTable<Article>(
-        items: state.articles,
-        isLoading: state.isLoading,
-        isLoadingMore: state.isLoadingMore,
-        hasMore: state.hasMore,
-        onLoadMore: notifier.loadMoreArticles,
-        onSearch: notifier.searchArticles,
-        searchHintText: 'Buscar artículos...',
-        showEditDeleteButtons: false, // O ajusta según necesidades
-        columns: const [
-          DataColumn(label: Text('SKU')),
-          DataColumn(label: Text('Descripción')),
-          DataColumn(label: Text('Stock'), numeric: true),
-          DataColumn(label: Text('Precio1'), numeric: true),
-        ],
-        buildRow: (article) => DataRow(
-          cells: [
-            DataCell(Text(article.sku)),
-            DataCell(Text(article.descripcion)),
-            DataCell(Text(article.stock.toString())),
-            DataCell(Text(article.precio1.toString())),
-          ],
-        ),
-      ),
+      // body: InfiniteScrollTable<Article>(
+      //   items: state.articles,
+      //   isLoading: state.isLoading,
+      //   isLoadingMore: state.isLoadingMore,
+      //   hasMore: state.hasMore,
+      //   onLoadMore: notifier.loadMoreArticles,
+      //   onSearch: notifier.searchArticles,
+      //   searchHintText: 'Buscar artículos...',
+      //   showEditDeleteButtons: false, // O ajusta según necesidades
+      //   columns: const [
+      //     DataColumn(label: Text('SKU')),
+      //     DataColumn(label: Text('Descripción')),
+      //     DataColumn(label: Text('Stock'), numeric: true),
+      //     DataColumn(label: Text('Precio1'), numeric: true),
+      //   ],
+      //   buildRow: (article) => DataRow(
+      //     cells: [
+      //       DataCell(Text(article.sku)),
+      //       DataCell(Text(article.descripcion)),
+      //       DataCell(Text(article.stock.toString())),
+      //       DataCell(Text(article.precio1.toString())),
+      //     ],
+      //   ),
+      // ),
+    
     );
   }
 }

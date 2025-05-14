@@ -19,8 +19,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
   late final TextEditingController _skuController;
   late final TextEditingController _descripcionController;
   late final TextEditingController _codigoBarrasController;
-  // late final TextEditingController _categoriaController;
-  late final Category? _selectedCategoria;
+  Category? _selectedCategoria;
   late final TextEditingController _ubicacionController;
   late final TextEditingController _fabricanteController;
   late final TextEditingController _stockInicialController;
@@ -49,7 +48,6 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
     _skuController.dispose();
     _descripcionController.dispose();
     _codigoBarrasController.dispose();
-    _selectedCategoria = null;
     _ubicacionController.dispose();
     _fabricanteController.dispose();
     _ivaController.dispose();
@@ -61,7 +59,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
   }
 
   Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate() && _selectedCategoria != null) {
       final newArticle = Article(
         sku: _skuController.text,
         descripcion: _descripcionController.text,
@@ -69,7 +67,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
             _codigoBarrasController.text.isNotEmpty
                 ? _codigoBarrasController.text
                 : null,
-        categoria: _selectedCategoria != null ? _selectedCategoria.id : "",
+        categoria: _selectedCategoria != null ? _selectedCategoria!.id.toString() : "",
         ubicacion: _ubicacionController.text,
         fabricante: _fabricanteController.text,
         iva: double.tryParse(_ivaController.text) ?? 0.00,

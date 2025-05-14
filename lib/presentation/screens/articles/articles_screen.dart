@@ -209,7 +209,7 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                 ),
                 const SizedBox(height: 10),
                 _buildDetailRow('SKU', article.sku),
-                _buildDetailRow('Categoría', article.categoria),
+                _buildDetailRow('Categoría', article.categoriaDescripcion!),
                 _buildDetailRow(
                   'Código de Barras',
                   article.codigoBarras != null
