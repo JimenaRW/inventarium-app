@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:inventarium/data/auth_notifier_provider.dart'; //
-import 'package:inventarium/data/auth_repository_provider.dart';
+import 'package:inventarium/data/auth_notifier_provider.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/auth_state.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {

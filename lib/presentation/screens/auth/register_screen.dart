@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:inventarium/domain/user.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:inventarium/data/auth_notifier_provider.dart'; //
-import 'package:inventarium/data/auth_repository_provider.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/auth_state.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -26,7 +22,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      // Mostrar error si las contraseñas no coinciden
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Las contraseñas no coinciden')),
       );
@@ -46,7 +41,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final authState = ref.watch(authStateProvider);
 
     if (authState == AuthState.authenticated) {
-      context.go('/'); // Navega al home si el registro fue exitoso
+      context.go('/');
     }
 
     return Scaffold(
