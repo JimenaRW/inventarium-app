@@ -1,15 +1,11 @@
-enum Role { admin, user, guest }
-
 class User {
-  final String email;
-  final String password;
-  final String username;
-  final Role role;
+  String? uid;
+  String? email;
+  String? role;
 
-  User({
-    required this.email,
-    required this.password,
-    required this.username,
-    required this.role,
-  });
+  User({this.uid, this.email, this.role});
+
+  factory User.fromFirebase(User user) {
+    return User(uid: user.uid, email: user.email);
+  }
 }

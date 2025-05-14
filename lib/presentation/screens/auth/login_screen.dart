@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:inventarium/controllers/auth_controller.dart';
+import 'package:inventarium/data/auth_notifier_provider.dart'; //
+import 'package:inventarium/data/auth_repository_provider.dart';
+import 'package:inventarium/presentation/viewmodels/article/states/auth_state.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   static const String name = 'login_screen';
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -21,21 +24,17 @@ class _LoginScreenState extends State<LoginScreen> {
     final form = _formKey.currentState;
     if (form == null || !form.validate()) return;
 
-    final username = _usernameController.text.trim();
-    final password = _passwordController.text;
-
-    final success = AuthController.login(username, password);
-    if (success) {
-      context.go('/'); // Navega al home si el login fue exitoso
-    } else {
-      setState(() {
-        _errorMessage = 'Usuario o contraseña incorrectos';
-      });
-    }
+    final authNotifier = ref.read(authNotifierProvider.notifier);
+    authNotifier.signInWithEmailAndPassword(
+      _usernameController.text,
+      _passwordController.text,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authNotifierProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Iniciar sesión'),
@@ -77,6 +76,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: _submit,
                 child: const Text('Iniciar sesión'),
               ),
+              if (authState == AuthState.loading)
+                const CircularProgressIndicator(),
             ],
           ),
         ),
