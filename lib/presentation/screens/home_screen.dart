@@ -31,10 +31,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       key: widget.scaffoldKey,
-      appBar: AppBar(
-        title: const Text("Inicio"),
-      ),
-      drawer: DrawerMenu(scafoldKey:  widget.scaffoldKey),
+      appBar: AppBar(title: const Text("Inicio")),
+      drawer: DrawerMenu(scaffoldKey: widget.scaffoldKey),
+
       // body: InfiniteScrollTable<Article>(
       //   items: state.articles,
       //   isLoading: state.isLoading,
@@ -59,7 +58,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       //     ],
       //   ),
       // ),
-    
     );
   }
 }

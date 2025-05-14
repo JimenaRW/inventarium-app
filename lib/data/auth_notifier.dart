@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/auth_repository.dart';
-import 'package:inventarium/domain/user.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/auth_state.dart';
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
+  String? _userEmail;
 
   AuthNotifier(this._authRepository) : super(AuthState.unauthenticated);
 
@@ -12,6 +12,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = AuthState.loading;
     try {
       await _authRepository.signInWithEmailAndPassword(email, password);
+      _userEmail = email;
+      state = AuthState.authenticated;
+    } catch (e) {
+      state = AuthState.unauthenticated;
+    }
+  }
+
+  Future<void> signUpWithEmailAndPassword(String email, String password) async {
+    state = AuthState.loading;
+    try {
+      await _authRepository.signUpWithEmailAndPassword(email, password);
+      _userEmail = email;
       state = AuthState.authenticated;
     } catch (e) {
       state = AuthState.unauthenticated;
@@ -22,9 +34,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = AuthState.loading;
     try {
       await _authRepository.signOut();
+      _userEmail = null;
       state = AuthState.unauthenticated;
     } catch (e) {
       // Manejar error
     }
+  }
+
+  String? getUserEmail() {
+    return _userEmail;
   }
 }
