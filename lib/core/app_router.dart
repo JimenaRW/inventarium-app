@@ -1,5 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/controllers/auth_controller.dart';
+import 'package:inventarium/presentation/screens/articles/articles_exports_csv.dart';
+import 'package:inventarium/presentation/screens/articles/articles_share_csv.dart';
 import 'package:inventarium/presentation/screens/articles/create_article_screen.dart';
 import 'package:inventarium/presentation/screens/articles/articles_screen.dart';
 import 'package:inventarium/presentation/screens/articles/edit_article_screen.dart';
@@ -9,6 +11,7 @@ import 'package:inventarium/presentation/screens/auth/register_screen.dart';
 import 'package:inventarium/presentation/screens/categories/categories_screen.dart';
 import 'package:inventarium/presentation/screens/categories/category_create_screen.dart';
 import 'package:inventarium/presentation/screens/home_screen.dart';
+import 'package:inventarium/presentation/screens/articles/upc_add_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/auth/login',
@@ -72,9 +75,19 @@ final appRouter = GoRouter(
     GoRoute(
       name: EditArticleScreen.name,
       path: '/articles/edit/:id',
-      builder: (context, state) => EditArticleScreen(
-        id: state.pathParameters['id'] ?? "",
-      ),
+      builder:
+          (context, state) =>
+              EditArticleScreen(id: state.pathParameters['id'] ?? ""),
+    ),
+    GoRoute(
+      path: '/articles/exports-csv',
+      name: ArticlesExportsCsv.name,
+      builder: (context, state) => const ArticlesExportsCsv(),
+    ),
+    GoRoute(
+      path: '/articles/share-csv',
+      name: ArticlesShareCsv.name,
+      builder: (context, state) => const ArticlesShareCsv(),
     ),
     GoRoute(
       path: '/auth/logout',
@@ -82,6 +95,11 @@ final appRouter = GoRouter(
         AuthController.logout();
         return '/auth/login';
       },
+    ),
+    GoRoute(
+      name: BarcodeScannerScreen.name,
+      path: '/barcode-scanner',
+      builder: (context, state) => BarcodeScannerScreen(),
     ),
   ],
 );

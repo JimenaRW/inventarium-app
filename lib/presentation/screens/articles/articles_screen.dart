@@ -37,7 +37,13 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     final notifier = ref.read(articleNotifierProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Artículos'), actions: []),
+      appBar: AppBar(
+        title: const Text('Artículos'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -53,12 +59,12 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                 _ActionButton(
                   icon: Icons.upload_file,
                   label: 'IMPORTAR\nCSV',
-                  onTap: () {},
+                  onTap: () => {},
                 ),
                 _ActionButton(
                   icon: Icons.save_alt,
                   label: 'EXPORTAR\nCSV',
-                  onTap: () {},
+                  onTap: () => context.push('/articles/exports-csv'),
                 ),
               ],
             ),
