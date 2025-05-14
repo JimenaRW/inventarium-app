@@ -1,3 +1,4 @@
+import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,6 +16,9 @@ class InfiniteScrollTable<T> extends ConsumerStatefulWidget {
   final Function(T)? onEdit;
   final Function(T)? onDelete;
   final String searchHintText;
+  final void Function(List<T>)? onMassDelete;
+  final bool Function(T)? isItemSelected;
+  final void Function(BuildContext, T)? onViewDetails;
 
   const InfiniteScrollTable({
     super.key,
@@ -31,6 +35,9 @@ class InfiniteScrollTable<T> extends ConsumerStatefulWidget {
     this.onDelete,
     this.error,
     this.searchHintText = 'Buscar',
+    this.onMassDelete,
+    this.isItemSelected,
+    this.onViewDetails,
   });
 
   @override
@@ -40,8 +47,11 @@ class InfiniteScrollTable<T> extends ConsumerStatefulWidget {
 
 class _InfiniteScrollTableState<T>
     extends ConsumerState<InfiniteScrollTable<T>> {
-  final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  bool isSelectionMode = false;
+  final Set<T> selectedItems = {};
 
   @override
   void initState() {
@@ -49,20 +59,65 @@ class _InfiniteScrollTableState<T>
     _scrollController.addListener(_scrollListener);
   }
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    _searchController.dispose();
-    super.dispose();
-  }
-
   void _scrollListener() {
+    if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - 200 &&
         !widget.isLoadingMore &&
         !widget.isLoading &&
         widget.hasMore) {
       widget.onLoadMore();
+    }
+  }
+
+  void toggleSelectionMode() {
+    if (!widget.showEditDeleteButtons) return;
+    setState(() {
+      isSelectionMode = true;
+    });
+  }
+
+  void cancelSelectionMode() {
+    setState(() {
+      isSelectionMode = false;
+      selectedItems.clear();
+    });
+  }
+
+  void toggleItemSelection(T item) {
+    setState(() {
+      if (selectedItems.contains(item)) {
+        selectedItems.remove(item);
+      } else {
+        selectedItems.add(item);
+      }
+    });
+  }
+
+  void confirmMassDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirmar eliminación'),
+            content: Text(
+              '¿Deseas eliminar ${selectedItems.length} elementos?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Confirmar'),
+              ),
+            ],
+          ),
+    );
+    if (confirmed == true && widget.onMassDelete != null) {
+      widget.onMassDelete!(selectedItems.toList());
+      cancelSelectionMode();
     }
   }
 
@@ -95,102 +150,116 @@ class _InfiniteScrollTableState<T>
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: widget.searchHintText,
-              prefixIcon: const Icon(Icons.search),
-              border: const OutlineInputBorder(),
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  _searchController.clear();
-                  widget.onSearch('');
-                },
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: widget.searchHintText,
+                    prefixIcon: const Icon(Icons.search),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        widget.onSearch('');
+                      },
+                    ),
+                  ),
+                  onChanged: widget.onSearch,
+                ),
               ),
-            ),
-            onChanged: widget.onSearch,
+              const SizedBox(width: 8),
+              if (widget.showEditDeleteButtons && !isSelectionMode)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  tooltip: 'Borrado masivo',
+                  onPressed: toggleSelectionMode,
+                ),
+              if (isSelectionMode) ...[
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  tooltip: 'Eliminar seleccionados',
+                  onPressed:
+                      selectedItems.isNotEmpty ? confirmMassDelete : null,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  tooltip: 'Cancelar selección',
+                  onPressed: cancelSelectionMode,
+                ),
+              ],
+            ],
           ),
         ),
-        Expanded(
-          child: NotificationListener<ScrollNotification>(
-            onNotification: (scrollNotification) {
-              if (scrollNotification is ScrollEndNotification) {
-                // Lógica adicional si es necesaria
-              }
-              return false;
-            },
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                scrollDirection: Axis.vertical,
-                child: DataTable(
-                  columns: [
-                    ...widget.columns,
-                    if (widget.showEditDeleteButtons)
-                      const DataColumn(label: Text('Acciones')),
-                  ],
-                  rows: [
-                    ...widget.items.map((item) {
+        Scrollbar(
+          thumbVisibility: true,
+          controller: _scrollController,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: MediaQuery.of(context).size.width,
+              ),
+              child: DataTable2(
+                columnSpacing: 12,
+                horizontalMargin: 12,
+                minWidth: 600,
+                headingRowHeight: 48,
+                dataRowHeight: 56,
+                columns: [
+                  if (isSelectionMode) const DataColumn2(label: Text('')),
+                  ...widget.columns,
+                ],
+                rows:
+                    widget.items.map((item) {
                       final row = widget.buildRow(item);
-                      if (widget.showEditDeleteButtons) {
-                        return DataRow(
-                          cells: [
-                            ...row.cells,
-                            DataCell(
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.edit,
-                                      color: Colors.blue,
-                                    ),
-                                    onPressed: () => widget.onEdit?.call(item),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.delete,
-                                      color: Colors.red,
-                                    ),
-                                    onPressed:
-                                        () => widget.onDelete?.call(item),
-                                  ),
-                                ],
-                              ),
+                      final cells = <DataCell>[];
+                      if (isSelectionMode) {
+                        final isSelected = selectedItems.contains(item);
+                        cells.add(
+                          DataCell(
+                            Checkbox(
+                              value: isSelected,
+                              onChanged: (_) => toggleItemSelection(item),
                             ),
-                          ],
+                          ),
                         );
                       }
-                      return row;
-                    }),
-                    if (widget.isLoadingMore)
-                      DataRow(
-                        cells: [
-                          DataCell(
-                            Container(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              alignment: Alignment.center,
-                              child: const CircularProgressIndicator(),
-                            ),
-                          ),
-                          ...List<DataCell>.generate(
-                            widget.columns.length +
-                                (widget.showEditDeleteButtons ? 1 : 0) -
-                                1,
-                            (_) => const DataCell(SizedBox()),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
+                      for (int i = 0; i < row.cells.length; i++) {
+                        final cell = row.cells[i];
+                        final isDescripcionColumn =
+                            widget.columns[i].label is Text &&
+                            (widget.columns[i].label as Text).data
+                                    ?.toLowerCase() ==
+                                'descripción';
+
+                        cells.add(
+                          isDescripcionColumn && widget.onViewDetails != null
+                              ? DataCell(
+                                cell.child!,
+                                onTap:
+                                    () => widget.onViewDetails!(context, item),
+                              )
+                              : cell,
+                        );
+                      }
+                      return DataRow(cells: cells);
+                    }).toList(),
               ),
             ),
           ),
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 }

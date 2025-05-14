@@ -12,7 +12,7 @@ class CreateArticleScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Nuevo artículo')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(1),
         child: ArticleForm(),
       ),
     );

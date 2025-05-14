@@ -6,7 +6,7 @@ import 'package:inventarium/presentation/viewmodels/article/states/article_searc
 class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
 final ArticleNotifier _articleNotifier;
   final int _currentPage = 1;
-  final int _itemsPerPage = 20;
+  final int _itemsPerPage = 10;
 
   ArticleSearchNotifier(this._articleNotifier)
     : super(ArticleSearchState.initial());
