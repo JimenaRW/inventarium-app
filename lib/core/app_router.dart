@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/presentation/screens/articles/articles_exports_csv.dart';
@@ -17,9 +17,13 @@ import 'package:inventarium/presentation/screens/home_screen.dart';
 import 'package:inventarium/presentation/screens/articles/upc_add_screen.dart';
 
 class AuthStreamListenable extends ChangeNotifier {
-  late StreamSubscription<User?> _subscription;
+  StreamSubscription<User?>? _subscription; // Hacerlo nullable
 
   AuthStreamListenable() {
+    init();
+  }
+
+  Future<void> init() async {
     _subscription = FirebaseAuth.instance.authStateChanges().listen((user) {
       notifyListeners();
     });
@@ -27,7 +31,7 @@ class AuthStreamListenable extends ChangeNotifier {
 
   @override
   void dispose() {
-    _subscription.cancel();
+    _subscription?.cancel(); // Cancelar solo si existe
     super.dispose();
   }
 }
@@ -37,10 +41,12 @@ final _authStreamListenable = AuthStreamListenable();
 final appRouter = GoRouter(
   initialLocation: '/auth/login',
   refreshListenable: _authStreamListenable,
-  redirect: (context, state) {
+  redirect: (context, state) async {
+    // Espera a que Firebase esté listo
+    await Firebase.initializeApp();
+
     final user = FirebaseAuth.instance.currentUser;
     final location = state.uri.toString();
-
     final loggingIn = location.startsWith('/auth');
 
     if (user == null && !loggingIn) {
