@@ -47,14 +47,8 @@ final appRouter = GoRouter(
 
     final user = FirebaseAuth.instance.currentUser;
     final location = state.uri.toString();
-    final loggingIn = location.startsWith('/auth');
-
-    if (user == null && !loggingIn) {
+    if (user == null && !location.startsWith('/auth')) {
       return '/auth/login';
-    }
-
-    if (user != null && loggingIn) {
-      return '/';
     }
 
     return null;

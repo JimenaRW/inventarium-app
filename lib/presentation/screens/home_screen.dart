@@ -20,16 +20,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(articleSearchProvider.notifier).loadInitialData();
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   ref.read(articleSearchProvider.notifier).loadInitialData();
+    // });
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _searchController.dispose();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -81,76 +81,76 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-//   void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
-//     showModalBottomSheet(
-//       context: context,
-//       isScrollControlled: true,
-//       builder: (context) => _buildArticleDetails(context, ref, article),
-//     );
-//   }
+  //   void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
+  //     showModalBottomSheet(
+  //       context: context,
+  //       isScrollControlled: true,
+  //       builder: (context) => _buildArticleDetails(context, ref, article),
+  //     );
+  //   }
 
-//   Widget _buildArticleDetails(BuildContext context, WidgetRef ref, Article article) {
-//     return Container(
-//       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-//       child: Wrap(
-//         children: <Widget>[
-//           Column(
-//             mainAxisSize: MainAxisSize.min,
-//             children: [
-//               Text(
-//                 'Detalles del Artículo',
-//                 style: const TextStyle(
-//                   fontSize: 24,
-//                   fontWeight: FontWeight.w500,
-//                 ),
-//               ),
-//               const SizedBox(height: 10),
-//               _buildDetailRow('SKU', article.sku),
-//               _buildDetailRow('Descripción', article.descripcion),
-//               _buildDetailRow('Stock', article.stock.toString()),
-//               _buildDetailRow(
-//                 'Precio 1',
-//                 '\$${article.precio1?.toStringAsFixed(2)}',
-//               ),
-//               const SizedBox(height: 20),
-//               Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                 children: <Widget>[
-//                   ElevatedButton(
-//                     onPressed: () {
-//                       Navigator.pop(context);
-//                       context.push('/articles/edit/${article.id}').then((_) {
-//                         ref.read(articleSearchProvider.notifier).loadInitialData();
-//                       });
-//                     },
-//                     child: const Text('Editar'),
-//                   ),
-//                   ElevatedButton(
-//                     onPressed: () {
-//                       // Implementar eliminación
-//                       Navigator.pop(context);
-//                     },
-//                     child: const Text('Eliminar'),
-//                   ),
-//                 ],
-//               ),
-//               const SizedBox(height: 20),
-//             ],
-//           ),
-//         ],
-//       ),
-//     );
-//   }
+  //   Widget _buildArticleDetails(BuildContext context, WidgetRef ref, Article article) {
+  //     return Container(
+  //       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+  //       child: Wrap(
+  //         children: <Widget>[
+  //           Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             children: [
+  //               Text(
+  //                 'Detalles del Artículo',
+  //                 style: const TextStyle(
+  //                   fontSize: 24,
+  //                   fontWeight: FontWeight.w500,
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 10),
+  //               _buildDetailRow('SKU', article.sku),
+  //               _buildDetailRow('Descripción', article.descripcion),
+  //               _buildDetailRow('Stock', article.stock.toString()),
+  //               _buildDetailRow(
+  //                 'Precio 1',
+  //                 '\$${article.precio1?.toStringAsFixed(2)}',
+  //               ),
+  //               const SizedBox(height: 20),
+  //               Row(
+  //                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //                 children: <Widget>[
+  //                   ElevatedButton(
+  //                     onPressed: () {
+  //                       Navigator.pop(context);
+  //                       context.push('/articles/edit/${article.id}').then((_) {
+  //                         ref.read(articleSearchProvider.notifier).loadInitialData();
+  //                       });
+  //                     },
+  //                     child: const Text('Editar'),
+  //                   ),
+  //                   ElevatedButton(
+  //                     onPressed: () {
+  //                       // Implementar eliminación
+  //                       Navigator.pop(context);
+  //                     },
+  //                     child: const Text('Eliminar'),
+  //                   ),
+  //                 ],
+  //               ),
+  //               const SizedBox(height: 20),
+  //             ],
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
 
-//   Widget _buildDetailRow(String label, String value) {
-//     return Padding(
-//       padding: const EdgeInsets.symmetric(vertical: 5),
-//       child: Row(
-//         children: [
-//           Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-//           Text(value),
-//         ],
-//       ),
-//     );
-//   }
+  //   Widget _buildDetailRow(String label, String value) {
+  //     return Padding(
+  //       padding: const EdgeInsets.symmetric(vertical: 5),
+  //       child: Row(
+  //         children: [
+  //           Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+  //           Text(value),
+  //         ],
+  //       ),
+  //     );
+  //   }
 }
