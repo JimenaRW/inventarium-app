@@ -6,6 +6,7 @@ class ArticleState {
   final bool isLoading;
   final String? error;
   final String searchQuery;
+  final String? lastExportedCsvUrl;
 
   const ArticleState({
     this.articles = const [],
@@ -13,6 +14,7 @@ class ArticleState {
     this.isLoading = false,
     this.error,
     this.searchQuery = '',
+    this.lastExportedCsvUrl,
   });
 
   ArticleState copyWith({
@@ -21,6 +23,7 @@ class ArticleState {
     bool? isLoading,
     String? error,
     String? searchQuery,
+    String? lastExportedCsvUrl,
   }) {
     return ArticleState(
       articles: articles ?? this.articles,
@@ -28,6 +31,7 @@ class ArticleState {
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
       searchQuery: searchQuery ?? this.searchQuery,
+      lastExportedCsvUrl: lastExportedCsvUrl ?? this.lastExportedCsvUrl,
     );
   }
 }

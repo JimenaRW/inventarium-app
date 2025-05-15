@@ -97,6 +97,15 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
   }
 
   Future<void> exportArticles() async {
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      state = state.copyWith(isLoading: true);
+
+      String url = await _repository.exportArticles();
+
+      state = state.copyWith(isLoading: false, lastExportedCsvUrl: url);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
+    }
   }
 }
