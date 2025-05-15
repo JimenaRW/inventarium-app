@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +13,16 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  // Configuración de debug para Firebase Auth
+  await FirebaseAuth.instance.setSettings(
+    appVerificationDisabledForTesting: true, // Solo para desarrollo
+    forceRecaptchaFlow: false, // Opcional: deshabilita Recaptcha en debug
+  );
+  
+  // Habilita logging detallado
+  FirebaseAuth.instance.useAuthEmulator('localhost', 9099); // Para usar emulador
+  debugPrint('Firebase Auth configurado en modo debug');
+  
   // await cargarDatosDePruebaCategoria();
   // await cargarDatosDePrueba();
 
