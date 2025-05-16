@@ -4,8 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:inventarium/data/article_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/presentation/screens/articles/articles_share_csv.dart';
-import 'package:inventarium/presentation/viewmodels/article/notifiers/article_notifier.dart';
-import 'package:inventarium/presentation/viewmodels/article/states/article_state.dart';
+import 'package:inventarium/presentation/viewmodels/article/notifiers/article_exports_csv_notifier.dart';
+import 'package:inventarium/presentation/viewmodels/article/provider.dart';
+import 'package:inventarium/presentation/viewmodels/article/states/article_exports_csv_state%20.dart';
 
 class ArticlesExportsCsv extends ConsumerStatefulWidget {
   static const String name = 'articles_exports_csv';
@@ -17,13 +18,12 @@ class ArticlesExportsCsv extends ConsumerStatefulWidget {
 
 class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
   final _searchController = TextEditingController();
-  bool _searchInList = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(articleNotifierProvider.notifier).loadArticles();
+      ref.read(articleExportsCsvNotifierProvider.notifier).loadArticles();
     });
   }
 
@@ -35,8 +35,8 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(articleNotifierProvider);
-    final notifier = ref.read(articleNotifierProvider.notifier);
+    final state = ref.watch(articleExportsCsvNotifierProvider);
+    final notifier = ref.read(articleExportsCsvNotifierProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -56,67 +56,29 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
               'ARTÍCULO',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              '¿ESTA SEGURO?',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-
-            // Botones de acción para exportación
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () => _exportArticles(context, notifier),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    minimumSize: const Size(120, 50),
-                  ),
-
-                  child: const Text(
-                    'CONTINUAR',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () => context.pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    minimumSize: const Size(120, 50),
-                  ),
-                  child: const Text(
-                    'CANCELAR',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
 
             const SizedBox(height: 16),
-            Text(
-              'Esta a punto de exportar ${state.articles.length} artículos',
-            ),
-
-            // Opción de búsqueda en lista
-            Row(
-              children: [
-                Checkbox(
-                  value: _searchInList,
-                  onChanged:
-                      (value) => setState(() => _searchInList = value ?? false),
+            Text('Esta a punto de exportar ${state.articles.length} artículos'),
+            const SizedBox(height: 16),
+            Center(
+              child: ElevatedButton(
+                onPressed: () => _exportFile(context, notifier),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  minimumSize: const Size(200, 50),
                 ),
-                const Text('Buscar en la lista'),
-              ],
+                child: const Text(
+                  'GENERAR REPORTE',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
             ),
-
+            const SizedBox(height: 10),
             const Divider(),
 
-            // Campo de búsqueda (similar a articles_screen)
             _buildSearchField(notifier),
             const SizedBox(height: 16),
 
-            // Listado de artículos (similar a articles_screen pero sin botones)
             Expanded(child: _buildArticlesTable(state)),
           ],
         ),
@@ -124,7 +86,7 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
     );
   }
 
-  Widget _buildSearchField(ArticleNotifier notifier) {
+  Widget _buildSearchField(ArticleExportsCsvNotifier notifier) {
     return TextField(
       controller: _searchController,
       decoration: InputDecoration(
@@ -143,7 +105,7 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
     );
   }
 
-  Widget _buildArticlesTable(ArticleState state) {
+  Widget _buildArticlesTable(ArticleExportsCsvState state) {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -227,7 +189,10 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
                     article.codigoBarras ?? 'Sin Código de Barras',
                   ),
                   _buildDetailRow('Descripción', article.descripcion),
-                  _buildDetailRow('Fabricante', article.fabricante ?? 'N/A'),
+                  _buildDetailRow(
+                    'Fabricante',
+                    article.fabricante.isEmpty ? article.fabricante : 'N/A',
+                  ),
                   _buildDetailRow('IVA', article.iva.toString()),
                   _buildDetailRow(
                     'Precio 1',
@@ -242,7 +207,10 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
                     '\$${article.precio3?.toStringAsFixed(2)}',
                   ),
                   _buildDetailRow('Stock', article.stock.toString()),
-                  _buildDetailRow('Ubicación', article.ubicacion ?? 'N/A'),
+                  _buildDetailRow(
+                    'Ubicación',
+                    article.ubicacion.isEmpty ? article.ubicacion : 'N/A',
+                  ),
                   const SizedBox(height: 20),
                 ],
               ),
@@ -265,9 +233,35 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
     );
   }
 
-  void _exportArticles(BuildContext context, ArticleNotifier notifier) {
+  void _exportArticles(
+    BuildContext context,
+    ArticleExportsCsvNotifier notifier,
+  ) {
     notifier.exportArticles().then((_) {
       context.pushNamed(ArticlesShareCsv.name);
     });
+  }
+
+  void _exportFile(BuildContext context, ArticleExportsCsvNotifier notifier) {
+    showDialog(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Generar reporte'),
+            content: Text(
+              '¿Estar seguro de querer exportar la totalidad de los articulos?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => _exportArticles(ctx, notifier),
+                child: const Text('Compartir'),
+              ),
+            ],
+          ),
+    );
   }
 }
