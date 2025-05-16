@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/article_repository_provider.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/no_stock_state.dart';
 
-class NoStockArticlesNotifier extends AsyncNotifier<NoStockArticlesState> {
-  Future<ArticleRepository> get _articleRepository async => ref.read(articleRepositoryProvider.future);
+class NoStockArticlesNotifier
+    extends AutoDisposeAsyncNotifier<NoStockArticlesState> {
+  // Cambiado a AutoDisposeAsyncNotifier
+  Future<ArticleRepository> get _articleRepository async =>
+      ref.read(articleRepositoryProvider);
 
   @override
   Future<NoStockArticlesState> build() async {

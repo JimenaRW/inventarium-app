@@ -35,9 +35,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Aquí deberías llamar a tu función para obtener los datos reales de las categorías:
-    // topCategories = ref.read(tuProveedorDeDatos).getTop5CategoriesWithCounts();
-    // Dispara la carga inicial de los datos de artículos sin stock
+
     ref.read(noStockProvider.notifier).loadArticlesWithNoStock();
   }
 
