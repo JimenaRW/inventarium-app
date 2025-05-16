@@ -20,6 +20,7 @@ dependencies:
   mobile_scanner: ^3.4.1
   firebase_auth: ^5.5.3
   firebase_storage: ^12.4.5
+  file_picker: ^10.1.9
 
 dev_dependencies:
   flutter_test:

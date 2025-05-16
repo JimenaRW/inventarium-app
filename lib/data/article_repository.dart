@@ -11,6 +11,8 @@ class ArticleRepository implements IArticleRepository {
 
   ArticleRepository(this.db, this._storage) : super();
 
+  Future<void> insertMany(List<Article> articles) async {}
+
   @override
   Future<Article> addArticle(Article article) async {
     try {
