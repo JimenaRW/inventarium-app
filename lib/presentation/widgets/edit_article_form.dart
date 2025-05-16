@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/data/category_repository_provider.dart';
+import 'package:inventarium/data/low_stock_provider.dart';
+import 'package:inventarium/data/no_stock_provider.dart';
+import 'package:inventarium/data/total_articles_provider.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
@@ -104,6 +107,9 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
 
       final state = ref.read(articleUpdateProvider);
       if (state.isSuccess && mounted) {
+        ref.invalidate(noStockProvider);
+        ref.invalidate(lowStockProvider);
+        ref.invalidate(totalArticlesProvider);
         Navigator.pop(context);
       }
     }
@@ -152,7 +158,8 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
             ),
             DropdownButtonFormField<Category>(
               value:
-                  _selectedCategoria ?? categoriasAsync.when(
+                  _selectedCategoria ??
+                  categoriasAsync.when(
                     data:
                         (categorias) => categorias.firstWhereOrNull(
                           (c) => c.id == widget.article.categoria,

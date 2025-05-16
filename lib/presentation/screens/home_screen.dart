@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:inventarium/core/menu/drawer_menu.dart';
-import 'package:inventarium/presentation/viewmodels/article/provider.dart';
+import 'package:inventarium/data/low_stock_provider.dart';
+import 'package:inventarium/data/navigation_provider.dart';
+import 'package:inventarium/data/no_stock_provider.dart';
+import 'package:inventarium/data/total_articles_provider.dart';
+import 'package:inventarium/presentation/widgets/all_articles_card.dart';
+import 'package:inventarium/presentation/widgets/category_chart.dart';
+import 'package:inventarium/presentation/widgets/category_list.dart';
+import 'package:inventarium/presentation/widgets/low_stock_card.dart';
+import 'package:inventarium/presentation/widgets/no_stock_card.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   static const String name = 'home_screen';
@@ -14,22 +21,73 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
   final _searchController = TextEditingController();
+
+  // Simulación de los datos del gráfico
+  Map<String, int> topCategories = {
+    'Electrónica': 50,
+    'Ropa': 80,
+    'Hogar': 120,
+    'Libros': 65,
+    'Alimentos': 90,
+  };
 
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   ref.read(articleSearchProvider.notifier).loadInitialData();
-    // });
+    Future.delayed(Duration.zero, () {
+      _loadInitialData();
+    });
   }
 
-  // @override
-  // void dispose() {
-  //   _searchController.dispose();
-  //   super.dispose();
-  // }
+  Future<void> _loadInitialData() async {
+    await ref.read(noStockProvider.notifier).build();
+    await ref.read(lowStockProvider.notifier).build();
+    await ref.read(totalArticlesProvider.notifier).build();
+    // Los datos de las categorías se simulan, no necesitan carga asíncrona por ahora
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    ref
+        .read(routeObserverProvider)
+        .subscribe(this, ModalRoute.of(context)! as PageRoute);
+  }
+
+  @override
+  void didPopNext() {
+    _reloadData();
+  }
+
+  @override
+  void didPushNext() {
+    // Otra pantalla fue pushed encima de la Home.
+  }
+
+  @override
+  void didPop() {
+    // La pantalla de Home hizo pop (si alguna vez se pusheara directamente).
+  }
+
+  @override
+  void didPush() {
+    _reloadData();
+  }
+
+  Future<void> _reloadData() async {
+    await ref.read(noStockProvider.notifier).build();
+    await ref.read(lowStockProvider.notifier).build();
+    await ref.read(totalArticlesProvider.notifier).build();
+    // Los datos de las categorías se simulan, no necesitan recarga por ahora
+  }
+
+  @override
+  void dispose() {
+    ref.read(routeObserverProvider).unsubscribe(this);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,110 +105,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       drawer: DrawerMenu(scaffoldKey: widget.scaffoldKey),
-      // body: InfiniteScrollTable<Article>(
-      //   items: state.articles,
-      //   isLoading: state.isLoading,
-      //   isLoadingMore: state.isLoadingMore,
-      //   hasMore: state.hasMore,
-      //   onLoadMore: notifier.loadMoreArticles,
-      //   onSearch: notifier.searchArticles,
-      //   searchHintText: 'Buscar artículos...',
-      //   showEditDeleteButtons: true, // Habilitar botones de edición/eliminación
-      //   onMassDelete: (articles) {},
-      //   columns: const [
-      //     DataColumn(label: Text('SKU')),
-      //     DataColumn(label: Text('Descripción')),
-      //     DataColumn(label: Text('Stock'), numeric: true),
-      //     DataColumn(label: Text('Precio1'), numeric: true),
-      //   ],
-      //   buildRow: (article) => DataRow(
-      //     cells: [
-      //       DataCell(Text(article.sku)),
-      //       DataCell(
-      //         Text(article.descripcion),
-      //         onTap: () => _showArticleDetails(context, article, ref),
-      //       ),
-      //       DataCell(Text(article.stock.toString())),
-      //       DataCell(Text('\$${article.precio1?.toStringAsFixed(2)}')),
-      //     ],
-      //   ),
-      //   detailViewBuilder: (context, ref, article) {
-      //     return _buildArticleDetails(context, ref, article);
-      //   },
-      // ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Text(
+                "Para revisar...",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 3,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 1.0,
+                children: const <Widget>[
+                  NoStockCard(),
+                  LowStockCard(),
+                  TotalArticlesCard(),
+                ],
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Top 5 Categorías con Más Artículos",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              CategoryChart(topCategories: topCategories),
+              const SizedBox(height: 10),
+              CategoryList(topCategories: topCategories),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
     );
   }
-
-  //   void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
-  //     showModalBottomSheet(
-  //       context: context,
-  //       isScrollControlled: true,
-  //       builder: (context) => _buildArticleDetails(context, ref, article),
-  //     );
-  //   }
-
-  //   Widget _buildArticleDetails(BuildContext context, WidgetRef ref, Article article) {
-  //     return Container(
-  //       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-  //       child: Wrap(
-  //         children: <Widget>[
-  //           Column(
-  //             mainAxisSize: MainAxisSize.min,
-  //             children: [
-  //               Text(
-  //                 'Detalles del Artículo',
-  //                 style: const TextStyle(
-  //                   fontSize: 24,
-  //                   fontWeight: FontWeight.w500,
-  //                 ),
-  //               ),
-  //               const SizedBox(height: 10),
-  //               _buildDetailRow('SKU', article.sku),
-  //               _buildDetailRow('Descripción', article.descripcion),
-  //               _buildDetailRow('Stock', article.stock.toString()),
-  //               _buildDetailRow(
-  //                 'Precio 1',
-  //                 '\$${article.precio1?.toStringAsFixed(2)}',
-  //               ),
-  //               const SizedBox(height: 20),
-  //               Row(
-  //                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                 children: <Widget>[
-  //                   ElevatedButton(
-  //                     onPressed: () {
-  //                       Navigator.pop(context);
-  //                       context.push('/articles/edit/${article.id}').then((_) {
-  //                         ref.read(articleSearchProvider.notifier).loadInitialData();
-  //                       });
-  //                     },
-  //                     child: const Text('Editar'),
-  //                   ),
-  //                   ElevatedButton(
-  //                     onPressed: () {
-  //                       // Implementar eliminación
-  //                       Navigator.pop(context);
-  //                     },
-  //                     child: const Text('Eliminar'),
-  //                   ),
-  //                 ],
-  //               ),
-  //               const SizedBox(height: 20),
-  //             ],
-  //           ),
-  //         ],
-  //       ),
-  //     );
-  //   }
-
-  //   Widget _buildDetailRow(String label, String value) {
-  //     return Padding(
-  //       padding: const EdgeInsets.symmetric(vertical: 5),
-  //       child: Row(
-  //         children: [
-  //           Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-  //           Text(value),
-  //         ],
-  //       ),
-  //     );
-  //   }
 }

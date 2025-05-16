@@ -1,0 +1,32 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:inventarium/data/article_repository.dart';
+import 'package:inventarium/data/article_repository_provider.dart';
+import 'package:inventarium/presentation/viewmodels/article/states/no_stock_state.dart';
+
+class NoStockArticlesNotifier
+    extends AutoDisposeAsyncNotifier<NoStockArticlesState> {
+  // Cambiado a AutoDisposeAsyncNotifier
+  Future<ArticleRepository> get _articleRepository async =>
+      ref.read(articleRepositoryProvider);
+
+  @override
+  Future<NoStockArticlesState> build() async {
+    return await _fetchNoStockArticles();
+  }
+
+  Future<NoStockArticlesState> _fetchNoStockArticles() async {
+    try {
+      final repository = await _articleRepository;
+      final articles = await repository.getArticlesWithNoStock();
+      return NoStockArticlesState(articles: articles);
+    } catch (e, stackTrace) {
+      print('Error loading articles with no stock: $e\n$stackTrace');
+      return NoStockArticlesState(error: e.toString());
+    }
+  }
+
+  Future<void> loadArticlesWithNoStock() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(_fetchNoStockArticles);
+  }
+}

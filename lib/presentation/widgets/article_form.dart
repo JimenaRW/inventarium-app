@@ -67,7 +67,8 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
             _codigoBarrasController.text.isNotEmpty
                 ? _codigoBarrasController.text
                 : null,
-        categoria: _selectedCategoria != null ? _selectedCategoria!.id.toString() : "",
+        categoria:
+            _selectedCategoria != null ? _selectedCategoria!.id.toString() : "",
         ubicacion: _ubicacionController.text,
         fabricante: _fabricanteController.text,
         iva: double.tryParse(_ivaController.text) ?? 0.00,
