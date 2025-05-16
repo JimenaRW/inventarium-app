@@ -12,16 +12,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // Configuración de debug para Firebase Auth
-  await FirebaseAuth.instance.setSettings(
-    appVerificationDisabledForTesting: true, // Solo para desarrollo
-    forceRecaptchaFlow: false, // Opcional: deshabilita Recaptcha en debug
-  );
-  
-  // Habilita logging detallado
-  FirebaseAuth.instance.useAuthEmulator('localhost', 9099); // Para usar emulador
-  debugPrint('Firebase Auth configurado en modo debug');
   
   // await cargarDatosDePruebaCategoria();
   // await cargarDatosDePrueba();
