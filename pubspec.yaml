@@ -20,12 +20,14 @@ dependencies:
   mobile_scanner: ^3.4.1
   firebase_auth: ^5.5.3
   firebase_storage: ^12.4.5
+  fl_chart: ^0.66.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.13.1
+  
   
 
 flutter_icons:

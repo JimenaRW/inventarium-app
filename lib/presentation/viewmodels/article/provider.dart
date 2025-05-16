@@ -20,4 +20,6 @@ final articleSearchProvider = StateNotifierProvider.autoDispose<
 final articleUpdateProvider = StateNotifierProvider.autoDispose<
   ArticleUpdateNotifier,
   ArticleUpdateState
->((ref) => ArticleUpdateNotifier(ref.read(articleRepositoryProvider)));
+>(
+  (ref) => ArticleUpdateNotifier(ref.read(articleRepositoryProvider), ref),
+); // ¡Pasa 'ref' aquí!

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:inventarium/core/menu/drawer_menu.dart';
-import 'package:inventarium/presentation/viewmodels/article/provider.dart';
+import 'package:inventarium/data/no_stock_provider.dart';
+import 'package:inventarium/presentation/widgets/category_chart.dart';
+import 'package:inventarium/presentation/widgets/category_list.dart';
+import 'package:inventarium/presentation/widgets/no_stock_card.dart'; // Importa NoStockCard
 
 class HomeScreen extends ConsumerStatefulWidget {
   static const String name = 'home_screen';
@@ -17,19 +19,27 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _searchController = TextEditingController();
 
+  // Simulación de los conteos (estos ya no se usarán directamente)
+  final int bajoStockCount = 30;
+  final int totalArticulosCount = 125;
+
+  // Simulación de los datos del gráfico
+  Map<String, int> topCategories = {
+    'Electrónica': 50,
+    'Ropa': 80,
+    'Hogar': 120,
+    'Libros': 65,
+    'Alimentos': 90,
+  };
+
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   ref.read(articleSearchProvider.notifier).loadInitialData();
-    // });
+    // Aquí deberías llamar a tu función para obtener los datos reales de las categorías:
+    // topCategories = ref.read(tuProveedorDeDatos).getTop5CategoriesWithCounts();
+    // Dispara la carga inicial de los datos de artículos sin stock
+    ref.read(noStockProvider.notifier).loadArticlesWithNoStock();
   }
-
-  // @override
-  // void dispose() {
-  //   _searchController.dispose();
-  //   super.dispose();
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -47,110 +57,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       drawer: DrawerMenu(scaffoldKey: widget.scaffoldKey),
-      // body: InfiniteScrollTable<Article>(
-      //   items: state.articles,
-      //   isLoading: state.isLoading,
-      //   isLoadingMore: state.isLoadingMore,
-      //   hasMore: state.hasMore,
-      //   onLoadMore: notifier.loadMoreArticles,
-      //   onSearch: notifier.searchArticles,
-      //   searchHintText: 'Buscar artículos...',
-      //   showEditDeleteButtons: true, // Habilitar botones de edición/eliminación
-      //   onMassDelete: (articles) {},
-      //   columns: const [
-      //     DataColumn(label: Text('SKU')),
-      //     DataColumn(label: Text('Descripción')),
-      //     DataColumn(label: Text('Stock'), numeric: true),
-      //     DataColumn(label: Text('Precio1'), numeric: true),
-      //   ],
-      //   buildRow: (article) => DataRow(
-      //     cells: [
-      //       DataCell(Text(article.sku)),
-      //       DataCell(
-      //         Text(article.descripcion),
-      //         onTap: () => _showArticleDetails(context, article, ref),
-      //       ),
-      //       DataCell(Text(article.stock.toString())),
-      //       DataCell(Text('\$${article.precio1?.toStringAsFixed(2)}')),
-      //     ],
-      //   ),
-      //   detailViewBuilder: (context, ref, article) {
-      //     return _buildArticleDetails(context, ref, article);
-      //   },
-      // ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Text(
+                "Para revisar...",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 3,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 1.0,
+                children: const <Widget>[
+                  NoStockCard(), // Usamos el nuevo widget NoStockCard
+                  // Aquí irán los otros ConsumerWidgets para las otras cards
+                  // LowStockCard(),
+                  // TotalArticlesCard(),
+                ],
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Top 5 Categorías con Más Artículos",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              CategoryChart(topCategories: topCategories),
+              const SizedBox(height: 10),
+              CategoryList(topCategories: topCategories),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
     );
   }
-
-  //   void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
-  //     showModalBottomSheet(
-  //       context: context,
-  //       isScrollControlled: true,
-  //       builder: (context) => _buildArticleDetails(context, ref, article),
-  //     );
-  //   }
-
-  //   Widget _buildArticleDetails(BuildContext context, WidgetRef ref, Article article) {
-  //     return Container(
-  //       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-  //       child: Wrap(
-  //         children: <Widget>[
-  //           Column(
-  //             mainAxisSize: MainAxisSize.min,
-  //             children: [
-  //               Text(
-  //                 'Detalles del Artículo',
-  //                 style: const TextStyle(
-  //                   fontSize: 24,
-  //                   fontWeight: FontWeight.w500,
-  //                 ),
-  //               ),
-  //               const SizedBox(height: 10),
-  //               _buildDetailRow('SKU', article.sku),
-  //               _buildDetailRow('Descripción', article.descripcion),
-  //               _buildDetailRow('Stock', article.stock.toString()),
-  //               _buildDetailRow(
-  //                 'Precio 1',
-  //                 '\$${article.precio1?.toStringAsFixed(2)}',
-  //               ),
-  //               const SizedBox(height: 20),
-  //               Row(
-  //                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                 children: <Widget>[
-  //                   ElevatedButton(
-  //                     onPressed: () {
-  //                       Navigator.pop(context);
-  //                       context.push('/articles/edit/${article.id}').then((_) {
-  //                         ref.read(articleSearchProvider.notifier).loadInitialData();
-  //                       });
-  //                     },
-  //                     child: const Text('Editar'),
-  //                   ),
-  //                   ElevatedButton(
-  //                     onPressed: () {
-  //                       // Implementar eliminación
-  //                       Navigator.pop(context);
-  //                     },
-  //                     child: const Text('Eliminar'),
-  //                   ),
-  //                 ],
-  //               ),
-  //               const SizedBox(height: 20),
-  //             ],
-  //           ),
-  //         ],
-  //       ),
-  //     );
-  //   }
-
-  //   Widget _buildDetailRow(String label, String value) {
-  //     return Padding(
-  //       padding: const EdgeInsets.symmetric(vertical: 5),
-  //       child: Row(
-  //         children: [
-  //           Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-  //           Text(value),
-  //         ],
-  //       ),
-  //     );
-  //   }
 }

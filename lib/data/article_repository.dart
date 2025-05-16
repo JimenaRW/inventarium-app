@@ -185,6 +185,25 @@ class ArticleRepository implements IArticleRepository {
     }
   }
 
+  // Nuevo método para obtener artículos con stock 0
+  Future<List<Article>> getArticlesWithNoStock() async {
+    try {
+      final querySnapshot =
+          await db
+              .collection('articles')
+              .where('stock', isEqualTo: 0)
+              .withConverter<Article>(
+                fromFirestore: Article.fromFirestore,
+                toFirestore: (Article article, _) => article.toFirestore(),
+              )
+              .get();
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      print('Error getting articles with no stock: $e');
+      rethrow; // Importante: relanza la excepción para que Riverpod la maneje
+    }
+  }
+
   String _generateCsvContent(List<Article> articles) {
     final buffer = StringBuffer();
 
