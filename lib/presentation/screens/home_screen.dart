@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/core/menu/drawer_menu.dart';
+import 'package:inventarium/data/low_stock_provider.dart';
+import 'package:inventarium/data/navigation_provider.dart';
 import 'package:inventarium/data/no_stock_provider.dart';
+import 'package:inventarium/data/total_articles_provider.dart';
+import 'package:inventarium/presentation/widgets/all_articles_card.dart';
 import 'package:inventarium/presentation/widgets/category_chart.dart';
 import 'package:inventarium/presentation/widgets/category_list.dart';
-import 'package:inventarium/presentation/widgets/no_stock_card.dart'; // Importa NoStockCard
+import 'package:inventarium/presentation/widgets/low_stock_card.dart';
+import 'package:inventarium/presentation/widgets/no_stock_card.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   static const String name = 'home_screen';
@@ -16,12 +21,8 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
   final _searchController = TextEditingController();
-
-  // Simulación de los conteos (estos ya no se usarán directamente)
-  final int bajoStockCount = 30;
-  final int totalArticulosCount = 125;
 
   // Simulación de los datos del gráfico
   Map<String, int> topCategories = {
@@ -35,8 +36,57 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    Future.delayed(Duration.zero, () {
+      _loadInitialData();
+    });
+  }
 
-    ref.read(noStockProvider.notifier).loadArticlesWithNoStock();
+  Future<void> _loadInitialData() async {
+    await ref.read(noStockProvider.notifier).build();
+    await ref.read(lowStockProvider.notifier).build();
+    await ref.read(totalArticlesProvider.notifier).build();
+    // Los datos de las categorías se simulan, no necesitan carga asíncrona por ahora
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    ref
+        .read(routeObserverProvider)
+        .subscribe(this, ModalRoute.of(context)! as PageRoute);
+  }
+
+  @override
+  void didPopNext() {
+    _reloadData();
+  }
+
+  @override
+  void didPushNext() {
+    // Otra pantalla fue pushed encima de la Home.
+  }
+
+  @override
+  void didPop() {
+    // La pantalla de Home hizo pop (si alguna vez se pusheara directamente).
+  }
+
+  @override
+  void didPush() {
+    _reloadData();
+  }
+
+  Future<void> _reloadData() async {
+    await ref.read(noStockProvider.notifier).build();
+    await ref.read(lowStockProvider.notifier).build();
+    await ref.read(totalArticlesProvider.notifier).build();
+    // Los datos de las categorías se simulan, no necesitan recarga por ahora
+  }
+
+  @override
+  void dispose() {
+    ref.read(routeObserverProvider).unsubscribe(this);
+    super.dispose();
   }
 
   @override
@@ -74,10 +124,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 crossAxisSpacing: 10,
                 childAspectRatio: 1.0,
                 children: const <Widget>[
-                  NoStockCard(), // Usamos el nuevo widget NoStockCard
-                  // Aquí irán los otros ConsumerWidgets para las otras cards
-                  // LowStockCard(),
-                  // TotalArticlesCard(),
+                  NoStockCard(),
+                  LowStockCard(),
+                  TotalArticlesCard(),
                 ],
               ),
               const SizedBox(height: 20),
