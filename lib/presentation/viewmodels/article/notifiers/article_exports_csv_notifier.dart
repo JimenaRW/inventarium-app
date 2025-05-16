@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/category_repository.dart';
 import 'package:inventarium/domain/article.dart';
-import 'package:inventarium/presentation/viewmodels/article/states/article_state.dart';
+import 'package:inventarium/presentation/viewmodels/article/states/article_exports_csv_state%20.dart';
 
-class ArticleNotifier extends StateNotifier<ArticleState> {
+class ArticleExportsCsvNotifier extends StateNotifier<ArticleExportsCsvState> {
   final ArticleRepository _repository;
   final CategoryRepository _repositoryCategories;
 
-  ArticleNotifier(this._repository, this._repositoryCategories)
-    : super(const ArticleState());
+  ArticleExportsCsvNotifier(this._repository, this._repositoryCategories)
+    : super(const ArticleExportsCsvState());
 
   Future<void> loadArticles() async {
     state = state.copyWith(isLoading: true);
@@ -54,27 +54,6 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
     state = state.copyWith(searchQuery: query, filteredArticles: filtered);
   }
 
-  Future<void> addArticle(Article article) async {
-    state = state.copyWith(isLoading: true);
-    try {
-      final createdArticle = await _repository.addArticle(article);
-
-      final updatedArticles = [...state.articles, createdArticle];
-
-      state = state.copyWith(
-        articles: updatedArticles,
-        filteredArticles: updatedArticles,
-        isLoading: false,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Error al agregar artículo: ${e.toString()}',
-      );
-      rethrow;
-    }
-  }
-
   Future<List<Article>> getArticles({int page = 1, int limit = 20}) async {
     try {
       final articles = await _repository.getArticlesPaginado(
@@ -87,12 +66,16 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
     }
   }
 
-  Future<List<Article>> searchArticles(String query) async {
+  Future<void> exportArticles() async {
     try {
-      final articles = await _repository.searchArticles(query);
-      return articles;
+      state = state.copyWith(isLoading: true);
+
+      String url = await _repository.exportArticles();
+
+      state = state.copyWith(isLoading: false, lastExportedCsvUrl: url, exportedCount: state.articles.length);
     } catch (e) {
-      throw Exception('Error en búsqueda: ${e.toString()}');
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
     }
   }
 
