@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthRepository {
@@ -19,10 +20,21 @@ class AuthRepository {
     String email,
     String password,
   ) async {
-    return await _firebaseAuth.createUserWithEmailAndPassword(
+    final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
+    // 2. Guardar rol en Firestore
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userCredential.user!.uid)
+        .set({
+          'email': email,
+          'role': 'viewer', // Asignar rol aquí
+          'id': userCredential.user?.uid,
+        });
+
+        return userCredential;
   }
 
   Future<void> signOut() async {
