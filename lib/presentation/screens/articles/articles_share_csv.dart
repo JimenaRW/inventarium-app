@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inventarium/presentation/viewmodels/article/notifiers/article_exports_csv_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
+
 
 class ArticlesShareCsv extends ConsumerWidget {
   static const String name = 'articles_share_csv';
@@ -15,6 +17,8 @@ class ArticlesShareCsv extends ConsumerWidget {
     final lastExportedUrl = ref.watch(
       articleExportsCsvNotifierProvider.select((state) => state.lastExportedCsvUrl),
     );
+
+final notifier = ref.read(articleExportsCsvNotifierProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -53,7 +57,7 @@ class ArticlesShareCsv extends ConsumerWidget {
             Center(
               child: ElevatedButton(
                 onPressed: lastExportedUrl != null 
-                    ? () => _shareFile(context, lastExportedUrl)
+                    ? () => _shareFile(context, lastExportedUrl, notifier)
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
@@ -72,7 +76,7 @@ class ArticlesShareCsv extends ConsumerWidget {
     );
   }
 
-  void _shareFile(BuildContext context, String fileUrl) {
+  void _shareFile(BuildContext context, String fileUrl, ArticleExportsCsvNotifier notifier) {
     // Implementa la lógica de compartir usando plugins como `share_plus`
     showDialog(
       context: context,
@@ -85,9 +89,9 @@ class ArticlesShareCsv extends ConsumerWidget {
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               // Ejemplo con share_plus:
-              // Share.share('Descarga el CSV: $fileUrl');
+            await notifier.shareFileWithDownload(fileUrl);
               Navigator.pop(ctx);
             },
             child: const Text('Compartir'),
