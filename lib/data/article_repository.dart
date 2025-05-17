@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/i_article_repository.dart';
+import 'package:inventarium/domain/role.dart';
 
 class ArticleRepository implements IArticleRepository {
   final FirebaseFirestore db;
@@ -158,7 +160,19 @@ class ArticleRepository implements IArticleRepository {
 
   Future<String> exportArticles() async {
     try {
-      // 1. Obtener todos los artículos de Firestore
+      // 1. Verifica el rol en Firestore antes de subir:
+      final userDoc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(FirebaseAuth.instance.currentUser!.uid)
+              .get();
+
+      final userRole = userDoc.data()!['role']; // 'admin', 'user', etc.
+      final admin = UserRole.admin.name;
+      if (userRole.toLowerCase() != admin.toLowerCase()) {
+        return "";
+      }
+
       final querySnapshot = await db.collection('articles').get();
       final articles =
           querySnapshot.docs.map((doc) {
@@ -174,7 +188,9 @@ class ArticleRepository implements IArticleRepository {
       // 3. Subir a Firebase Storage
       final fileName =
           'articulos_export_${DateTime.now().millisecondsSinceEpoch}.csv';
-      final ref = _storage.ref().child('exports/$fileName');
+      final ref = _storage.ref().child(
+        'exports_csv/${userDoc.data()!['id']}/$fileName',
+      );
 
       await ref.putString(csvContent);
 

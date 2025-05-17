@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 
-class ArticlesShareCsv extends StatelessWidget {
+class ArticlesShareCsv extends ConsumerWidget {
   static const String name = 'articles_share_csv';
   const ArticlesShareCsv({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final exportedCount = ref.watch(
+      articleExportsCsvNotifierProvider.select((state) => state.exportedCount),
+    );
+    final lastExportedUrl = ref.watch(
+      articleExportsCsvNotifierProvider.select((state) => state.lastExportedCsvUrl),
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Exportar CSV'),
@@ -34,30 +43,56 @@ class ArticlesShareCsv extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            
-            const Text(
-              '1080 registros importados, comparta el archivo por email o whatsapp / drive',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
+            Text(
+              '$exportedCount registros exportados',
+              style: const TextStyle(fontSize: 16),
             ),
             
             const SizedBox(height: 32),
             
             Center(
               child: ElevatedButton(
-                onPressed: () => context.pop(),
+                onPressed: lastExportedUrl != null 
+                    ? () => _shareFile(context, lastExportedUrl)
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   minimumSize: const Size(200, 50),
                 ),
                 child: const Text(
-                  'CONTINUAR',
+                  'COMPARTIR ARCHIVO',
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),
             ),
+            
           ],
         ),
+      ),
+    );
+  }
+
+  void _shareFile(BuildContext context, String fileUrl) {
+    // Implementa la lógica de compartir usando plugins como `share_plus`
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Compartir archivo'),
+        content: Text('¿Compartir reporte?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              // Ejemplo con share_plus:
+              // Share.share('Descarga el CSV: $fileUrl');
+              Navigator.pop(ctx);
+            },
+            child: const Text('Compartir'),
+          ),
+        ],
       ),
     );
   }
