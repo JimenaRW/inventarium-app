@@ -30,9 +30,9 @@ final articleSearchProvider = StateNotifierProvider.autoDispose<
 
 final articleUpdateProvider = StateNotifierProvider.autoDispose<
   ArticleUpdateNotifier,
-  ArticleUpdateState
->((ref) => ArticleUpdateNotifier(ref.read(articleRepositoryProvider)));
-
+  ArticleUpdateState>(
+  (ref) => ArticleUpdateNotifier(ref.read(articleRepositoryProvider), ref),
+); // ¡Pasa 'ref' aquí!
 
 Provider<ArticleRepository> articleRepositoryProvider =
     Provider<ArticleRepository>((ref) => ArticleRepository(db, storage));
@@ -44,6 +44,7 @@ final articleExportsCsvNotifierProvider =
         ref.read(categoryRepositoryProvider),
       ),
     );
+
 
 final articleImportCsvNotifierProvider =
   StateNotifierProvider<ArticleImportCsvNotifier, ArticleImportCsvState>(
