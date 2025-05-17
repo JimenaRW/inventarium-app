@@ -89,21 +89,22 @@ class ArticleExportsCsvNotifier extends StateNotifier<ArticleExportsCsvState> {
 Future<void> shareFileWithDownload(String storagePath) async {
 
  try {
-    final doc =  convertPublicUrlToGsUrl(storagePath);
-    final ref = FirebaseStorage.instance.refFromURL(doc);
-    final bytes = await ref.getData();
+    // final doc =  convertPublicUrlToGsUrl(storagePath);
+    // final ref = FirebaseStorage.instance.ref('https://firebasestorage.googleapis.com/v0/b/inventarium-th3-2025.firebasestorage.app/o/exports_csv%2FC7hAYluK3BcEcDEpL2e0WEhs8j42%2Farticulos_export_1747360026725.csv?alt=media&token=22b634ae-6672-4aad-b29f-720a0112ee2e');
+    // final bytes = await ref.getData();
 
-    if (bytes == null) {
-      print("No se pudo descargar el archivo.");
-      return;
-    }
+    // if (bytes == null) {
+    //   print("No se pudo descargar el archivo.");
+    //   return;
+    // }
+    final response = await http.get(Uri.parse(storagePath));
 
     // Obtener directorio temporal
     final tempDir = await getTemporaryDirectory();
     final tempFile = File('${tempDir.path}/documento.csv');
 
     // Guardar archivo temporal
-    await tempFile.writeAsBytes(bytes);
+    await tempFile.writeAsBytes(response.bodyBytes);
 
     // Compartir archivo
     await Share.shareXFiles([XFile(tempFile.path)], text: 'Compartir archivo');
