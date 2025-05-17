@@ -7,6 +7,7 @@ import 'package:inventarium/data/no_stock_provider.dart';
 import 'package:inventarium/data/total_articles_provider.dart';
 import 'package:inventarium/presentation/widgets/all_articles_card.dart';
 import 'package:inventarium/presentation/widgets/category_chart.dart';
+import 'package:inventarium/presentation/widgets/category_dashboard.dart';
 import 'package:inventarium/presentation/widgets/category_list.dart';
 import 'package:inventarium/presentation/widgets/low_stock_card.dart';
 import 'package:inventarium/presentation/widgets/no_stock_card.dart';
@@ -58,29 +59,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
 
   @override
   void didPopNext() {
+    print('didPopNext llamado');
     _reloadData();
   }
 
   @override
-  void didPushNext() {
-    // Otra pantalla fue pushed encima de la Home.
-  }
+  void didPushNext() {}
 
   @override
-  void didPop() {
-    // La pantalla de Home hizo pop (si alguna vez se pusheara directamente).
-  }
+  void didPop() {}
 
   @override
   void didPush() {
+    print('didPush llamado');
     _reloadData();
   }
 
   Future<void> _reloadData() async {
-    await ref.read(noStockProvider.notifier).build();
-    await ref.read(lowStockProvider.notifier).build();
-    await ref.read(totalArticlesProvider.notifier).build();
-    // Los datos de las categorías se simulan, no necesitan recarga por ahora
+    ref.invalidate(noStockProvider);
+    ref.invalidate(lowStockProvider);
+    ref.invalidate(totalArticlesProvider);
   }
 
   @override
@@ -129,15 +127,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
                   TotalArticlesCard(),
                 ],
               ),
-              const SizedBox(height: 20),
-              const Text(
-                "Top 5 Categorías con Más Artículos",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
               const SizedBox(height: 10),
-              CategoryChart(topCategories: topCategories),
-              const SizedBox(height: 10),
-              CategoryList(topCategories: topCategories),
+              CategoryDashboard(),
               const SizedBox(height: 20),
             ],
           ),
