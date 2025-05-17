@@ -167,10 +167,12 @@ class InfiniteScrollTable<T> extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<InfiniteScrollTable<T>> createState() => _InfiniteScrollTableState<T>();
+  ConsumerState<InfiniteScrollTable<T>> createState() =>
+      _InfiniteScrollTableState<T>();
 }
 
-class _InfiniteScrollTableState<T> extends ConsumerState<InfiniteScrollTable<T>> {
+class _InfiniteScrollTableState<T>
+    extends ConsumerState<InfiniteScrollTable<T>> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -221,22 +223,23 @@ class _InfiniteScrollTableState<T> extends ConsumerState<InfiniteScrollTable<T>>
   void confirmMassDelete() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar eliminación'),
-        content: Text(
-          '¿Deseas eliminar ${selectedItems.length} elementos?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirmar eliminación'),
+            content: Text(
+              '¿Deseas eliminar ${selectedItems.length} elementos?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Confirmar'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Confirmar'),
-          ),
-        ],
-      ),
     );
     if (confirmed == true && widget.onMassDelete != null) {
       widget.onMassDelete!(selectedItems.toList());
@@ -342,32 +345,35 @@ class _InfiniteScrollTableState<T> extends ConsumerState<InfiniteScrollTable<T>>
                     if (isSelectionMode) const DataColumn(label: Text('')),
                     ...widget.columns,
                   ],
-                  rows: widget.items.map((item) {
-                    final row = widget.buildRow(item);
-                    final cells = <DataCell>[];
-                    
-                    if (isSelectionMode) {
-                      final isSelected = selectedItems.contains(item);
-                      cells.add(
-                        DataCell(
-                          Checkbox(
-                            value: isSelected,
-                            onChanged: (_) => toggleItemSelection(item),
-                          ),
-                        ),
-                      );
-                    }
-                    
-                    for (int i = 0; i < row.cells.length; i++) {
-                      final cell = row.cells[i];
-                      cells.add(DataCell(
-                        cell.child ?? const SizedBox(),
-                        onTap: () => _showDetails(context, item),
-                      ));
-                    }
-                    
-                    return DataRow(cells: cells);
-                  }).toList(),
+                  rows:
+                      widget.items.map((item) {
+                        final row = widget.buildRow(item);
+                        final cells = <DataCell>[];
+
+                        if (isSelectionMode) {
+                          final isSelected = selectedItems.contains(item);
+                          cells.add(
+                            DataCell(
+                              Checkbox(
+                                value: isSelected,
+                                onChanged: (_) => toggleItemSelection(item),
+                              ),
+                            ),
+                          );
+                        }
+
+                        for (int i = 0; i < row.cells.length; i++) {
+                          final cell = row.cells[i];
+                          cells.add(
+                            DataCell(
+                              cell.child ?? const SizedBox(),
+                              onTap: () => _showDetails(context, item),
+                            ),
+                          );
+                        }
+
+                        return DataRow(cells: cells);
+                      }).toList(),
                 ),
               ),
             ),

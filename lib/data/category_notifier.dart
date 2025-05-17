@@ -1,30 +1,42 @@
-// category_notifier.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/category_repository.dart';
 import 'package:inventarium/domain/category.dart';
 
 class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
   final CategoryRepository _repository;
-  String _searchQuery = ''; // Almacena la consulta de búsqueda
+  String _searchQuery = '';
+  bool _mounted = true; // Agrega una bandera para rastrear el estado del widget
 
   CategoryNotifier(this._repository) : super(const AsyncValue.loading()) {
     loadCategories();
   }
 
+  @override
+  void dispose() {
+    _mounted =
+        false; // Establece la bandera a false cuando se elimina el notifier
+    super.dispose();
+  }
+
   void resetSearch() {
-    state = state.whenData((_) => []); // Limpia la lista temporalmente
-    loadCategories(); // Vuelve a cargar la lista completa
+    if (!_mounted) return; // Verifica mounted
+    state = state.whenData((_) => []);
+    loadCategories();
   }
 
   void clearSearch() {
+    if (!_mounted) return; // Verifica mounted
     _searchQuery = '';
-    loadCategories(); // Vuelve a cargar la lista completa
+    loadCategories();
   }
 
   Future<void> loadCategories() async {
+    if (!_mounted) return; // Verifica mounted
     state = const AsyncValue.loading();
     try {
       final categories = await _repository.getAllCategories();
+      if (!_mounted)
+        return; // Verifica mounted después de la operación asíncrona
       state = AsyncValue.data(
         _searchQuery.isEmpty
             ? categories
@@ -37,16 +49,17 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
                 .toList(),
       );
     } catch (e) {
+      if (!_mounted) return; // Verifica mounted en caso de error
       state = AsyncValue.error(e, StackTrace.current);
     }
   }
 
   Future<void> addCategory(String description) async {
+    if (!_mounted) return;
     try {
       final newCategory = Category(id: "", descripcion: description);
-
+      if (!_mounted) return;
       state = AsyncValue.data([...?state.value, newCategory]);
-
       await _repository.addCategory(newCategory);
     } catch (e) {
       rethrow;
@@ -54,8 +67,10 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
   }
 
   Future<void> deleteCategory(String id) async {
+    if (!_mounted) return;
     try {
       await _repository.deleteCategory(id);
+      if (!_mounted) return;
       state.whenData(
         (categories) =>
             state = AsyncValue.data(
@@ -63,24 +78,28 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
             ),
       );
     } catch (e) {
+      if (!_mounted) return;
       state = AsyncValue.error(e, StackTrace.current);
       rethrow;
     }
   }
 
   void searchCategories(String query) {
+    if (!_mounted) return;
     _searchQuery = query;
-
     loadCategories();
   }
 
   Future<void> updateCategory(String categoryId, String newDescription) async {
+    if (!_mounted) return;
     try {
       state = const AsyncValue.loading();
       Category category = Category(id: categoryId, descripcion: newDescription);
       await _repository.updateCategory(category);
+      if (!_mounted) return;
       await loadCategories(); // Recarga la lista después de la actualización
     } catch (e) {
+      if (!_mounted) return;
       state = AsyncValue.error(e, StackTrace.current);
     }
   }

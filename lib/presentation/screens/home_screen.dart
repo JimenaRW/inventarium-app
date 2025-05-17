@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/core/menu/drawer_menu.dart';
+
 import 'package:inventarium/data/low_stock_provider.dart';
 import 'package:inventarium/data/navigation_provider.dart';
 import 'package:inventarium/data/no_stock_provider.dart';
+import 'package:inventarium/data/top_categories_provider.dart';
 import 'package:inventarium/data/total_articles_provider.dart';
 import 'package:inventarium/presentation/widgets/all_articles_card.dart';
-import 'package:inventarium/presentation/widgets/category_chart.dart';
+
 import 'package:inventarium/presentation/widgets/category_dashboard.dart';
-import 'package:inventarium/presentation/widgets/category_list.dart';
+
 import 'package:inventarium/presentation/widgets/low_stock_card.dart';
 import 'package:inventarium/presentation/widgets/no_stock_card.dart';
 
@@ -46,7 +48,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
     await ref.read(noStockProvider.notifier).build();
     await ref.read(lowStockProvider.notifier).build();
     await ref.read(totalArticlesProvider.notifier).build();
-    // Los datos de las categorías se simulan, no necesitan carga asíncrona por ahora
   }
 
   @override
@@ -58,27 +59,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
   }
 
   @override
-  void didPopNext() {
-    print('didPopNext llamado');
-    _reloadData();
-  }
-
-  @override
   void didPushNext() {}
 
   @override
   void didPop() {}
 
   @override
+  void didPopNext() {
+    print('didPopNext llamado');
+    Future.microtask(
+      _reloadData,
+    ); // Usar Future.microtask para ejecutar después del build actual
+  }
+
+  @override
   void didPush() {
     print('didPush llamado');
-    _reloadData();
+    Future.microtask(
+      _reloadData,
+    ); // Usar Future.microtask para ejecutar después del build actual
   }
 
   Future<void> _reloadData() async {
     ref.invalidate(noStockProvider);
     ref.invalidate(lowStockProvider);
     ref.invalidate(totalArticlesProvider);
+    ref.invalidate(topCategoriesProvider);
   }
 
   @override
@@ -91,17 +97,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
   Widget build(BuildContext context) {
     return Scaffold(
       key: widget.scaffoldKey,
-      appBar: AppBar(
-        title: const Text("Inicio"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Implementar búsqueda si es necesario
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text("Inicio")),
       drawer: DrawerMenu(scaffoldKey: widget.scaffoldKey),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

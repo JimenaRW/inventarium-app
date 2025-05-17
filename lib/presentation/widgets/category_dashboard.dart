@@ -9,7 +9,6 @@ class CategoryDashboard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Usa el provider topCategoriesProvider directamente.
     final topCategoriesAsync = ref.watch(topCategoriesProvider);
 
     return Column(
