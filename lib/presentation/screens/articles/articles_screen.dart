@@ -59,7 +59,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                 _ActionButton(
                   icon: Icons.upload_file,
                   label: 'IMPORTAR\nCSV',
-                  onTap: () => {},
+                  onTap: () => context.push('/articles/import-csv'),
                 ),
                 _ActionButton(
                   icon: Icons.save_alt,
@@ -127,28 +127,31 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     }
 
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columns: const [
-          DataColumn(label: Text('SKU')),
-          DataColumn(label: Text('Descripción')),
-          DataColumn(label: Text('Stock'), numeric: true),
-          DataColumn(label: Text('Precio1'), numeric: true),
-        ],
-        rows:
-            state.filteredArticles.map((article) {
-              return DataRow(
-                cells: [
-                  DataCell(Text(article.sku)),
-                  DataCell(
-                    Text(article.descripcion),
-                    onTap: () => _showArticleDetails(context, article, ref),
-                  ),
-                  DataCell(Text(article.stock.toString())),
-                  DataCell(Text('\$${article.precio1?.toStringAsFixed(2)}')),
-                ],
-              );
-            }).toList(),
+      scrollDirection: Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+          columns: const [
+            DataColumn(label: Text('SKU')),
+            DataColumn(label: Text('Descripción')),
+            DataColumn(label: Text('Stock'), numeric: true),
+            DataColumn(label: Text('Precio1'), numeric: true),
+          ],
+          rows:
+              state.filteredArticles.map((article) {
+                return DataRow(
+                  cells: [
+                    DataCell(Text(article.sku)),
+                    DataCell(
+                      Text(article.descripcion),
+                      onTap: () => _showArticleDetails(context, article, ref),
+                    ),
+                    DataCell(Text(article.stock.toString())),
+                    DataCell(Text('\$${article.precio1?.toStringAsFixed(2)}')),
+                  ],
+                );
+              }).toList(),
+        ),
       ),
     );
   }
