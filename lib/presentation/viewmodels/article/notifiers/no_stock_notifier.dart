@@ -11,16 +11,21 @@ class NoStockArticlesNotifier
 
   @override
   Future<NoStockArticlesState> build() async {
-    return await _fetchNoStockArticles();
+    try {
+      final result = await _fetchNoStockArticles();
+      return result; // Devolver directamente el estado
+    } catch (e, st) {
+      return NoStockArticlesState(error: e.toString());
+    }
   }
 
   Future<NoStockArticlesState> _fetchNoStockArticles() async {
     try {
       final repository = await _articleRepository;
       final articles = await repository.getArticlesWithNoStock();
+
       return NoStockArticlesState(articles: articles);
     } catch (e, stackTrace) {
-      print('Error loading articles with no stock: $e\n$stackTrace');
       return NoStockArticlesState(error: e.toString());
     }
   }

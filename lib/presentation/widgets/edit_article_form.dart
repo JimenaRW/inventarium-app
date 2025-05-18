@@ -107,9 +107,6 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
 
       final state = ref.read(articleUpdateProvider);
       if (state.isSuccess && mounted) {
-        ref.invalidate(noStockProvider);
-        ref.invalidate(lowStockProvider);
-        ref.invalidate(totalArticlesProvider);
         Navigator.pop(context);
       }
     }
