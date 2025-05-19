@@ -10,6 +10,13 @@ class CategoryDashboard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final topCategoriesAsync = ref.watch(topCategoriesProvider);
+    const List<Color> chartColors = [
+      Colors.blueAccent,
+      Colors.greenAccent,
+      Colors.orangeAccent,
+      Colors.purpleAccent,
+      Colors.redAccent,
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -23,7 +30,10 @@ class CategoryDashboard extends ConsumerWidget {
           height: 200,
           child: topCategoriesAsync.when(
             data:
-                (topCategories) => CategoryChart(topCategories: topCategories),
+                (topCategories) => CategoryChart(
+                  topCategories: topCategories,
+                  barColors: chartColors,
+                ),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) => Center(child: Text('Error: $error')),
           ),
@@ -36,7 +46,11 @@ class CategoryDashboard extends ConsumerWidget {
         const SizedBox(height: 16),
         SizedBox(
           child: topCategoriesAsync.when(
-            data: (topCategories) => CategoryList(topCategories: topCategories),
+            data:
+                (topCategories) => CategoryList(
+                  topCategories: topCategories,
+                  barColors: chartColors,
+                ),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) => Center(child: Text('Error: $error')),
           ),
