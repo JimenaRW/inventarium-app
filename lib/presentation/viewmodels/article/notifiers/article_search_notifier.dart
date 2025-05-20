@@ -4,7 +4,7 @@ import 'package:inventarium/presentation/viewmodels/article/notifiers/article_no
 import 'package:inventarium/presentation/viewmodels/article/states/article_search_state.dart';
 
 class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
-final ArticleNotifier _articleNotifier;
+  final ArticleNotifier _articleNotifier;
   final int _currentPage = 1;
   final int _itemsPerPage = 10;
 
@@ -16,7 +16,7 @@ final ArticleNotifier _articleNotifier;
 
     try {
       await _articleNotifier.loadArticles();
-      
+
       state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(
@@ -50,9 +50,14 @@ final ArticleNotifier _articleNotifier;
   Future<void> loadInitialData() async {
     state = state.copyWith(isLoading: true);
     try {
-      final articles = await _articleNotifier.getArticles(page: _currentPage, limit: _itemsPerPage);
+      final articles = await _articleNotifier.getArticles(
+        page: _currentPage,
+        limit: _itemsPerPage,
+      );
+      print('Artículos cargados: ${articles.length}');
       state = state.copyWith(
         articles: articles,
+        filteredArticles: articles, // Agrega esto
         isLoading: false,
         hasMore: articles.length == _itemsPerPage,
       );
@@ -61,7 +66,7 @@ final ArticleNotifier _articleNotifier;
     }
   }
 
-   Future<void> loadMoreArticles() async {
+  Future<void> loadMoreArticles() async {
     if (state.isLoadingMore || !state.hasMore) return;
 
     state = state.copyWith(isLoadingMore: true);
@@ -70,20 +75,38 @@ final ArticleNotifier _articleNotifier;
         page: state.currentPage + 1,
         limit: _itemsPerPage,
       );
-      
+
+      final filteredNewArticles = getFilteredArticles(newArticles);
+
       state = state.copyWith(
         articles: [...state.articles, ...newArticles],
-        filteredArticles: [...state.filteredArticles, ...newArticles],
+        filteredArticles: [...state.filteredArticles, ...filteredNewArticles],
         isLoadingMore: false,
         hasMore: newArticles.length == _itemsPerPage,
         currentPage: state.currentPage + 1,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoadingMore: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoadingMore: false, error: e.toString());
     }
+  }
+
+  List<Article> getFilteredArticles(List<Article> articles) {
+    if (state.searchQuery.isEmpty) return articles;
+
+    final query = state.searchQuery.toLowerCase();
+    final terms = query.split(' ').where((t) => t.isNotEmpty).toList();
+
+    if (terms.isEmpty) return articles;
+
+    return articles.where((article) {
+      final searchableContent = [
+        article.descripcion.toLowerCase(),
+        article.sku.toLowerCase(),
+        article.codigoBarras?.toLowerCase() ?? '',
+      ].join(' ');
+
+      return terms.every((term) => searchableContent.contains(term));
+    }).toList();
   }
 
   Future<void> searchArticles(String query) async {
@@ -95,15 +118,9 @@ final ArticleNotifier _articleNotifier;
     state = state.copyWith(isSearching: true);
     try {
       final results = await _articleNotifier.searchArticles(query);
-      state = state.copyWith(
-        filteredArticles: results,
-        isSearching: false,
-      );
+      state = state.copyWith(filteredArticles: results, isSearching: false);
     } catch (e) {
-      state = state.copyWith(
-        isSearching: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isSearching: false, error: e.toString());
     }
   }
 }

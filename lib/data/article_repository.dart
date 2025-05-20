@@ -52,9 +52,19 @@ class ArticleRepository implements IArticleRepository {
   }
 
   @override
-  Future<Article?> getArticleById(String sku) =>
-      // TODO: implement getArticleById
-      throw UnimplementedError();
+  Future<Article?> getArticleById(String id) async {
+    final doc =
+        await db
+            .collection('articles')
+            .withConverter<Article>(
+              fromFirestore: Article.fromFirestore,
+              toFirestore: (Article article, _) => article.toFirestore(),
+            )
+            .doc(id)
+            .get();
+
+    return doc.data();
+  }
 
   @override
   Future<List<Article>> searchArticles(String query) async {
