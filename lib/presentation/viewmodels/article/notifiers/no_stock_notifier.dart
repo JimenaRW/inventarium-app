@@ -14,7 +14,7 @@ class NoStockArticlesNotifier
     try {
       final result = await _fetchNoStockArticles();
       return result; // Devolver directamente el estado
-    } catch (e, st) {
+    } catch (e) {
       return NoStockArticlesState(error: e.toString());
     }
   }
@@ -25,7 +25,7 @@ class NoStockArticlesNotifier
       final articles = await repository.getArticlesWithNoStock();
 
       return NoStockArticlesState(articles: articles);
-    } catch (e, stackTrace) {
+    } catch (e) {
       return NoStockArticlesState(error: e.toString());
     }
   }

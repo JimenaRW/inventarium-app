@@ -2,8 +2,19 @@ import 'package:flutter/material.dart';
 
 class CategoryList extends StatelessWidget {
   final Map<String, int> topCategories;
+  final List<Color> barColors;
 
-  const CategoryList({super.key, required this.topCategories});
+  const CategoryList({
+    super.key,
+    required this.topCategories,
+    this.barColors = const [
+      Colors.blueAccent,
+      Colors.greenAccent,
+      Colors.orangeAccent,
+      Colors.purpleAccent,
+      Colors.redAccent,
+    ],
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +29,20 @@ class CategoryList extends StatelessWidget {
       itemBuilder: (context, index) {
         final category = topCategories.keys.elementAt(index);
         final count = topCategories[category];
+        final color =
+            barColors[index %
+                barColors.length]; // Obtiene el color correspondiente
         return ListTile(
+          leading: Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              color: color,
+              shape:
+                  BoxShape
+                      .rectangle, // Puedes cambiar a BoxShape.circle para un bullet
+            ),
+          ),
           title: Text(category),
           trailing: Text('$count artículos'),
         );
