@@ -59,7 +59,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                 _ActionButton(
                   icon: Icons.upload_file,
                   label: 'IMPORTAR\nCSV',
-                  onTap: () => {},
+                  onTap: () => context.push('/articles/import-csv'),
                 ),
                 _ActionButton(
                   icon: Icons.save_alt,

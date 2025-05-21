@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/navigation_provider.dart';
 import 'package:inventarium/presentation/screens/articles/articles_exports_csv.dart';
+import 'package:inventarium/presentation/screens/articles/articles_import_csv.dart';
 import 'package:inventarium/presentation/screens/articles/articles_share_csv.dart';
 import 'package:inventarium/presentation/screens/articles/create_article_screen.dart';
 import 'package:inventarium/presentation/screens/articles/articles_screen.dart';
@@ -112,6 +113,11 @@ final appRouterProvider = Provider<GoRouter>(
         path: '/articles/share-csv',
         name: ArticlesShareCsv.name,
         builder: (context, state) => const ArticlesShareCsv(),
+      ),
+      GoRoute(
+        path: '/articles/import-csv',
+        name: ArticlesImportCsv.name,
+        builder: (context, state) => const ArticlesImportCsv(),
       ),
       GoRoute(
         name: BarcodeScannerScreen.name,

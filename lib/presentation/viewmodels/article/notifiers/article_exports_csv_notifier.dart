@@ -1,9 +1,15 @@
+import 'dart:io';
+
 import 'package:collection/collection.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/category_repository.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_exports_csv_state%20.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 class ArticleExportsCsvNotifier extends StateNotifier<ArticleExportsCsvState> {
   final ArticleRepository _repository;
@@ -78,5 +84,43 @@ class ArticleExportsCsvNotifier extends StateNotifier<ArticleExportsCsvState> {
       rethrow;
     }
   }
+
+
+Future<void> shareFileWithDownload(String storagePath) async {
+
+ try {
+    // final doc =  convertPublicUrlToGsUrl(storagePath);
+    // final ref = FirebaseStorage.instance.ref('https://firebasestorage.googleapis.com/v0/b/inventarium-th3-2025.firebasestorage.app/o/exports_csv%2FC7hAYluK3BcEcDEpL2e0WEhs8j42%2Farticulos_export_1747360026725.csv?alt=media&token=22b634ae-6672-4aad-b29f-720a0112ee2e');
+    // final bytes = await ref.getData();
+
+    // if (bytes == null) {
+    //   print("No se pudo descargar el archivo.");
+    //   return;
+    // }
+    final response = await http.get(Uri.parse(storagePath));
+
+    // Obtener directorio temporal
+    final tempDir = await getTemporaryDirectory();
+    final tempFile = File('${tempDir.path}/documento.csv');
+
+    // Guardar archivo temporal
+    await tempFile.writeAsBytes(response.bodyBytes);
+
+    // Compartir archivo
+    await Share.shareXFiles([XFile(tempFile.path)], text: 'Compartir archivo');
+
+  } catch (e) {
+    print("Error al compartir archivo: $e");
+  }
+} 
+
+String convertPublicUrlToGsUrl(String publicUrl) {
+  final uri = Uri.parse(publicUrl);
+  final bucket = 'inventarium-th3-2025.appspot.com';
+  final objectPath = Uri.decodeFull(uri.pathSegments[4]); // exports_csv/.../archivo.csv
+  return 'gs://$bucket/$objectPath';
+} 
+
+
 
 }
