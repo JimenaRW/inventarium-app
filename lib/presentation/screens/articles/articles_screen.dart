@@ -292,7 +292,12 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                     ElevatedButton(
                       onPressed: () {
                         // TODO: implementar pegue para borrar artículo en Firebase
-                        Navigator.pop(context);
+                        Navigator.pop(bc);
+                        context.push('/articles/delete/${article.id}').then((_) {
+                          ref
+                              .read(articleSearchNotifierProvider.notifier)
+                              .loadInitialData();
+                        });
                       },
                       child: const Text('Eliminar'),
                     ),

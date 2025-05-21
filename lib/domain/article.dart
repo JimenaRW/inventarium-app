@@ -15,7 +15,7 @@ class Article extends Equatable {
   final double? precio2;
   final double? precio3;
   final double? iva;
-  final bool activo;
+  final String activo;
 
   const Article({
     String? id,
@@ -30,14 +30,14 @@ class Article extends Equatable {
     double? precio2,
     double? precio3,
     double? iva,
-    bool? activo,
+    String? activo,
     String? categoriaDescripcion,
   }) : id = id ?? "",
        precio1 = precio1 ?? 0.0,
        precio2 = precio2 ?? 0.0,
        precio3 = precio3 ?? 0.0,
        iva = iva ?? 0.00,
-       activo = activo ?? true,
+       activo = activo ?? 'activo',
        categoriaDescripcion = categoriaDescripcion ?? "";
 
   @override
@@ -71,7 +71,7 @@ class Article extends Equatable {
     double? precio2,
     double? precio3,
     double? iva,
-    bool? activo,
+    String? activo,
   }) {
     return Article(
       id: id ?? this.id,

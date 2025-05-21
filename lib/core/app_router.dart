@@ -10,6 +10,7 @@ import 'package:inventarium/presentation/screens/articles/articles_import_csv.da
 import 'package:inventarium/presentation/screens/articles/articles_share_csv.dart';
 import 'package:inventarium/presentation/screens/articles/create_article_screen.dart';
 import 'package:inventarium/presentation/screens/articles/articles_screen.dart';
+import 'package:inventarium/presentation/screens/articles/delete_article_screen.dart';
 import 'package:inventarium/presentation/screens/articles/edit_article_screen.dart';
 import 'package:inventarium/presentation/screens/auth/login_screen.dart';
 import 'package:inventarium/presentation/screens/auth/password_reset_screen.dart';
@@ -103,6 +104,13 @@ final appRouterProvider = Provider<GoRouter>(
         builder:
             (context, state) =>
                 EditArticleScreen(id: state.pathParameters['id'] ?? ""),
+      ),
+      GoRoute(
+        name: DeleteArticleScreen.name,
+        path: '/articles/delete/:id',
+        builder:
+            (context, state) =>
+                DeleteArticleScreen(articleId: state.pathParameters['id'] ?? ""),
       ),
       GoRoute(
         path: '/articles/exports-csv',

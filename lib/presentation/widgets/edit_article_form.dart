@@ -7,6 +7,7 @@ import 'package:inventarium/data/low_stock_provider.dart';
 import 'package:inventarium/data/no_stock_provider.dart';
 import 'package:inventarium/data/total_articles_provider.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/article_active.dart';
 import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/widgets/custom_form_field.dart';
@@ -99,6 +100,7 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
         precio1: double.tryParse(_precio1Controller.text) ?? 0.00,
         precio2: double.tryParse(_precio2Controller.text) ?? 0.00,
         precio3: double.tryParse(_precio3Controller.text) ?? 0.00,
+        activo: ArticleActive.activo.name,
       );
 
       await ref
