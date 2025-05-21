@@ -125,10 +125,20 @@ class Article extends Equatable {
       ubicacion: data?['location'],
       fabricante: data?['fabricator'],
       stock: data?['stock'],
-      precio1: data?['price1'],
-      precio2: data?['price2'],
-      precio3: data?['price3'],
-      iva: data?['iva'],
+      precio1:
+          data?['price1'] is int
+              ? (data?['price1'] as int).toDouble()
+              : data?['price1'],
+      precio2:
+          data?['price2'] is int
+              ? (data?['price2'] as int).toDouble()
+              : data?['price2'],
+      precio3:
+          data?['price3'] is int
+              ? (data?['price3'] as int).toDouble()
+              : data?['price3'],
+      iva:
+          data?['iva'] is int ? (data?['iva'] as int).toDouble() : data?['iva'],
       activo: data?['active'],
     );
   }

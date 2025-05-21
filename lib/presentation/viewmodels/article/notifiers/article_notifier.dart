@@ -96,4 +96,26 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
     }
   }
 
+  Future<void> loadArticleById(String id) async {
+    print('Cargando artículo con ID: $id');
+    try {
+      final article = await _repository.getArticleById(id);
+      print('Artículo cargado en loadarticleById: $article');
+      final categories = await _repositoryCategories.getAllCategories();
+      final categoriaDescripcion =
+          categories
+              .firstWhereOrNull((x) => x.id.contains(article?.categoria ?? ''))
+              ?.descripcion;
+
+      if (article != null) {
+        final updatedArticle = article.copyWith(
+          categoriaDescripcion: categoriaDescripcion,
+        );
+        state = state.copyWith(articles: [...state.articles, updatedArticle]);
+        print('Artículos en el estado: ${state.articles}');
+      }
+    } catch (e) {
+      // Manejar el error
+    }
+  }
 }

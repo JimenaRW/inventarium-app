@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository_provider.dart';
@@ -14,17 +15,41 @@ class EditArticleScreen extends ConsumerStatefulWidget {
 }
 
 class _EditArticleScreenState extends ConsumerState<EditArticleScreen> {
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
+    print('ID del artículo en edit article screen: ${widget.id}');
+    ref.read(articleNotifierProvider.notifier).loadArticleById(widget.id).then((
+      _,
+    ) {
+      setState(() {
+        _isLoading = false;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final articleState = ref.watch(articleNotifierProvider);
-    final article = articleState.articles.firstWhere(
+    final article = articleState.articles.firstWhereOrNull(
       (element) => element.id == widget.id,
     );
+
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Editar Artículo')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (article == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Editar Artículo')),
+        body: const Center(child: Text('Artículo no encontrado')),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Editar Artículo')),
