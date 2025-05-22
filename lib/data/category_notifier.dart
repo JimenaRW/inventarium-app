@@ -91,16 +91,15 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
   }
 
   Future<void> updateCategory(String categoryId, String newDescription) async {
-    if (!_mounted) return;
     try {
       state = const AsyncValue.loading();
-      Category category = Category(id: categoryId, descripcion: newDescription);
-      await _repository.updateCategory(category);
-      if (!_mounted) return;
-      await loadCategories(); // Recarga la lista después de la actualización
+      await _repository.updateCategory(
+        Category(id: categoryId, descripcion: newDescription),
+      );
+      await loadCategories(); // Forzar recarga
     } catch (e) {
-      if (!_mounted) return;
       state = AsyncValue.error(e, StackTrace.current);
+      rethrow;
     }
   }
 }
