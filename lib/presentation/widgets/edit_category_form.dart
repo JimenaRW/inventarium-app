@@ -68,43 +68,46 @@ class _EditCategoryFormState extends ConsumerState<EditCategoryForm> {
   //   }
   // }
 
-Future<void> _submitForm() async {
-  // 1️⃣ Verificación inicial
-  if (!mounted || !_formKey.currentState!.validate()) return;
+  Future<void> _submitForm() async {
+    // 1️⃣ Verificación inicial
+    if (!mounted || !_formKey.currentState!.validate()) return;
 
-  setState(() => _isSubmitting = true);
+    setState(() => _isSubmitting = true);
 
-  try {
-    // 2️⃣ Verificación pre-await
-    if (!mounted) return;
-    
-    await ref.read(categoriesNotifierProvider.notifier)
-      .updateCategory(widget.categoryId, _descriptionController.text.trim());
+    try {
+      // 2️⃣ Verificación pre-await
+      if (!mounted) return;
 
-    // 3️⃣ Verificación post-await (CRÍTICA)
-    if (!mounted) {
-      debugPrint('Operación interrumpida: Widget destruido durante await');
-      return;
+      await ref
+          .read(categoriesNotifierProvider.notifier)
+          .updateCategory(
+            widget.categoryId,
+            _descriptionController.text.trim(),
+          );
+
+      // 3️⃣ Verificación post-await (CRÍTICA)
+      if (!mounted) {
+        debugPrint('Operación interrumpida: Widget destruido durante await');
+        return;
+      }
+
+      // 4️⃣ Navegación segura
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Categoría actualizada')));
+        // Navegación explícita
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
-
-    // 4️⃣ Navegación segura
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Categoría actualizada')),
-      );
-      context.go('/categories'); // Navegación explícita
-    }
-
-  } catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error: ${e.toString()}')),
-    );
-    }
-  } finally {
-    if (mounted) setState(() => _isSubmitting = false);
   }
-}
 
   @override
   Widget build(BuildContext context) {

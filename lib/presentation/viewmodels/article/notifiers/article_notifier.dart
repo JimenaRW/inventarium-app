@@ -125,16 +125,16 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
       final article = await _repository.getArticleById(id);
 
       if (article == null) {
-        throw (
-          "El artículo no se encuentra disponible en la base de datos.",
-        );
+        throw ("El artículo no se encuentra disponible en la base de datos.",);
       }
 
       if (article.estado == ArticleStatus.inactive.name) {
         throw ("El artículo ya se encuentra inactivo.");
       }
 
-      final softDeleteArticle = article.copyWith(estado: ArticleStatus.inactive.name);
+      final softDeleteArticle = article.copyWith(
+        estado: ArticleStatus.inactive.name,
+      );
 
       await _repository.deleteArticle(softDeleteArticle);
     } catch (e) {

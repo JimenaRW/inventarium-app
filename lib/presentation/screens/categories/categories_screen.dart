@@ -15,6 +15,8 @@ class CategoriesScreen extends ConsumerStatefulWidget {
 
 class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   final _searchController = TextEditingController();
+  CategoryStatus _selectedStatus = CategoryStatus.active;
+
   Category? _selectedCategory;
 
   @override
@@ -53,7 +55,46 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               ),
             ],
           ),
-
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Row(
+                children: [
+                  Row(
+                    children: [
+                      Radio<CategoryStatus>(
+                        value: CategoryStatus.active,
+                        groupValue: _selectedStatus,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedStatus = value!;
+                            notifier.loadCategoriesByStatus(value);
+                          });
+                        },
+                      ),
+                      const Text('Activos'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Radio<CategoryStatus>(
+                        value: CategoryStatus.inactive,
+                        groupValue: _selectedStatus,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedStatus = value!;
+                            notifier.loadCategoriesByStatus(value);
+                          });
+                        },
+                      ),
+                      const Text('Inactivos'),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
           Row(
             children: [
               Expanded(
@@ -78,22 +119,8 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                   ),
                 ),
               ),
+
               // Botones adicionales
-              _ActionButton(
-                icon: Icons.edit,
-                label: 'EDITAR\nCATEGORÍA',
-                onTap: () => context.push(''),
-                fontSize: 10,
-                iconSize: 25,
-              ),
-              SizedBox(width: 8),
-              _ActionButton(
-                icon: Icons.delete,
-                label: 'BORRAR\nCATEGORÍA',
-                onTap: () => context.push(''),
-                fontSize: 10,
-                iconSize: 25,
-              ),
               SizedBox(width: 8), // Espacio entre botones
             ],
           ),
@@ -195,14 +222,14 @@ void _showCategoryDetails(
                     ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pop();
-                        context
-                            .push('/categories/edit/${category.id}');
+                        context.push('/categories/edit/${category.id}');
                       },
                       child: const Text('Editar'),
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.of(context).pop();
+                        context.push('/categories/delete/${category.id}');
                       },
                       child: const Text('Eliminar'),
                     ),

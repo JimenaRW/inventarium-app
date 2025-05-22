@@ -66,24 +66,6 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
     }
   }
 
-  Future<void> deleteCategory(String id) async {
-    if (!_mounted) return;
-    try {
-      await _repository.deleteCategory(id);
-      if (!_mounted) return;
-      state.whenData(
-        (categories) =>
-            state = AsyncValue.data(
-              categories.where((c) => c.id != id).toList(),
-            ),
-      );
-    } catch (e) {
-      if (!_mounted) return;
-      state = AsyncValue.error(e, StackTrace.current);
-      rethrow;
-    }
-  }
-
   void searchCategories(String query) {
     if (!_mounted) return;
     _searchQuery = query;
@@ -99,6 +81,41 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
       await loadCategories(); // Forzar recarga
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
+      rethrow;
+    }
+  }
+
+  Future<void> loadCategoriesByStatus(CategoryStatus status) async {
+    print('Cargando categorías por estado: ${status.name}');
+    state = const AsyncLoading();
+    try {
+      final categories = await _repository.getCategoriesByStatus(status.name);
+      print('Categorías obtenidas: ${categories.length}');
+      state = AsyncData(categories);
+    } catch (e) {
+      print('Error al cargar categorías: $e');
+      state = AsyncError(e, StackTrace.current);
+    }
+  }
+
+  Future<void> softDeleteById(String id) async {
+    try {
+      final category = await _repository.getCategoryById(id);
+
+      if (category == null) {
+        throw ("La categoría no se encuentra disponible en la base de datos.",);
+      }
+
+      if (category.estado == CategoryStatus.inactive.name) {
+        throw ("La categoría ya se encuentra inactiva.");
+      }
+
+      final softDeleteCategory = category.copyWith(
+        estado: CategoryStatus.inactive.name,
+      );
+
+      await _repository.deleteCategory(softDeleteCategory);
+    } catch (e) {
       rethrow;
     }
   }

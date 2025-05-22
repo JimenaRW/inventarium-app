@@ -11,6 +11,7 @@ import 'package:inventarium/presentation/screens/articles/articles_share_csv.dar
 import 'package:inventarium/presentation/screens/articles/create_article_screen.dart';
 import 'package:inventarium/presentation/screens/articles/articles_screen.dart';
 import 'package:inventarium/presentation/screens/articles/delete_article_screen.dart';
+import 'package:inventarium/presentation/screens/articles/delete_category_screen.dart';
 import 'package:inventarium/presentation/screens/articles/edit_article_screen.dart';
 import 'package:inventarium/presentation/screens/auth/login_screen.dart';
 import 'package:inventarium/presentation/screens/auth/password_reset_screen.dart';
@@ -110,8 +111,9 @@ final appRouterProvider = Provider<GoRouter>(
         name: DeleteArticleScreen.name,
         path: '/articles/delete/:id',
         builder:
-            (context, state) =>
-                DeleteArticleScreen(articleId: state.pathParameters['id'] ?? ""),
+            (context, state) => DeleteArticleScreen(
+              articleId: state.pathParameters['id'] ?? "",
+            ),
       ),
       GoRoute(
         path: '/articles/exports-csv',
@@ -138,7 +140,15 @@ final appRouterProvider = Provider<GoRouter>(
         path: '/categories/edit/:id',
         builder:
             (context, state) =>
-                EditCategoryScreen(id: state.pathParameters['id'] ?? '',),
+                EditCategoryScreen(id: state.pathParameters['id'] ?? ''),
+      ),
+      GoRoute(
+        name: DeleteCategoryScreen.name,
+        path: '/categories/delete/:id',
+        builder:
+            (context, state) => DeleteCategoryScreen(
+              categoryId: state.pathParameters['id'] ?? '',
+            ),
       ),
     ],
     observers: [ref.read(routeObserverProvider)],
