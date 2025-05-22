@@ -123,4 +123,37 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       state = state.copyWith(isSearching: false, error: e.toString());
     }
   }
+
+  Future<void> updateStock(String id, int newStock) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _articleNotifier.updateStock(id, newStock);
+
+      final updatedAll =
+          state.articles.map((art) {
+            return art.id == id ? art.copyWith(stock: newStock) : art;
+          }).toList();
+
+      final updatedFiltered =
+          state.searchQuery.isEmpty
+              ? updatedAll
+              : updatedAll.where((art) {
+                final q = state.searchQuery.toLowerCase();
+                return art.descripcion.toLowerCase().contains(q) ||
+                    art.sku.toLowerCase().contains(q) ||
+                    (art.codigoBarras ?? '').toLowerCase().contains(q);
+              }).toList();
+
+      state = state.copyWith(
+        articles: updatedAll,
+        filteredArticles: updatedFiltered,
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'No se pudo actualizar el stock: ${e.toString()}',
+      );
+    }
+  }
 }

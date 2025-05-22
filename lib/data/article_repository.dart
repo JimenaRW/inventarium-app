@@ -121,6 +121,18 @@ class ArticleRepository implements IArticleRepository {
     }
   }
 
+  @override
+  Future<void> updateStock(String id, int newStock) async {
+    try {
+      await db
+          .collection('articles')
+          .doc(id)
+          .update({'stock': newStock});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<List<Article>> getArticles() async {
     final docs = db
         .collection('articles')
