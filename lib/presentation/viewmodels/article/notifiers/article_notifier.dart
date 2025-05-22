@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/category_repository.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/article_status.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_state.dart';
 
 class ArticleNotifier extends StateNotifier<ArticleState> {
@@ -96,4 +97,48 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
     }
   }
 
+  Future<void> loadArticleById(String id) async {
+    print('Cargando artículo con ID: $id');
+    try {
+      final article = await _repository.getArticleById(id);
+      print('Artículo cargado en loadarticleById: $article');
+      final categories = await _repositoryCategories.getAllCategories();
+      final categoriaDescripcion =
+          categories
+              .firstWhereOrNull((x) => x.id.contains(article?.categoria ?? ''))
+              ?.descripcion;
+
+      if (article != null) {
+        final updatedArticle = article.copyWith(
+          categoriaDescripcion: categoriaDescripcion,
+        );
+        state = state.copyWith(articles: [...state.articles, updatedArticle]);
+        print('Artículos en el estado: ${state.articles}');
+      }
+    } catch (e) {
+      // Manejar el error
+    }
+  }
+
+  Future<void> softDeleteById(String id) async {
+    try {
+      final article = await _repository.getArticleById(id);
+
+      if (article == null) {
+        throw ("El artículo no se encuentra disponible en la base de datos.",);
+      }
+
+      if (article.estado == ArticleStatus.inactive.name) {
+        throw ("El artículo ya se encuentra inactivo.");
+      }
+
+      final softDeleteArticle = article.copyWith(
+        estado: ArticleStatus.inactive.name,
+      );
+
+      await _repository.deleteArticle(softDeleteArticle);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

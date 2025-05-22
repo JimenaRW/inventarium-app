@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/data/category_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/article_status.dart';
 import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/widgets/custom_form_field.dart';
@@ -76,6 +77,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
         precio1: double.tryParse(_precio1Controller.text) ?? 0.00,
         precio2: double.tryParse(_precio2Controller.text) ?? 0.00,
         precio3: double.tryParse(_precio3Controller.text) ?? 0.00,
+        estado: ArticleStatus.active.name,
       );
 
       await ref.read(articleCreateProvider.notifier).submitForm(newArticle);

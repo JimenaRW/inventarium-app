@@ -2,15 +2,18 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/category_repository_provider.dart';
+import 'package:inventarium/domain/category.dart';
 
 class EditCategoryForm extends ConsumerStatefulWidget {
   final String categoryId;
   final String initialDescription;
+  final String initialStatus;
 
   const EditCategoryForm({
     super.key,
     required this.categoryId,
     required this.initialDescription,
+    required this.initialStatus,
   });
 
   @override
@@ -19,6 +22,7 @@ class EditCategoryForm extends ConsumerStatefulWidget {
 
 class _EditCategoryFormState extends ConsumerState<EditCategoryForm> {
   late final TextEditingController _descriptionController;
+  late CategoryStatus _selectedStatus;
   final _formKey = GlobalKey<FormState>();
   bool _isSubmitting = false;
 
@@ -27,6 +31,10 @@ class _EditCategoryFormState extends ConsumerState<EditCategoryForm> {
     super.initState();
     _descriptionController = TextEditingController(
       text: widget.initialDescription,
+    );
+    _selectedStatus = CategoryStatus.values.firstWhere(
+      (e) => e.name == widget.initialStatus,
+      orElse: () => CategoryStatus.active,
     );
   }
 
@@ -52,6 +60,7 @@ class _EditCategoryFormState extends ConsumerState<EditCategoryForm> {
         await notifer.updateCategory(
           widget.categoryId,
           _descriptionController.text.trim(),
+          _selectedStatus.name,
         );
 
         scaffoldMessenger.showSnackBar(
@@ -84,6 +93,37 @@ class _EditCategoryFormState extends ConsumerState<EditCategoryForm> {
               }
               return null;
             },
+          ),
+          const SizedBox(height: 20),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Estado:', style: TextStyle(fontSize: 16)),
+              Row(
+                children: [
+                  Radio<CategoryStatus>(
+                    value: CategoryStatus.active,
+                    groupValue: _selectedStatus,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedStatus = value!;
+                      });
+                    },
+                  ),
+                  const Text('Activo'),
+                  Radio<CategoryStatus>(
+                    value: CategoryStatus.inactive,
+                    groupValue: _selectedStatus,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedStatus = value!;
+                      });
+                    },
+                  ),
+                  const Text('Inactivo'),
+                ],
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           ElevatedButton(

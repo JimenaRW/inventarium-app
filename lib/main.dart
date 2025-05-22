@@ -1,11 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:inventarium/core/app_router.dart'; // Importa el archivo donde está appRouterProvider
+import 'package:inventarium/core/app_router.dart'; 
 import 'package:inventarium/firebase_options.dart';
 
 void main() async {

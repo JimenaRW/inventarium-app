@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/data/article_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
-import 'package:inventarium/presentation/viewmodels/article/notifiers/article_notifier.dart';
-import 'package:inventarium/presentation/viewmodels/article/states/article_state.dart';
+import 'package:inventarium/presentation/viewmodels/article/notifiers/article_search_notifier.dart';
+import 'package:inventarium/presentation/viewmodels/article/states/article_search_state.dart';
 
 class ArticlesScreen extends ConsumerStatefulWidget {
   static const String name = 'articles_screen';
@@ -21,7 +21,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(articleNotifierProvider.notifier).loadArticles();
+      ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
     });
   }
 
@@ -33,8 +33,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(articleNotifierProvider);
-    final notifier = ref.read(articleNotifierProvider.notifier);
+    final state = ref.watch(articleSearchNotifierProvider);
+    final notifier = ref.read(articleSearchNotifierProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -73,14 +73,14 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
             ), // Espacio entre los botones y el buscador
             _buildSearchField(notifier),
             const SizedBox(height: 16),
-            Expanded(child: _buildContent(state)),
+            Expanded(child: _buildContent(state, notifier)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSearchField(ArticleNotifier notifier) {
+  Widget _buildSearchField(ArticleSearchNotifier notifier) {
     return TextField(
       controller: _searchController,
       decoration: InputDecoration(
@@ -91,15 +91,18 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
           icon: const Icon(Icons.clear),
           onPressed: () {
             _searchController.clear();
-            notifier.setSearchQuery('');
+            notifier.searchArticles('');
           },
         ),
       ),
-      onChanged: notifier.setSearchQuery,
+      onChanged: (query) => notifier.searchArticles(query),
     );
   }
 
-  Widget _buildContent(ArticleState state) {
+  Widget _buildContent(
+    ArticleSearchState state,
+    ArticleSearchNotifier notifier,
+  ) {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -112,9 +115,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
             Text('Error: ${state.error}'),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed:
-                  () =>
-                      ref.read(articleNotifierProvider.notifier).loadArticles(),
+              onPressed: () => notifier.loadInitialData(),
               child: const Text('Reintentar'),
             ),
           ],
@@ -126,39 +127,63 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
       return const Center(child: Text('No se encontraron artículos'));
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columns: const [
-            DataColumn(label: Text('SKU')),
-            DataColumn(label: Text('Descripción')),
-            DataColumn(label: Text('Stock'), numeric: true),
-            DataColumn(label: Text('Precio1'), numeric: true),
-          ],
-          rows:
-              state.filteredArticles.map((article) {
-                return DataRow(
-                  cells: [
-                    DataCell(Text(article.sku)),
-                    DataCell(
-                      Text(article.descripcion),
-                      onTap: () => _showArticleDetails(context, article, ref),
-                    ),
-                    DataCell(Text(article.stock.toString())),
-                    DataCell(Text('\$${article.precio1?.toStringAsFixed(2)}')),
-                  ],
-                );
-              }).toList(),
-        ),
+    print('Artículos en filteredArticles: ${state.filteredArticles.length}');
+
+    return NotificationListener<ScrollNotification>(
+      onNotification: (scrollNotification) {
+        if (scrollNotification is ScrollEndNotification) {
+          final metrics = scrollNotification.metrics;
+          if (metrics.pixels >= metrics.maxScrollExtent * 0.9 &&
+              metrics.axis == Axis.vertical) {
+            print('Llegó cerca del final de la lista...');
+            if (state.hasMore) {
+              print('Cargando más artículos...');
+              notifier.loadMoreArticles();
+            }
+          }
+        }
+        return true;
+      },
+      child: ListView(
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text('SKU')),
+                DataColumn(label: Text('Descripción')),
+                DataColumn(label: Text('Stock'), numeric: true),
+                DataColumn(label: Text('Precio1'), numeric: true),
+              ],
+              rows:
+                  state.filteredArticles.map((article) {
+                    return DataRow(
+                      cells: [
+                        DataCell(Text(article.sku)),
+                        DataCell(
+                          Text(article.descripcion),
+                          onTap: () {
+                            print(
+                              article,
+                            ); // Verifica si el artículo es null o no
+                            _showArticleDetails(context, article, ref);
+                          },
+                        ),
+                        DataCell(Text(article.stock.toString())),
+                        DataCell(
+                          Text('\$${article.precio1?.toStringAsFixed(2)}'),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+            ),
+          ),
+          if (state.isLoadingMore)
+            const Center(child: CircularProgressIndicator()),
+        ],
       ),
     );
   }
-
-  // void _navigateToDetail(BuildContext context, Article article) {
-  //   context.push('/articles/${article.sku}');
-  // }
 }
 
 class _ActionButton extends StatelessWidget {
@@ -192,6 +217,19 @@ class _ActionButton extends StatelessWidget {
 }
 
 void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
+  print('Artículo:');
+  print('ID: ${article.id}');
+  print('SKU: ${article.sku}');
+  print('Categoría: ${article.categoriaDescripcion}');
+  print('Código de Barras: ${article.codigoBarras}');
+  print('Descripción: ${article.descripcion}');
+  print('Fabricante: ${article.fabricante}');
+  print('IVA: ${article.iva}');
+  print('Precio 1: ${article.precio1}');
+  print('Precio 2: ${article.precio2}');
+  print('Precio 3: ${article.precio3}');
+  print('Stock: ${article.stock}');
+  print('Ubicación: ${article.ubicacion}');
   showModalBottomSheet(
     context: context,
     isScrollControlled: true, // Agrega esta línea
@@ -242,11 +280,11 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                   children: <Widget>[
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pop(bc); // Utiliza bc en lugar de context
                         context.push('/articles/edit/${article.id}').then((_) {
                           ref
-                              .read(articleNotifierProvider.notifier)
-                              .loadArticles();
+                              .read(articleSearchNotifierProvider.notifier)
+                              .loadInitialData();
                         });
                       },
                       child: const Text('Editar'),
@@ -254,7 +292,12 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                     ElevatedButton(
                       onPressed: () {
                         // TODO: implementar pegue para borrar artículo en Firebase
-                        Navigator.pop(context);
+                        Navigator.pop(bc);
+                        context.push('/articles/delete/${article.id}').then((_) {
+                          ref
+                              .read(articleSearchNotifierProvider.notifier)
+                              .loadInitialData();
+                        });
                       },
                       child: const Text('Eliminar'),
                     ),

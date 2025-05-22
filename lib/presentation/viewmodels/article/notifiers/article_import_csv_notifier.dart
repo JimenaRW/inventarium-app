@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/category_repository.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/article_status.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_import_csv_state.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -158,7 +159,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
               precio2: double.tryParse(values[8].trim()) ?? 0.0,
               precio3: double.tryParse(values[9].trim()) ?? 0.0,
               iva: double.tryParse(values[10].trim()) ?? 0.0,
-              activo: true,
+              estado: ArticleStatus.active.name,
             );
 
             articulosImportados.add(articulo);
@@ -313,7 +314,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         if (id != null) {
           final ref = articlesRef.doc(id);
           operaciones.add((batch) {
-            batch.update(ref, {'active': false});
+            batch.update(ref, {'status': ArticleStatus.inactive.name});
           });
         }
       }
