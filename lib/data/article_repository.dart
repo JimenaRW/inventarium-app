@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:inventarium/domain/article.dart';
-import 'package:inventarium/domain/article_active.dart';
+import 'package:inventarium/domain/article_status.dart';
 import 'package:inventarium/domain/i_article_repository.dart';
 import 'package:inventarium/domain/role.dart';
 
@@ -46,7 +46,7 @@ class ArticleRepository implements IArticleRepository {
     try {
       final docs = db
           .collection('articles')
-          .where('active', isEqualTo: ArticleActive.activo.name)
+          .where('status', isEqualTo: ArticleStatus.active.name)
           .withConverter<Article>(
             fromFirestore: Article.fromFirestore,
             toFirestore: (Article article, _) => article.toFirestore(),
@@ -79,7 +79,7 @@ class ArticleRepository implements IArticleRepository {
   Future<List<Article>> searchArticles(String query) async {
     final docs = db
         .collection('articles')
-        .where('active', isEqualTo: ArticleActive.activo.name)
+        .where('status', isEqualTo: ArticleStatus.active.name)
         .withConverter<Article>(
           fromFirestore: Article.fromFirestore,
           toFirestore: (Article article, _) => article.toFirestore(),
@@ -124,7 +124,7 @@ class ArticleRepository implements IArticleRepository {
   Future<List<Article>> getArticles() async {
     final docs = db
         .collection('articles')
-        .where('active', isEqualTo: ArticleActive.activo.name)
+        .where('status', isEqualTo: ArticleStatus.active.name)
         .withConverter<Article>(
           fromFirestore: Article.fromFirestore,
           toFirestore: (Article article, _) => article.toFirestore(),
@@ -146,7 +146,7 @@ class ArticleRepository implements IArticleRepository {
 
       final collectionRef = db
           .collection('articles')
-          .where('active', isEqualTo: ArticleActive.activo.name)
+          .where('status', isEqualTo: ArticleStatus.active.name)
           .orderBy('createdAt', descending: true);
 
       QuerySnapshot querySnapshot;
@@ -195,7 +195,7 @@ class ArticleRepository implements IArticleRepository {
         return "";
       }
 
-      final querySnapshot = await db.collection('articles').where('active', isEqualTo: ArticleActive.activo.name).get();
+      final querySnapshot = await db.collection('articles').where('status', isEqualTo: ArticleStatus.active.name).get();
       final articles =
           querySnapshot.docs.map((doc) {
             return Article.fromFirestore(
@@ -230,7 +230,7 @@ class ArticleRepository implements IArticleRepository {
           await db
               .collection('articles')
               .where('stock', isEqualTo: 0)
-              .where('active', isEqualTo: ArticleActive.activo.name)
+              .where('status', isEqualTo: ArticleStatus.active.name)
               .withConverter<Article>(
                 fromFirestore: Article.fromFirestore,
                 toFirestore: (Article article, _) => article.toFirestore(),
@@ -249,7 +249,7 @@ class ArticleRepository implements IArticleRepository {
           await db
               .collection('articles')
               .where('stock', isLessThanOrEqualTo: threshold, isNotEqualTo: 0,)
-              .where('active', isEqualTo: ArticleActive.activo.name)
+              .where('status', isEqualTo: ArticleStatus.active.name)
               .withConverter<Article>(
                 fromFirestore: Article.fromFirestore,
                 toFirestore: (Article article, _) => article.toFirestore(),
@@ -300,7 +300,7 @@ class ArticleRepository implements IArticleRepository {
         article.precio2?.toStringAsFixed(2) ?? '0.00',
         article.precio3?.toStringAsFixed(2) ?? '0.00',
         article.iva?.toStringAsFixed(2) ?? '0.00',
-        article.activo,
+        article.estado,
       ], '\t');
       buffer.writeln();
     }

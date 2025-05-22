@@ -15,7 +15,7 @@ class Article extends Equatable {
   final double? precio2;
   final double? precio3;
   final double? iva;
-  final String activo;
+  final String estado;
 
   const Article({
     String? id,
@@ -30,14 +30,14 @@ class Article extends Equatable {
     double? precio2,
     double? precio3,
     double? iva,
-    String? activo,
+    String? estado,
     String? categoriaDescripcion,
   }) : id = id ?? "",
        precio1 = precio1 ?? 0.0,
        precio2 = precio2 ?? 0.0,
        precio3 = precio3 ?? 0.0,
        iva = iva ?? 0.00,
-       activo = activo ?? 'activo',
+       estado = estado ?? 'active',
        categoriaDescripcion = categoriaDescripcion ?? "";
 
   @override
@@ -54,7 +54,7 @@ class Article extends Equatable {
     precio2,
     precio3,
     iva,
-    activo,
+    estado,
   ];
 
   Article copyWith({
@@ -71,7 +71,7 @@ class Article extends Equatable {
     double? precio2,
     double? precio3,
     double? iva,
-    String? activo,
+    String? estado,
   }) {
     return Article(
       id: id ?? this.id,
@@ -87,7 +87,7 @@ class Article extends Equatable {
       precio2: precio2 ?? this.precio2,
       precio3: precio3 ?? this.precio3,
       iva: iva ?? this.iva,
-      activo: activo ?? this.activo,
+      estado: estado ?? this.estado,
     );
   }
 
@@ -105,7 +105,7 @@ class Article extends Equatable {
       'price2': precio2,
       'price3': precio3,
       'iva': iva,
-      'active': activo,
+      'status': estado,
       'createdAt': DateTime.now(),
     };
   }
@@ -139,12 +139,12 @@ class Article extends Equatable {
               : data?['price3'],
       iva:
           data?['iva'] is int ? (data?['iva'] as int).toDouble() : data?['iva'],
-      activo: data?['active'],
+      estado: data?['status'],
     );
   }
 
   @override
   String toString() {
-    return 'Article: id: $id, sku: $sku, descripción: $descripcion, código de barras: $codigoBarras, categoría: $categoria, ubicación: $ubicacion, fabricante: $fabricante, stock inicial: $stock, precio1: $precio1, precio2: $precio2, precio3: $precio3, iva: $iva, activo: $activo)';
+    return 'Article: id: $id, sku: $sku, descripción: $descripcion, código de barras: $codigoBarras, categoría: $categoria, ubicación: $ubicacion, fabricante: $fabricante, stock inicial: $stock, precio1: $precio1, precio2: $precio2, precio3: $precio3, iva: $iva, estado: $estado)';
   }
 }

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/category_repository.dart';
 import 'package:inventarium/domain/article.dart';
-import 'package:inventarium/domain/article_active.dart';
+import 'package:inventarium/domain/article_status.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_state.dart';
 
 class ArticleNotifier extends StateNotifier<ArticleState> {
@@ -130,11 +130,11 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
         );
       }
 
-      if (article.activo == ArticleActive.inactivo.name) {
+      if (article.estado == ArticleStatus.inactive.name) {
         throw ("El artículo ya se encuentra inactivo.");
       }
 
-      final softDeleteArticle = article.copyWith(activo: ArticleActive.inactivo.name);
+      final softDeleteArticle = article.copyWith(estado: ArticleStatus.inactive.name);
 
       await _repository.deleteArticle(softDeleteArticle);
     } catch (e) {
