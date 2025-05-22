@@ -16,6 +16,7 @@ import 'package:inventarium/presentation/screens/auth/password_reset_screen.dart
 import 'package:inventarium/presentation/screens/auth/register_screen.dart';
 import 'package:inventarium/presentation/screens/categories/categories_screen.dart';
 import 'package:inventarium/presentation/screens/categories/category_create_screen.dart';
+import 'package:inventarium/presentation/screens/categories/edit_category_screen.dart';
 import 'package:inventarium/presentation/screens/home_screen.dart';
 import 'package:inventarium/presentation/screens/articles/upc_add_screen.dart';
 
@@ -123,6 +124,13 @@ final appRouterProvider = Provider<GoRouter>(
         name: BarcodeScannerScreen.name,
         path: '/barcode-scanner',
         builder: (context, state) => BarcodeScannerScreen(),
+      ),
+      GoRoute(
+        name: EditCategoryScreen.name,
+        path: '/categories/edit/:id',
+        builder:
+            (context, state) =>
+                EditCategoryScreen(id: state.pathParameters['id'] ?? '',),
       ),
     ],
     observers: [ref.read(routeObserverProvider)],

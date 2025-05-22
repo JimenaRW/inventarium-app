@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/data/category_repository_provider.dart';
+import 'package:inventarium/domain/category.dart';
+import 'package:inventarium/presentation/screens/categories/edit_category_screen.dart';
 
 class CategoriesScreen extends ConsumerStatefulWidget {
   static const String name = 'categories_screen';
@@ -13,6 +15,7 @@ class CategoriesScreen extends ConsumerStatefulWidget {
 
 class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   final _searchController = TextEditingController();
+  Category? _selectedCategory;
 
   @override
   void dispose() {
@@ -104,7 +107,14 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                     itemCount: categories.length,
                     itemBuilder: (context, index) {
                       final category = categories[index];
-                      return ListTile(title: Text(category.descripcion));
+                      return ListTile(
+                        title: Text(category.descripcion),
+                        selected: _selectedCategory?.id == category.id,
+                        onTap: () {
+                          setState(() => _selectedCategory = category);
+                          _showCategoryDetails(context, category, ref);
+                        },
+                      );
                     },
                   ),
             ),
@@ -150,4 +160,72 @@ class _ActionButton extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showCategoryDetails(
+  BuildContext context,
+  Category category,
+  WidgetRef ref,
+) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (BuildContext bc) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        child: Wrap(
+          children: <Widget>[
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Detalles de la Categoría',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildDetailRow('ID', category.id),
+                _buildDetailRow('Descripción', category.descripcion),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        context
+                            .push('/categories/edit/${category.id}');
+                      },
+                      child: const Text('Editar'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Eliminar'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Widget _buildDetailRow(String label, String value) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 5),
+    child: Row(
+      children: [
+        Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(value),
+      ],
+    ),
+  );
 }

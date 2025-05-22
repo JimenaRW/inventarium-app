@@ -103,8 +103,15 @@ CategoryRepository(this.db) : super();
 
   @override
  Future<void> updateCategory(Category category) async {
-  await db.collection('categories').doc(category.id).update({
-    'descripcion': category.descripcion,
-  });
+  try {
+    await db.collection('categories').doc(category.id).update({
+      'description': category.descripcion,
+    });
+  } catch (e) {
+    if (e.toString().contains('NOT_FOUND')) {
+      throw Exception('La categoría no existe');
+    }
+    rethrow;
+  }
 }
 }
