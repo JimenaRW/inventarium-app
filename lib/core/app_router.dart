@@ -20,7 +20,6 @@ import 'package:inventarium/presentation/screens/categories/categories_screen.da
 import 'package:inventarium/presentation/screens/categories/category_create_screen.dart';
 import 'package:inventarium/presentation/screens/categories/edit_category_screen.dart';
 import 'package:inventarium/presentation/screens/home_screen.dart';
-import 'package:inventarium/presentation/screens/articles/upc_add_screen.dart';
 
 class AuthStreamListenable extends ChangeNotifier {
   StreamSubscription<User?>? _subscription; // Hacerlo nullable
@@ -129,11 +128,6 @@ final appRouterProvider = Provider<GoRouter>(
         path: '/articles/import-csv',
         name: ArticlesImportCsv.name,
         builder: (context, state) => const ArticlesImportCsv(),
-      ),
-      GoRoute(
-        name: BarcodeScannerScreen.name,
-        path: '/barcode-scanner',
-        builder: (context, state) => BarcodeScannerScreen(),
       ),
       GoRoute(
         name: EditCategoryScreen.name,
