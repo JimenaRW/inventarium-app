@@ -21,7 +21,13 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
 
   @override
   void dispose() {
+    try {
+      ref.invalidate(categoriesNotifierProvider);
+    } catch (e) {
+      // Ignorar la excepción
+    }
     _searchController.dispose();
+
     super.dispose();
   }
 

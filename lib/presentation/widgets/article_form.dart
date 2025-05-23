@@ -5,6 +5,7 @@ import 'package:inventarium/data/category_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
 import 'package:inventarium/domain/category.dart';
+import 'package:inventarium/presentation/viewmodels/article/notifiers/upc_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/widgets/custom_form_field.dart';
 
@@ -101,6 +102,20 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Ficha técnica',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
             CustomFormField(
               controller: _skuController,
               labelText: 'SKU',
@@ -118,7 +133,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               labelText: 'Descripción',
               hintText: 'Ingrese la descripción del artículo',
               minLines: 3,
-              maxLines: 200,
+              maxLines: 100,
             ),
             CustomFormField(
               controller: _codigoBarrasController,
@@ -128,9 +143,17 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               suffixIcon: IconButton(
                 icon: const Icon(Icons.camera_alt),
                 onPressed: () async {
-                  final result = await context.push('/barcode-scanner');
+                  final result = await ref
+                      .read(upcNotifierProvider.notifier)
+                      .scanUPC(context);
                   if (result != null) {
-                    _codigoBarrasController.text = result.toString();
+                    _codigoBarrasController.text = result;
+                  } else {
+                    final error = ref.read(upcNotifierProvider).error;
+                    if (error != null) {
+                      // Maneja el error
+                    }
+                    ;
                   }
                 },
               ),
@@ -142,6 +165,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
                   vertical: 8.0,
                 ),
                 child: DropdownButtonFormField<Category>(
+                  isExpanded: true,
                   value: _selectedCategoria,
                   decoration: const InputDecoration(
                     hintText: 'Seleccione una categoría*',
@@ -175,14 +199,28 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               labelText: 'Ubicación',
               hintText: 'Ingrese la ubicación del artículo',
               minLines: 3,
-              maxLines: 200,
+              maxLines: 100,
             ),
             CustomFormField(
               controller: _fabricanteController,
               labelText: 'Fabricante',
               hintText: 'Ingrese el nombre del fabricante',
               minLines: 3,
-              maxLines: 200,
+              maxLines: 100,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Datos contables',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
             CustomFormField(
               controller: _ivaController,

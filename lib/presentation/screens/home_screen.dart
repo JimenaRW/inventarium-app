@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/core/menu/drawer_menu.dart';
+import 'package:inventarium/data/category_repository_provider.dart';
 
 import 'package:inventarium/data/low_stock_provider.dart';
 import 'package:inventarium/data/navigation_provider.dart';
@@ -85,6 +86,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
     ref.invalidate(lowStockProvider);
     ref.invalidate(totalArticlesProvider);
     ref.invalidate(topCategoriesProvider);
+    ref.invalidate(categoriesNotifierProvider);
   }
 
   @override
