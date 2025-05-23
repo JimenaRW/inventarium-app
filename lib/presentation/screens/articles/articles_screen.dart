@@ -22,6 +22,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
+      ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false);
     });
   }
 
@@ -35,6 +36,25 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(articleSearchNotifierProvider);
     final notifier = ref.read(articleSearchNotifierProvider.notifier);
+
+    ref.listen<ArticleSearchState>(articleSearchNotifierProvider, (
+      previous,
+      current,
+    ) {
+      // Solo mostrar si errorDeleted cambió de null a un valor
+      if (previous?.errorDeleted == null && current.errorDeleted != null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(current.errorDeleted!)));
+      }
+
+      // Solo mostrar si successMessage cambió de null a un valor
+      if (previous?.successMessage == null && current.successMessage != null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(current.successMessage!)));
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -54,17 +74,35 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                 _ActionButton(
                   icon: Icons.add_circle_outline,
                   label: 'CREAR\nARTÍCULO',
-                  onTap: () => context.push('/articles/create'),
+                  onTap:
+                      () => {
+                        context.push('/articles/create'),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false),
+                      },
                 ),
                 _ActionButton(
                   icon: Icons.upload_file,
                   label: 'IMPORTAR\nCSV',
-                  onTap: () => context.push('/articles/import-csv'),
+                  onTap:
+                      () => {
+                        context.push('/articles/import-csv'),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false),
+                      },
                 ),
                 _ActionButton(
                   icon: Icons.save_alt,
                   label: 'EXPORTAR\nCSV',
-                  onTap: () => context.push('/articles/exports-csv'),
+                  onTap:
+                      () => {
+                        context.push('/articles/exports-csv'),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false),
+                      },
                 ),
               ],
             ),
@@ -116,8 +154,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
           ),
           if (!state.isDeleted) ...[
             IconButton(
-              onPressed:
-                  () => notifier.toggleDeleteMode(true),
+              onPressed: () => notifier.toggleDeleteMode(true),
               icon: const Icon(Icons.delete_outline_outlined),
               tooltip: 'Borrado masivo',
               padding: const EdgeInsets.all(12),
@@ -125,19 +162,17 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
           ],
           if (state.isDeleted) ...[
             IconButton(
-              onPressed:
-                  () =>
-                      notifier.toggleDeleteMode(false),
+              onPressed: () => notifier.toggleDeleteMode(false),
               icon: const Icon(Icons.cancel_outlined),
               tooltip: 'Cancelar',
               padding: const EdgeInsets.all(12),
             ),
             IconButton(
+              // onPressed: () async => await removeArticles(notifier, scaffoldMessenger),
               onPressed:
-                  () =>
-                      notifier.removeAllArticles(),
+                  () async => await _showDeleteConfirmation(context, notifier),
               icon: const Icon(Icons.delete_sharp),
-              tooltip: 'Confirmar',
+              tooltip: 'Confirmar borrado masivo',
               padding: const EdgeInsets.all(12),
             ),
           ],
@@ -214,9 +249,15 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                               onChanged: (value) {
                                 setState(() {
                                   if (value == true) {
-                                    notifier.toggleDeleteList(true, article.id!);
+                                    notifier.toggleDeleteList(
+                                      true,
+                                      article.id!,
+                                    );
                                   } else {
-                                    notifier.toggleDeleteList(false, article.id!);
+                                    notifier.toggleDeleteList(
+                                      false,
+                                      article.id!,
+                                    );
                                   }
                                 });
                                 print(state.articlesDeleted);
@@ -247,6 +288,50 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
         ],
       ),
     );
+  }
+}
+
+Future<void> removeArticles(
+  ArticleSearchNotifier notifier,
+  ScaffoldMessengerState scaffoldMessenger,
+) async {
+  try {
+    await notifier.removeAllArticles();
+    scaffoldMessenger.showSnackBar(
+      const SnackBar(content: Text('Eliminación masiva exitosa.')),
+    );
+  } catch (e) {
+    scaffoldMessenger.showSnackBar(SnackBar(content: Text(e.toString())));
+  }
+}
+
+Future<void> _showDeleteConfirmation(
+  BuildContext context,
+  ArticleSearchNotifier notifier,
+) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder:
+        (context) => AlertDialog(
+          title: const Text('Confirmar eliminado masivo'),
+          content: const Text(
+            '¿Estás seguro de querer eliminar los artículos seleccinados?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        ),
+  );
+
+  if (confirmed == true) {
+    await notifier.removeAllArticles();
   }
 }
 
@@ -350,12 +435,14 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                               .read(articleSearchNotifierProvider.notifier)
                               .loadInitialData();
                         });
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false);
                       },
                       child: const Text('Editar'),
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        // TODO: implementar pegue para borrar artículo en Firebase
                         Navigator.pop(bc);
                         context.push('/articles/delete/${article.id}').then((
                           _,
@@ -364,6 +451,10 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                               .read(articleSearchNotifierProvider.notifier)
                               .loadInitialData();
                         });
+
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false);
                       },
                       child: const Text('Eliminar'),
                     ),

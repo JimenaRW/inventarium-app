@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
@@ -65,10 +64,17 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
         hasMore: articles.length == _itemsPerPage,
       );
     } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
+      state = state.copyWith(
+        error: e.toString(),
+        isLoading: false,
+        isDeleted: false,
+        articlesDeleted: [],
+        errorDeleted: null,
+      );
     }
   }
-
+void clearErrorDeleted() => state = state.copyWith(errorDeleted: null);
+void clearSuccessMessage() => state = state.copyWith(successMessage: null);
   Future<void> loadMoreArticles() async {
     if (state.isLoadingMore || !state.hasMore) return;
 
@@ -146,19 +152,30 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
   }
 
   Future<void> removeAllArticles() async {
-      state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true);
 
     try {
       final firestore = FirebaseFirestore.instance;
       final articlesRef = firestore.collection('articles');
 
+      final estadosPermitidos = [
+        ArticleStatus.active.toString(),
+        ArticleStatus.suspended.toString(),
+      ];
+
       final querySnapshot =
           await articlesRef
               .where(FieldPath.documentId, whereIn: state.articlesDeleted)
+              .where('status', whereIn: estadosPermitidos)
               .get();
 
       if (querySnapshot.docs.isEmpty) {
-        debugPrint('No articles found to deactivate');
+        state = state.copyWith(
+          isLoading: false,
+          errorDeleted:
+              "No existen artículos en estado activo o suspendido que eliminar.",
+        );
+
         return;
       }
 
@@ -172,9 +189,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
             .take(maxBatchSize);
 
         for (final doc in batchDocs) {
-          batch.update(doc.reference, {
-            'status': ArticleStatus.inactive.name,
-          });
+          batch.update(doc.reference, {'status': ArticleStatus.inactive.name});
         }
 
         await batch.commit();
@@ -184,11 +199,19 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
         }
       }
 
-      state = state.copyWith(articlesDeleted: [], isLoading: false);
+      state = state.copyWith(
+        articlesDeleted: [],
+        isDeleted: false,
+        isLoading: false,
+        errorDeleted: null,
+        successMessage: "Borrado masivo exitoso!"
+      );
     } catch (e) {
-      // TODO mostrar mensaje de error de tipo eliminar masivo
-      state = state.copyWith( isLoading: false);
-
+      state = state.copyWith(
+        isLoading: false,
+        errorDeleted:
+            "No logro eliminar la lista de artículos: ${e.toString()}",
+      );
     }
   }
 }
