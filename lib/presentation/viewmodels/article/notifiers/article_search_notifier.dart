@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/article_status.dart';
 import 'package:inventarium/presentation/viewmodels/article/notifiers/article_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_search_state.dart';
 
@@ -121,6 +124,71 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       state = state.copyWith(filteredArticles: results, isSearching: false);
     } catch (e) {
       state = state.copyWith(isSearching: false, error: e.toString());
+    }
+  }
+
+  void toggleDeleteMode(bool enabled) {
+    state = state.copyWith(isDeleted: enabled, articlesDeleted: []);
+  }
+
+  void toggleDeleteList(bool bool, String idArticle) {
+    if (bool) {
+      state = state.copyWith(
+        articlesDeleted: [...state.articlesDeleted, idArticle],
+      );
+    } else {
+      state = state.copyWith(
+        articlesDeleted: [
+          ...state.articlesDeleted.where((art) => art != idArticle),
+        ],
+      );
+    }
+  }
+
+  Future<void> removeAllArticles() async {
+      state = state.copyWith(isLoading: true);
+
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final articlesRef = firestore.collection('articles');
+
+      final querySnapshot =
+          await articlesRef
+              .where(FieldPath.documentId, whereIn: state.articlesDeleted)
+              .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        debugPrint('No articles found to deactivate');
+        return;
+      }
+
+      const maxBatchSize = 500;
+      final totalBatches = (querySnapshot.docs.length / maxBatchSize).ceil();
+
+      for (int i = 0; i < totalBatches; i++) {
+        final batch = firestore.batch();
+        final batchDocs = querySnapshot.docs
+            .skip(i * maxBatchSize)
+            .take(maxBatchSize);
+
+        for (final doc in batchDocs) {
+          batch.update(doc.reference, {
+            'status': ArticleStatus.inactive.name,
+          });
+        }
+
+        await batch.commit();
+
+        if (i < totalBatches - 1) {
+          await Future.delayed(const Duration(milliseconds: 200));
+        }
+      }
+
+      state = state.copyWith(articlesDeleted: [], isLoading: false);
+    } catch (e) {
+      // TODO mostrar mensaje de error de tipo eliminar masivo
+      state = state.copyWith( isLoading: false);
+
     }
   }
 }
