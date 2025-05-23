@@ -101,6 +101,20 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Ficha técnica',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
             CustomFormField(
               controller: _skuController,
               labelText: 'SKU',
@@ -118,7 +132,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               labelText: 'Descripción',
               hintText: 'Ingrese la descripción del artículo',
               minLines: 3,
-              maxLines: 200,
+              maxLines: 100,
             ),
             CustomFormField(
               controller: _codigoBarrasController,
@@ -142,6 +156,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
                   vertical: 8.0,
                 ),
                 child: DropdownButtonFormField<Category>(
+                  isExpanded: true,
                   value: _selectedCategoria,
                   decoration: const InputDecoration(
                     hintText: 'Seleccione una categoría*',
@@ -175,14 +190,28 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               labelText: 'Ubicación',
               hintText: 'Ingrese la ubicación del artículo',
               minLines: 3,
-              maxLines: 200,
+              maxLines: 100,
             ),
             CustomFormField(
               controller: _fabricanteController,
               labelText: 'Fabricante',
               hintText: 'Ingrese el nombre del fabricante',
               minLines: 3,
-              maxLines: 200,
+              maxLines: 100,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Datos contables',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
             CustomFormField(
               controller: _ivaController,

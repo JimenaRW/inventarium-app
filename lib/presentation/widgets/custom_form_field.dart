@@ -31,7 +31,8 @@ class CustomFormField extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: ConstrainedBox(
           constraints: const BoxConstraints(
-            maxWidth: 400, // Limita el ancho máximo
+            maxWidth: 400,
+            maxHeight: 50, // Limita el ancho máximo
           ),
           child: TextFormField(
             controller: controller,
@@ -45,9 +46,9 @@ class CustomFormField extends StatelessWidget {
               suffixIcon: suffixIcon,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 12.0,
-                vertical: 16.0,
+                vertical: 10.0,
               ),
-              isDense: true, 
+              isDense: true,
             ),
             keyboardType: keyboardType,
             maxLines: maxLines,
