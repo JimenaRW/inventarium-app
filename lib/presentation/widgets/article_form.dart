@@ -5,6 +5,7 @@ import 'package:inventarium/data/category_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
 import 'package:inventarium/domain/category.dart';
+import 'package:inventarium/presentation/viewmodels/article/notifiers/upc_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/widgets/custom_form_field.dart';
 
@@ -142,9 +143,17 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               suffixIcon: IconButton(
                 icon: const Icon(Icons.camera_alt),
                 onPressed: () async {
-                  final result = await context.push('/barcode-scanner');
+                  final result = await ref
+                      .read(upcNotifierProvider.notifier)
+                      .scanUPC(context);
                   if (result != null) {
-                    _codigoBarrasController.text = result.toString();
+                    _codigoBarrasController.text = result;
+                  } else {
+                    final error = ref.read(upcNotifierProvider).error;
+                    if (error != null) {
+                      // Maneja el error
+                    }
+                    ;
                   }
                 },
               ),
