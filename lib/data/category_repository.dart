@@ -109,6 +109,7 @@ class CategoryRepository implements ICategoryRepository {
     try {
       await db.collection('categories').doc(category.id).update({
         'description': category.descripcion,
+        'status': category.estado,
       });
     } catch (e) {
       if (e.toString().contains('NOT_FOUND')) {

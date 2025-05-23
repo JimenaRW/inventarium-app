@@ -215,6 +215,12 @@ void _showCategoryDetails(
                 const SizedBox(height: 20),
                 _buildDetailRow('ID', category.id),
                 _buildDetailRow('Descripción', category.descripcion),
+                _buildDetailRow(
+                  'Estado', 
+                  category.estado == CategoryStatus.active.name 
+                    ? 'Activo' 
+                    : 'Inactivo',
+                ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,

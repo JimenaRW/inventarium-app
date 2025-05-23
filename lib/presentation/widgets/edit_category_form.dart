@@ -1,18 +1,19 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:inventarium/data/category_repository_provider.dart';
+import 'package:inventarium/domain/category.dart';
 
 class EditCategoryForm extends ConsumerStatefulWidget {
   final String categoryId;
   final String initialDescription;
+  final String initialStatus;
 
   const EditCategoryForm({
     super.key,
     required this.categoryId,
     required this.initialDescription,
+    required this.initialStatus,
   });
 
   @override
@@ -21,6 +22,7 @@ class EditCategoryForm extends ConsumerStatefulWidget {
 
 class _EditCategoryFormState extends ConsumerState<EditCategoryForm> {
   late final TextEditingController _descriptionController;
+  late CategoryStatus _selectedStatus;
   final _formKey = GlobalKey<FormState>();
   bool _isSubmitting = false;
 
@@ -30,6 +32,10 @@ class _EditCategoryFormState extends ConsumerState<EditCategoryForm> {
     _descriptionController = TextEditingController(
       text: widget.initialDescription,
     );
+    _selectedStatus = CategoryStatus.values.firstWhere(
+      (e) => e.name == widget.initialStatus,
+      orElse: () => CategoryStatus.active,
+    );
   }
 
   @override
@@ -38,79 +44,38 @@ class _EditCategoryFormState extends ConsumerState<EditCategoryForm> {
     super.dispose();
   }
 
-  // Future<void> _submitForm() async {
-  //   if (_isSubmitting || !_formKey.currentState!.validate()) return;
-
-  //   setState(() => _isSubmitting = true);
-
-  //   try {
-  //     await ref
-  //         .read(categoriesNotifierProvider.notifier)
-  //         .updateCategory(
-  //           widget.categoryId,
-  //           _descriptionController.text.trim(),
-  //         );
-
-  //     if (!mounted) return;
-
-  //     ScaffoldMessenger.of(
-  //       context,
-  //     ).showSnackBar(const SnackBar(content: Text('Categoría actualizada')));
-
-  //     Navigator.of(context, rootNavigator: true).pop();
-  //   } catch (e) {
-  //     if (!mounted) return;
-  //     ScaffoldMessenger.of(
-  //       context,
-  //     ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
-  //   } finally {
-  //     if (mounted) setState(() => _isSubmitting = false);
-  //   }
-  // }
-
-  Future<void> _submitForm() async {
-    // 1️⃣ Verificación inicial
-    if (!mounted || !_formKey.currentState!.validate()) return;
-
-    setState(() => _isSubmitting = true);
-
-    try {
-      // 2️⃣ Verificación pre-await
-      if (!mounted) return;
-
-      await ref
-          .read(categoriesNotifierProvider.notifier)
-          .updateCategory(
-            widget.categoryId,
-            _descriptionController.text.trim(),
-          );
-
-      // 3️⃣ Verificación post-await (CRÍTICA)
-      if (!mounted) {
-        debugPrint('Operación interrumpida: Widget destruido durante await');
-        return;
-      }
-
-      // 4️⃣ Navegación segura
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Categoría actualizada')));
-        // Navegación explícita
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
-      }
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final notifer = ref.watch(categoriesNotifierProvider.notifier);
+
+    Future<void> submitForm() async {
+      if (!_formKey.currentState!.validate()) return;
+
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      final navigator = Navigator.of(context);
+
+      setState(() => _isSubmitting = true);
+
+      try {
+        await notifer.updateCategory(
+          widget.categoryId,
+          _descriptionController.text.trim(),
+          _selectedStatus.name,
+        );
+
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('Categoría actualizada')),
+        );
+        navigator.pop();
+      } catch (e) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      } finally {
+        if (mounted) setState(() => _isSubmitting = false);
+      }
+    }
+
     return Form(
       key: _formKey,
       child: Column(
@@ -130,8 +95,39 @@ class _EditCategoryFormState extends ConsumerState<EditCategoryForm> {
             },
           ),
           const SizedBox(height: 20),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Estado:', style: TextStyle(fontSize: 16)),
+              Row(
+                children: [
+                  Radio<CategoryStatus>(
+                    value: CategoryStatus.active,
+                    groupValue: _selectedStatus,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedStatus = value!;
+                      });
+                    },
+                  ),
+                  const Text('Activo'),
+                  Radio<CategoryStatus>(
+                    value: CategoryStatus.inactive,
+                    groupValue: _selectedStatus,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedStatus = value!;
+                      });
+                    },
+                  ),
+                  const Text('Inactivo'),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: _isSubmitting ? null : _submitForm,
+            onPressed: _isSubmitting ? null : () async => await submitForm(),
             child:
                 _isSubmitting
                     ? const CircularProgressIndicator()

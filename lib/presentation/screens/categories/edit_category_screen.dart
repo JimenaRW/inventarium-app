@@ -35,6 +35,7 @@ class _EditCategoryScreenState extends ConsumerState<EditCategoryScreen> {
             child: EditCategoryForm(
               categoryId: category.id,
               initialDescription: category.descripcion,
+              initialStatus: category.estado,
             ),
           ),
         );
