@@ -73,8 +73,10 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       );
     }
   }
-void clearErrorDeleted() => state = state.copyWith(errorDeleted: null);
-void clearSuccessMessage() => state = state.copyWith(successMessage: null);
+
+  void clearErrorDeleted() => state = state.copyWith(errorDeleted: null);
+  void clearSuccessMessage() => state = state.copyWith(successMessage: null);
+
   Future<void> loadMoreArticles() async {
     if (state.isLoadingMore || !state.hasMore) return;
 
@@ -204,7 +206,7 @@ void clearSuccessMessage() => state = state.copyWith(successMessage: null);
         isDeleted: false,
         isLoading: false,
         errorDeleted: null,
-        successMessage: "Borrado masivo exitoso!"
+        successMessage: "Borrado masivo exitoso!",
       );
     } catch (e) {
       state = state.copyWith(

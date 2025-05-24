@@ -37,25 +37,6 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     final state = ref.watch(articleSearchNotifierProvider);
     final notifier = ref.read(articleSearchNotifierProvider.notifier);
 
-    ref.listen<ArticleSearchState>(articleSearchNotifierProvider, (
-      previous,
-      current,
-    ) {
-      // Solo mostrar si errorDeleted cambió de null a un valor
-      if (previous?.errorDeleted == null && current.errorDeleted != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(current.errorDeleted!)));
-      }
-
-      // Solo mostrar si successMessage cambió de null a un valor
-      if (previous?.successMessage == null && current.successMessage != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(current.successMessage!)));
-      }
-    });
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Artículos'),
@@ -122,6 +103,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     ArticleSearchNotifier notifier,
     ArticleSearchState state,
   ) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     return ConstrainedBox(
       constraints: const BoxConstraints(
         minHeight: 64,
@@ -169,8 +151,25 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
             ),
             IconButton(
               // onPressed: () async => await removeArticles(notifier, scaffoldMessenger),
-              onPressed:
-                  () async => await _showDeleteConfirmation(context, notifier),
+              onPressed: () async {
+                try {
+                  await notifier.removeAllArticles();
+                  await notifier.loadInitialData();
+                  // Mostrar mensaje de éxito
+                  scaffoldMessenger.showSnackBar(
+                    const SnackBar(content: Text('Eliminación exitosa')),
+                  );
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    ref
+                        .read(articleSearchNotifierProvider.notifier)
+                        .loadInitialData();
+                  });
+                } catch (e) {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(content: Text(e.toString())),
+                  );
+                }
+              },
               icon: const Icon(Icons.delete_sharp),
               tooltip: 'Confirmar borrado masivo',
               padding: const EdgeInsets.all(12),
@@ -288,20 +287,6 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
         ],
       ),
     );
-  }
-}
-
-Future<void> removeArticles(
-  ArticleSearchNotifier notifier,
-  ScaffoldMessengerState scaffoldMessenger,
-) async {
-  try {
-    await notifier.removeAllArticles();
-    scaffoldMessenger.showSnackBar(
-      const SnackBar(content: Text('Eliminación masiva exitosa.')),
-    );
-  } catch (e) {
-    scaffoldMessenger.showSnackBar(SnackBar(content: Text(e.toString())));
   }
 }
 
