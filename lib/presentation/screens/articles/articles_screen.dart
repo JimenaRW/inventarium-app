@@ -157,7 +157,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   await notifier.loadInitialData();
                   // Mostrar mensaje de éxito
                   scaffoldMessenger.showSnackBar(
-                    const SnackBar(content: Text('Eliminación exitosa')),
+                    SnackBar(content: Text(state.successMessage!)),
                   );
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     ref
@@ -166,7 +166,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   });
                 } catch (e) {
                   scaffoldMessenger.showSnackBar(
-                    SnackBar(content: Text(e.toString())),
+                    SnackBar(content: Text(state.errorDeleted != null ? state.errorDeleted! : e.toString())),
                   );
                 }
               },
