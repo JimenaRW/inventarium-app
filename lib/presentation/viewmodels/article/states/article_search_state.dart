@@ -10,6 +10,10 @@ class ArticleSearchState {
   final int currentPage;
   final String? error;
   final String searchQuery;
+  final bool isDeleted;
+  final List<String> articlesDeleted;
+  final String? errorDeleted;
+  final String? successMessage;
 
   const ArticleSearchState({
     this.articles = const [],
@@ -21,6 +25,10 @@ class ArticleSearchState {
     this.currentPage = 1,
     this.error,
     this.searchQuery = '',
+    this.isDeleted = false,
+    this.articlesDeleted = const [],
+    this.errorDeleted,
+    this.successMessage,
   });
 
   factory ArticleSearchState.initial() => ArticleSearchState(
@@ -31,6 +39,10 @@ class ArticleSearchState {
     isSearching: false,
     hasMore: true,
     currentPage: 0,
+    isDeleted: false,
+    articlesDeleted: [],
+    errorDeleted: null,
+    successMessage: null,
   );
 
   ArticleSearchState copyWith({
@@ -42,6 +54,10 @@ class ArticleSearchState {
     bool? hasMore,
     int? currentPage,
     String? error,
+    bool? isDeleted,
+    List<String>? articlesDeleted,
+    String? errorDeleted,
+    String? successMessage,
   }) {
     return ArticleSearchState(
       articles: articles ?? this.articles,
@@ -52,6 +68,10 @@ class ArticleSearchState {
       hasMore: hasMore ?? this.hasMore,
       currentPage: currentPage ?? this.currentPage,
       error: error ?? this.error,
+      isDeleted: isDeleted ?? this.isDeleted,
+      articlesDeleted: articlesDeleted ?? this.articlesDeleted,
+      errorDeleted: errorDeleted ?? this.errorDeleted,
+      successMessage: successMessage ?? this.successMessage,
     );
   }
 }

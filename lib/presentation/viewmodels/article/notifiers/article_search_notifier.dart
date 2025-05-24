@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/article_status.dart';
 import 'package:inventarium/presentation/viewmodels/article/notifiers/article_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_search_state.dart';
 
@@ -62,9 +64,18 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
         hasMore: articles.length == _itemsPerPage,
       );
     } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
+      state = state.copyWith(
+        error: e.toString(),
+        isLoading: false,
+        isDeleted: false,
+        articlesDeleted: [],
+        errorDeleted: null,
+      );
     }
   }
+
+  void clearErrorDeleted() => state = state.copyWith(errorDeleted: null);
+  void clearSuccessMessage() => state = state.copyWith(successMessage: null);
 
   Future<void> loadMoreArticles() async {
     if (state.isLoadingMore || !state.hasMore) return;
@@ -121,6 +132,88 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       state = state.copyWith(filteredArticles: results, isSearching: false);
     } catch (e) {
       state = state.copyWith(isSearching: false, error: e.toString());
+    }
+  }
+
+  void toggleDeleteMode(bool enabled) {
+    state = state.copyWith(isDeleted: enabled, articlesDeleted: []);
+  }
+
+  void toggleDeleteList(bool bool, String idArticle) {
+    if (bool) {
+      state = state.copyWith(
+        articlesDeleted: [...state.articlesDeleted, idArticle],
+      );
+    } else {
+      state = state.copyWith(
+        articlesDeleted: [
+          ...state.articlesDeleted.where((art) => art != idArticle),
+        ],
+      );
+    }
+  }
+
+  Future<void> removeAllArticles() async {
+    state = state.copyWith(isLoading: true);
+
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final articlesRef = firestore.collection('articles');
+
+      final estadosPermitidos = [
+        ArticleStatus.active.toString(),
+        ArticleStatus.suspended.toString(),
+      ];
+
+      final querySnapshot =
+          await articlesRef
+              .where(FieldPath.documentId, whereIn: state.articlesDeleted)
+              .where('status', whereIn: estadosPermitidos)
+              .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        state = state.copyWith(
+          isLoading: false,
+          errorDeleted:
+              "No existen artículos en estado activo o suspendido que eliminar.",
+        );
+
+        return;
+      }
+
+      const maxBatchSize = 500;
+      final totalBatches = (querySnapshot.docs.length / maxBatchSize).ceil();
+
+      for (int i = 0; i < totalBatches; i++) {
+        final batch = firestore.batch();
+        final batchDocs = querySnapshot.docs
+            .skip(i * maxBatchSize)
+            .take(maxBatchSize);
+
+        for (final doc in batchDocs) {
+          batch.update(doc.reference, {'status': ArticleStatus.inactive.name});
+        }
+
+        await batch.commit();
+
+        if (i < totalBatches - 1) {
+          await Future.delayed(const Duration(milliseconds: 200));
+        }
+      }
+
+      state = state.copyWith(
+        articlesDeleted: [],
+        isDeleted: false,
+        isLoading: false,
+        errorDeleted: null,
+        successMessage: "Borrado masivo exitoso!",
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorDeleted:
+            "No logro eliminar la lista de artículos: ${e.toString()}",
+      );
     }
   }
 }
