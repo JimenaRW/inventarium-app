@@ -135,10 +135,7 @@ class _ArticleCard extends ConsumerStatefulWidget {
   final Article article;
   final ArticleSearchNotifier notifier;
 
-  const _ArticleCard({
-    required this.article,
-    required this.notifier,
-  });
+  const _ArticleCard({required this.article, required this.notifier});
 
   @override
   ConsumerState<_ArticleCard> createState() => _ArticleCardState();

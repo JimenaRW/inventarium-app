@@ -22,7 +22,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
-      ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false);
+      /* ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false); */
     });
   }
 
@@ -58,9 +58,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   onTap:
                       () => {
                         context.push('/articles/create'),
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false),
+                        ref.read(articleSearchNotifierProvider.notifier),
+                        /*  .toggleDeleteMode(false) */
                       },
                 ),
                 _ActionButton(
@@ -69,9 +68,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   onTap:
                       () => {
                         context.push('/articles/import-csv'),
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false),
+                        ref.read(articleSearchNotifierProvider.notifier),
+                        /* .toggleDeleteMode(false) */
                       },
                 ),
                 _ActionButton(
@@ -80,9 +78,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   onTap:
                       () => {
                         context.push('/articles/exports-csv'),
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false),
+                        ref.read(articleSearchNotifierProvider.notifier),
+                        /* .toggleDeleteMode(false) */
                       },
                 ),
               ],
