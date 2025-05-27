@@ -12,14 +12,15 @@ import 'package:inventarium/presentation/screens/articles/articles_stock_screen.
 import 'package:inventarium/presentation/screens/articles/create_article_screen.dart';
 import 'package:inventarium/presentation/screens/articles/articles_screen.dart';
 import 'package:inventarium/presentation/screens/articles/delete_article_screen.dart';
+import 'package:inventarium/presentation/screens/articles/delete_category_screen.dart';
 import 'package:inventarium/presentation/screens/articles/edit_article_screen.dart';
 import 'package:inventarium/presentation/screens/auth/login_screen.dart';
 import 'package:inventarium/presentation/screens/auth/password_reset_screen.dart';
 import 'package:inventarium/presentation/screens/auth/register_screen.dart';
 import 'package:inventarium/presentation/screens/categories/categories_screen.dart';
 import 'package:inventarium/presentation/screens/categories/category_create_screen.dart';
+import 'package:inventarium/presentation/screens/categories/edit_category_screen.dart';
 import 'package:inventarium/presentation/screens/home_screen.dart';
-import 'package:inventarium/presentation/screens/articles/upc_add_screen.dart';
 
 class AuthStreamListenable extends ChangeNotifier {
   StreamSubscription<User?>? _subscription; // Hacerlo nullable
@@ -110,8 +111,9 @@ final appRouterProvider = Provider<GoRouter>(
         name: DeleteArticleScreen.name,
         path: '/articles/delete/:id',
         builder:
-            (context, state) =>
-                DeleteArticleScreen(articleId: state.pathParameters['id'] ?? ""),
+            (context, state) => DeleteArticleScreen(
+              articleId: state.pathParameters['id'] ?? "",
+            ),
       ),
       GoRoute(
         path: '/articles/exports-csv',
@@ -129,9 +131,19 @@ final appRouterProvider = Provider<GoRouter>(
         builder: (context, state) => const ArticlesImportCsv(),
       ),
       GoRoute(
-        name: BarcodeScannerScreen.name,
-        path: '/barcode-scanner',
-        builder: (context, state) => BarcodeScannerScreen(),
+        name: EditCategoryScreen.name,
+        path: '/categories/edit/:id',
+        builder:
+            (context, state) =>
+                EditCategoryScreen(id: state.pathParameters['id'] ?? ''),
+      ),
+      GoRoute(
+        name: DeleteCategoryScreen.name,
+        path: '/categories/delete/:id',
+        builder:
+            (context, state) => DeleteCategoryScreen(
+              categoryId: state.pathParameters['id'] ?? '',
+            ),
       ),
       GoRoute(
         name: StockScreen.name,

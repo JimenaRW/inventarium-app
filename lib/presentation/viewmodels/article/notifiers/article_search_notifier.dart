@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/article_status.dart';
 import 'package:inventarium/presentation/viewmodels/article/notifiers/article_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_search_state.dart';
 
@@ -62,9 +64,18 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
         hasMore: articles.length == _itemsPerPage,
       );
     } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
+      state = state.copyWith(
+        error: e.toString(),
+        isLoading: false,
+        isDeleted: false,
+        articlesDeleted: [],
+        errorDeleted: null,
+      );
     }
   }
+
+  void clearErrorDeleted() => state = state.copyWith(errorDeleted: null);
+  void clearSuccessMessage() => state = state.copyWith(successMessage: null);
 
   Future<void> loadMoreArticles() async {
     if (state.isLoadingMore || !state.hasMore) return;
@@ -121,39 +132,6 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       state = state.copyWith(filteredArticles: results, isSearching: false);
     } catch (e) {
       state = state.copyWith(isSearching: false, error: e.toString());
-    }
-  }
-
-  Future<void> updateStock(String id, int newStock) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      await _articleNotifier.updateStock(id, newStock);
-
-      final updatedAll =
-          state.articles.map((art) {
-            return art.id == id ? art.copyWith(stock: newStock) : art;
-          }).toList();
-
-      final updatedFiltered =
-          state.searchQuery.isEmpty
-              ? updatedAll
-              : updatedAll.where((art) {
-                final q = state.searchQuery.toLowerCase();
-                return art.descripcion.toLowerCase().contains(q) ||
-                    art.sku.toLowerCase().contains(q) ||
-                    (art.codigoBarras ?? '').toLowerCase().contains(q);
-              }).toList();
-
-      state = state.copyWith(
-        articles: updatedAll,
-        filteredArticles: updatedFiltered,
-        isLoading: false,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'No se pudo actualizar el stock: ${e.toString()}',
-      );
     }
   }
 }
