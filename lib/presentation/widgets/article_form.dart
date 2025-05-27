@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/category_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
@@ -8,6 +12,7 @@ import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/presentation/viewmodels/article/notifiers/upc_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/widgets/custom_form_field.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ArticleForm extends ConsumerStatefulWidget {
   const ArticleForm({super.key});
@@ -29,6 +34,9 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
   late final TextEditingController _precio2Controller;
   late final TextEditingController _precio3Controller;
   late final TextEditingController _ivaController;
+  File? _image;
+  final ImagePicker _picker = ImagePicker();
+
   @override
   void initState() {
     super.initState();
@@ -62,6 +70,13 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate() && _selectedCategoria != null) {
+      String? imageUrl;
+      if (_image != null) {
+        imageUrl = await ref
+            .read(articleRepositoryProvider)
+            .uploadArticleImage(_image!, _skuController.text);
+      }
+
       final newArticle = Article(
         sku: _skuController.text,
         descripcion: _descripcionController.text,
@@ -79,6 +94,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
         precio2: double.tryParse(_precio2Controller.text) ?? 0.00,
         precio3: double.tryParse(_precio3Controller.text) ?? 0.00,
         estado: ArticleStatus.active.name,
+        imageUrl: imageUrl,
       );
 
       await ref.read(articleCreateProvider.notifier).submitForm(newArticle);
@@ -88,6 +104,54 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
         Navigator.pop(context);
       }
     }
+  }
+
+  Future<void> _selectImage() async {
+    final XFile? photo = await _picker.pickImage(source: ImageSource.gallery);
+    if (photo != null) {
+      setState(() {
+        _image = File(photo.path);
+      });
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+    if (photo != null) {
+      setState(() {
+        _image = File(photo.path);
+      });
+    }
+  }
+
+  void _showImagePicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Galería'),
+                onTap: () {
+                  _selectImage();
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Cámara'),
+                onTap: () {
+                  _takePhoto();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -116,6 +180,35 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
                 const SizedBox(height: 16),
               ],
             ),
+            GestureDetector(
+              onTap: _showImagePicker,
+              child: Center(
+                child: Container(
+                  width: 160,
+                  height: 160,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image:
+                        _image != null
+                            ? DecorationImage(
+                              fit: BoxFit.contain,
+                              image: FileImage(_image!),
+                            )
+                            : null,
+                    color: _image == null ? Colors.grey[200] : null,
+                  ),
+                  child:
+                      _image == null
+                          ? Icon(
+                            Icons.camera_alt,
+                            size: 40,
+                            color: Colors.grey[600],
+                          )
+                          : null,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             CustomFormField(
               controller: _skuController,
               labelText: 'SKU',
