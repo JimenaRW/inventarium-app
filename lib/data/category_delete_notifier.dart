@@ -1,24 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:inventarium/presentation/viewmodels/article/notifiers/article_notifier.dart';
-import 'package:inventarium/presentation/viewmodels/article/states/article_delete_state.dart';
+import 'package:inventarium/data/category_notifier.dart';
+import 'package:inventarium/presentation/viewmodels/article/states/category_delete_state.dart';
 
-class ArticleDeleteNotifier extends StateNotifier<ArticleDeleteState> {
-  final ArticleNotifier repository;
+class CategoryDeleteNotifier extends StateNotifier<CategoryDeleteState> {
+  final CategoryNotifier repository;
 
-  ArticleDeleteNotifier(this.repository)
+  CategoryDeleteNotifier(this.repository)
     : super(
-        ArticleDeleteState(
+        CategoryDeleteState(
           isLoading: false,
           success: false,
           errorMessage: null,
         ),
       );
 
-  Future<void> deleteArticle(String articleId) async {
+  Future<void> deleteCategory(String categoryId) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      await repository.softDeleteById(articleId);
+      await repository.softDeleteById(categoryId);
       state = state.copyWith(isLoading: false, success: true);
     } catch (e) {
       state = state.copyWith(
@@ -29,7 +29,7 @@ class ArticleDeleteNotifier extends StateNotifier<ArticleDeleteState> {
   }
 
   void resetState() {
-    state = ArticleDeleteState(
+    state = CategoryDeleteState(
       isLoading: false,
       success: false,
       errorMessage: null,

@@ -22,6 +22,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
+      ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false);
     });
   }
 
@@ -54,24 +55,42 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                 _ActionButton(
                   icon: Icons.add_circle_outline,
                   label: 'CREAR\nARTÍCULO',
-                  onTap: () => context.push('/articles/create'),
+                  onTap:
+                      () => {
+                        context.push('/articles/create'),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false),
+                      },
                 ),
                 _ActionButton(
                   icon: Icons.upload_file,
                   label: 'IMPORTAR\nCSV',
-                  onTap: () => context.push('/articles/import-csv'),
+                  onTap:
+                      () => {
+                        context.push('/articles/import-csv'),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false),
+                      },
                 ),
                 _ActionButton(
                   icon: Icons.save_alt,
                   label: 'EXPORTAR\nCSV',
-                  onTap: () => context.push('/articles/exports-csv'),
+                  onTap:
+                      () => {
+                        context.push('/articles/exports-csv'),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false),
+                      },
                 ),
               ],
             ),
             const SizedBox(
               height: 24,
             ), // Espacio entre los botones y el buscador
-            _buildSearchField(notifier),
+            _buildSearchField(notifier, state),
             const SizedBox(height: 16),
             Expanded(child: _buildContent(state, notifier)),
           ],
@@ -80,22 +99,84 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     );
   }
 
-  Widget _buildSearchField(ArticleSearchNotifier notifier) {
-    return TextField(
-      controller: _searchController,
-      decoration: InputDecoration(
-        hintText: 'Buscar por SKU o descripción',
-        prefixIcon: const Icon(Icons.search),
-        border: const OutlineInputBorder(),
-        suffixIcon: IconButton(
-          icon: const Icon(Icons.clear),
-          onPressed: () {
-            _searchController.clear();
-            notifier.searchArticles('');
-          },
-        ),
+  Widget _buildSearchField(
+    ArticleSearchNotifier notifier,
+    ArticleSearchState state,
+  ) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        minHeight: 64,
+      ), // Ensure minimum tap target size
+      child: Row(
+        children: [
+          Expanded(
+            // This ensures the TextField has a bounded width
+            child: Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Buscar por SKU o descripción',
+                  prefixIcon: const Icon(Icons.search),
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      _searchController.clear();
+                      notifier.searchArticles('');
+                    },
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  isDense: true, // Reduces the default padding
+                ),
+                onChanged: notifier.searchArticles,
+              ),
+            ),
+          ),
+          if (!state.isDeleted) ...[
+            IconButton(
+              onPressed: () => notifier.toggleDeleteMode(true),
+              icon: const Icon(Icons.delete_outline_outlined),
+              tooltip: 'Borrado masivo',
+              padding: const EdgeInsets.all(12),
+            ),
+          ],
+          if (state.isDeleted) ...[
+            IconButton(
+              onPressed: () => notifier.toggleDeleteMode(false),
+              icon: const Icon(Icons.cancel_outlined),
+              tooltip: 'Cancelar',
+              padding: const EdgeInsets.all(12),
+            ),
+            IconButton(
+              // onPressed: () async => await removeArticles(notifier, scaffoldMessenger),
+              onPressed: () async {
+                try {
+                  await notifier.removeAllArticles();
+                  await notifier.loadInitialData();
+                  // Mostrar mensaje de éxito
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(content: Text(state.successMessage!)),
+                  );
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    ref
+                        .read(articleSearchNotifierProvider.notifier)
+                        .loadInitialData();
+                  });
+                } catch (e) {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(content: Text(state.errorDeleted != null ? state.errorDeleted! : e.toString())),
+                  );
+                }
+              },
+              icon: const Icon(Icons.delete_sharp),
+              tooltip: 'Confirmar borrado masivo',
+              padding: const EdgeInsets.all(12),
+            ),
+          ],
+        ],
       ),
-      onChanged: (query) => notifier.searchArticles(query),
     );
   }
 
@@ -149,7 +230,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
-              columns: const [
+              columns: [
+                if (state.isDeleted) DataColumn(label: Text('')),
                 DataColumn(label: Text('SKU')),
                 DataColumn(label: Text('Descripción')),
                 DataColumn(label: Text('Stock'), numeric: true),
@@ -159,6 +241,28 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   state.filteredArticles.map((article) {
                     return DataRow(
                       cells: [
+                        if (state.isDeleted)
+                          DataCell(
+                            Checkbox(
+                              value: state.articlesDeleted.contains(article.id),
+                              onChanged: (value) {
+                                setState(() {
+                                  if (value == true) {
+                                    notifier.toggleDeleteList(
+                                      true,
+                                      article.id!,
+                                    );
+                                  } else {
+                                    notifier.toggleDeleteList(
+                                      false,
+                                      article.id!,
+                                    );
+                                  }
+                                });
+                                print(state.articlesDeleted);
+                              },
+                            ),
+                          ),
                         DataCell(Text(article.sku)),
                         DataCell(
                           Text(article.descripcion),
@@ -183,6 +287,36 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
         ],
       ),
     );
+  }
+}
+
+Future<void> _showDeleteConfirmation(
+  BuildContext context,
+  ArticleSearchNotifier notifier,
+) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder:
+        (context) => AlertDialog(
+          title: const Text('Confirmar eliminado masivo'),
+          content: const Text(
+            '¿Estás seguro de querer eliminar los artículos seleccinados?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        ),
+  );
+
+  if (confirmed == true) {
+    await notifier.removeAllArticles();
   }
 }
 
@@ -286,18 +420,26 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                               .read(articleSearchNotifierProvider.notifier)
                               .loadInitialData();
                         });
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false);
                       },
                       child: const Text('Editar'),
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        // TODO: implementar pegue para borrar artículo en Firebase
                         Navigator.pop(bc);
-                        context.push('/articles/delete/${article.id}').then((_) {
+                        context.push('/articles/delete/${article.id}').then((
+                          _,
+                        ) {
                           ref
                               .read(articleSearchNotifierProvider.notifier)
                               .loadInitialData();
                         });
+
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false);
                       },
                       child: const Text('Eliminar'),
                     ),
