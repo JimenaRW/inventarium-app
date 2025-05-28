@@ -68,7 +68,7 @@ class DeleteArticleScreen extends ConsumerWidget {
                                 ); // Llama al método para eliminar
                           },
                   child:
-                      articleState.isLoading!
+                      articleState.isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text('Eliminar'),
                 ),
@@ -76,7 +76,7 @@ class DeleteArticleScreen extends ConsumerWidget {
             ),
 
             // Si la eliminación fue exitosa, mostramos un mensaje
-            if (articleState.success!)
+            if (articleState.success)
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
                 child: Text(

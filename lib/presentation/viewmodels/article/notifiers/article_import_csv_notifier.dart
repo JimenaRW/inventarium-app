@@ -192,7 +192,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
 
   Future<void> importarArticulos() async {
     if (!canImport()) return;
-    final fecha = FieldValue.serverTimestamp();
 
     state = state.copyWith(isLoading: true);
 
