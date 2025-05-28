@@ -3,8 +3,6 @@ import 'package:inventarium/data/user_repository.dart';
 import 'package:inventarium/domain/role.dart';
 import 'package:inventarium/presentation/viewmodels/users/states/user_state.dart';
 
-
-
 class UserNotifier extends StateNotifier<UserState> {
   final UserRepository _userRepository;
 
@@ -21,10 +19,10 @@ class UserNotifier extends StateNotifier<UserState> {
   }
 
   Future<void> loadUsers() async {
-    state = state.copyWith(loading: true);
     try {
+      state = state.copyWith(loading: true);
       final users = await _userRepository.getAllUsers();
-      state = state.copyWith(users: users, loading: false);
+      state = state.copyWith(users: users, loading: false, error: null);
     } catch (e) {
       state = state.copyWith(error: e.toString(), loading: false);
     }
@@ -35,12 +33,13 @@ class UserNotifier extends StateNotifier<UserState> {
     try {
       await _userRepository.updateUserRole(userId, newRole);
       state = state.copyWith(
-        users: state.users.map((user) {
-          if (user.id == userId) {
-            return user.copyWith(role: newRole);
-          }
-          return user;
-        }).toList(),
+        users:
+            state.users.map((user) {
+              if (user.id == userId) {
+                return user.copyWith(role: newRole);
+              }
+              return user;
+            }).toList(),
         updating: false,
       );
     } catch (e) {
