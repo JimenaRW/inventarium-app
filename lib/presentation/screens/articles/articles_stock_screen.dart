@@ -148,9 +148,7 @@ class _ArticleCardState extends ConsumerState<_ArticleCard> {
   @override
   void initState() {
     super.initState();
-    _stockController = TextEditingController(
-      text: widget.article.stock.toString(),
-    );
+    _stockController = TextEditingController();
   }
 
   @override
@@ -168,6 +166,7 @@ class _ArticleCardState extends ConsumerState<_ArticleCard> {
 
   @override
   Widget build(BuildContext context) {
+    _stockController.text = widget.article.stock.toString();
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: Padding(
