@@ -8,6 +8,7 @@ import 'package:inventarium/data/navigation_provider.dart';
 import 'package:inventarium/presentation/screens/articles/articles_exports_csv.dart';
 import 'package:inventarium/presentation/screens/articles/articles_import_csv.dart';
 import 'package:inventarium/presentation/screens/articles/articles_share_csv.dart';
+import 'package:inventarium/presentation/screens/articles/articles_stock_screen.dart';
 import 'package:inventarium/presentation/screens/articles/create_article_screen.dart';
 import 'package:inventarium/presentation/screens/articles/articles_screen.dart';
 import 'package:inventarium/presentation/screens/articles/delete_article_screen.dart';
@@ -143,6 +144,11 @@ final appRouterProvider = Provider<GoRouter>(
             (context, state) => DeleteCategoryScreen(
               categoryId: state.pathParameters['id'] ?? '',
             ),
+      ),
+      GoRoute(
+        name: StockScreen.name,
+        path: '/stock',
+        builder: (context, state) => StockScreen(),
       ),
     ],
     observers: [ref.read(routeObserverProvider)],

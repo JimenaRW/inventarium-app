@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
@@ -132,6 +133,27 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       state = state.copyWith(filteredArticles: results, isSearching: false);
     } catch (e) {
       state = state.copyWith(isSearching: false, error: e.toString());
+    }
+  }
+
+  void updateStock(String id, int newStock) async {
+    try {
+      await _articleNotifier.updateStock(id, newStock);
+      final updatedArticles =
+          state.articles.map((article) {
+            if (article.id == id) {
+              return article.copyWith(stock: newStock);
+            }
+            return article;
+          }).toList();
+
+      state = state.copyWith(
+        articles: updatedArticles,
+        filteredArticles: getFilteredArticles(updatedArticles),
+      );
+    } catch (e) {
+      // Maneja el error
+      print('Error al actualizar stock: $e');
     }
   }
 
