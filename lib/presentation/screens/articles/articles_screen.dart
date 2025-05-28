@@ -23,7 +23,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
-      ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false);
+      /* ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false); */
     });
   }
 
@@ -59,9 +59,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   onTap:
                       () => {
                         context.push('/articles/create'),
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false),
+                        ref.read(articleSearchNotifierProvider.notifier),
+                        /*  .toggleDeleteMode(false) */
                       },
                 ),
                 _ActionButton(
@@ -70,9 +69,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   onTap:
                       () => {
                         context.push('/articles/import-csv'),
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false),
+                        ref.read(articleSearchNotifierProvider.notifier),
+                        /* .toggleDeleteMode(false) */
                       },
                 ),
                 _ActionButton(
@@ -81,9 +79,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   onTap:
                       () => {
                         context.push('/articles/exports-csv'),
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false),
+                        ref.read(articleSearchNotifierProvider.notifier),
+                        /* .toggleDeleteMode(false) */
                       },
                 ),
               ],
@@ -319,7 +316,7 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
   print('Ubicación: ${article.ubicacion}');
   showModalBottomSheet(
     context: context,
-    isScrollControlled: true, // Agrega esta línea
+    isScrollControlled: true,
     builder: (BuildContext bc) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -335,6 +332,15 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+                const SizedBox(height: 10),
+                if (article.imageUrl != null && article.imageUrl!.isNotEmpty)
+                  Container(
+                    width: MediaQuery.of(context).size.width * 0.4,
+                    child: Image.network(
+                      article.imageUrl!,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 const SizedBox(height: 10),
                 _buildDetailRow('SKU', article.sku),
                 _buildDetailRow('Categoría', article.categoriaDescripcion!),
@@ -367,7 +373,7 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                   children: <Widget>[
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(bc); // Utiliza bc en lugar de context
+                        Navigator.pop(bc);
                         context.push('/articles/edit/${article.id}').then((_) {
                           ref
                               .read(articleSearchNotifierProvider.notifier)

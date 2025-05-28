@@ -16,6 +16,7 @@ class Article extends Equatable {
   final double? precio3;
   final double? iva;
   final String estado;
+  final String? imageUrl;
 
   const Article({
     String? id,
@@ -32,13 +33,15 @@ class Article extends Equatable {
     double? iva,
     String? estado,
     String? categoriaDescripcion,
+    String? imageUrl,
   }) : id = id ?? "",
        precio1 = precio1 ?? 0.0,
        precio2 = precio2 ?? 0.0,
        precio3 = precio3 ?? 0.0,
        iva = iva ?? 0.00,
        estado = estado ?? 'active',
-       categoriaDescripcion = categoriaDescripcion ?? "";
+       categoriaDescripcion = categoriaDescripcion ?? "",
+       imageUrl = imageUrl ?? "";
 
   @override
   List<Object?> get props => [
@@ -72,6 +75,7 @@ class Article extends Equatable {
     double? precio3,
     double? iva,
     String? estado,
+    String? imageUrl,
   }) {
     return Article(
       id: id ?? this.id,
@@ -88,6 +92,7 @@ class Article extends Equatable {
       precio3: precio3 ?? this.precio3,
       iva: iva ?? this.iva,
       estado: estado ?? this.estado,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 
@@ -107,6 +112,7 @@ class Article extends Equatable {
       'iva': iva,
       'status': estado,
       'createdAt': DateTime.now(),
+      'imageUrl': imageUrl,
     };
   }
 
@@ -140,11 +146,12 @@ class Article extends Equatable {
       iva:
           data?['iva'] is int ? (data?['iva'] as int).toDouble() : data?['iva'],
       estado: data?['status'],
+      imageUrl: data?['imageUrl'],
     );
   }
 
   @override
   String toString() {
-    return 'Article: id: $id, sku: $sku, descripción: $descripcion, código de barras: $codigoBarras, categoría: $categoria, ubicación: $ubicacion, fabricante: $fabricante, stock inicial: $stock, precio1: $precio1, precio2: $precio2, precio3: $precio3, iva: $iva, estado: $estado)';
+    return 'Article: id: $id, sku: $sku, descripción: $descripcion, código de barras: $codigoBarras, categoría: $categoria, ubicación: $ubicacion, fabricante: $fabricante, stock inicial: $stock, precio1: $precio1, precio2: $precio2, precio3: $precio3, iva: $iva, estado: $estado, imageUrl: $imageUrl';
   }
 }

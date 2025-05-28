@@ -141,4 +141,8 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
       rethrow;
     }
   }
+
+  Future<void> updateStock(String id, int newStock) {
+    return _repository.updateStock(id, newStock);
+  }
 }
