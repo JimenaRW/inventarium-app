@@ -12,7 +12,7 @@ class UserNotifier extends StateNotifier<UserState> {
     state = state.copyWith(loading: true);
     try {
       final user = await _userRepository.getCurrentUser();
-      state = state.copyWith(currentUser: user, loading: false);
+      state = state.copyWith(user: user, loading: false);
     } catch (e) {
       state = state.copyWith(error: e.toString(), loading: false);
     }

@@ -21,6 +21,9 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
+      ref.read(userNotifierProvider.notifier).loadCurrentUser();
+    });
+    Future.microtask(() {
       ref.read(userNotifierProvider.notifier).loadUsers();
     });
     _searchController.addListener(_filterUsers);
@@ -106,12 +109,12 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
               DataCell(
                 Row(
                   children: [
-                    if (_canEditUser(state.currentUser, user))
+                    if (_canEditUser(state.user, user))
                       IconButton(
                         icon: const Icon(Icons.edit, color: Colors.blue),
                         onPressed: () => _editUser(user),
                       ),
-                    if (_canDeleteUser(state.currentUser, user))
+                    if (_canDeleteUser(state.user, user))
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () => _confirmDelete(context, user),
@@ -127,8 +130,8 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
   }
 
   bool _canEditUser(User? currentUser, User targetUser) {
-    return currentUser?.role == UserRole.admin || 
-           currentUser?.id == targetUser.id;
+    return currentUser?.role == UserRole.admin && 
+           currentUser?.id != targetUser.id;
   }
 
   bool _canDeleteUser(User? currentUser, User targetUser) {

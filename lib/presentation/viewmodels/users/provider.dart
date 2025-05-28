@@ -8,8 +8,6 @@ final userNotifierProvider = StateNotifierProvider<UserNotifier, UserState>((ref
   final notifier = UserNotifier(
 ref.read
 (userRepositoryProvider));
-// Usar Future.microtask para posponer la ejecución después del build
-  Future.microtask(() => notifier.loadCurrentUser()); 
   return notifier;
 }); 
 

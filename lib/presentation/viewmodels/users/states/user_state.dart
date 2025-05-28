@@ -6,15 +6,14 @@ class UserState {
   final bool loading;
   final bool updating;
   final String? error;
-  final User? currentUser;
-
+  final User? user;
 
   UserState({
     required this.users,
     required this.loading,
     required this.updating,
-    required this.currentUser,
     this.error,
+    this.user
   });
 
   factory UserState.initial() {
@@ -22,7 +21,6 @@ class UserState {
       users: [],
       loading: false,
       updating: false,
-      currentUser: null,
     );
   }
 
@@ -31,14 +29,14 @@ class UserState {
     bool? loading,
     bool? updating,
     String? error,
-  User? currentUser,
+    User? user,
   }) {
     return UserState(
       users: users ?? this.users,
       loading: loading ?? this.loading,
       updating: updating ?? this.updating,
-      currentUser: this.currentUser,
       error: error ?? this.error,
+      user: user ?? this.user,
     );
   }
 }
