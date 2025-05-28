@@ -136,14 +136,6 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
     }
   }
 
-  Widget toggleDeleteMode(bool bool) {
-    throw UnimplementedError('toggleDeleteMode is not implemented yet.');
-  }
-
-  removeAllArticles() {}
-
-  void toggleDeleteList(bool bool, String s) {}
-
   void updateStock(String id, int newStock) async {
     try {
       await _articleNotifier.updateStock(id, newStock);
@@ -162,6 +154,88 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
     } catch (e) {
       // Maneja el error
       print('Error al actualizar stock: $e');
+    }
+  }
+
+  void toggleDeleteMode(bool enabled) {
+    state = state.copyWith(isDeleted: enabled, articlesDeleted: []);
+  }
+
+  void toggleDeleteList(bool bool, String idArticle) {
+    if (bool) {
+      state = state.copyWith(
+        articlesDeleted: [...state.articlesDeleted, idArticle],
+      );
+    } else {
+      state = state.copyWith(
+        articlesDeleted: [
+          ...state.articlesDeleted.where((art) => art != idArticle),
+        ],
+      );
+    }
+  }
+
+  Future<void> removeAllArticles() async {
+    state = state.copyWith(isLoading: true);
+
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final articlesRef = firestore.collection('articles');
+
+      final estadosPermitidos = [
+        ArticleStatus.active.toString(),
+        ArticleStatus.suspended.toString(),
+      ];
+
+      final querySnapshot =
+          await articlesRef
+              .where(FieldPath.documentId, whereIn: state.articlesDeleted)
+              .where('status', whereIn: estadosPermitidos)
+              .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        state = state.copyWith(
+          isLoading: false,
+          errorDeleted:
+              "No existen artículos en estado activo o suspendido que eliminar.",
+        );
+
+        return;
+      }
+
+      const maxBatchSize = 500;
+      final totalBatches = (querySnapshot.docs.length / maxBatchSize).ceil();
+
+      for (int i = 0; i < totalBatches; i++) {
+        final batch = firestore.batch();
+        final batchDocs = querySnapshot.docs
+            .skip(i * maxBatchSize)
+            .take(maxBatchSize);
+
+        for (final doc in batchDocs) {
+          batch.update(doc.reference, {'status': ArticleStatus.inactive.name});
+        }
+
+        await batch.commit();
+
+        if (i < totalBatches - 1) {
+          await Future.delayed(const Duration(milliseconds: 200));
+        }
+      }
+
+      state = state.copyWith(
+        articlesDeleted: [],
+        isDeleted: false,
+        isLoading: false,
+        errorDeleted: null,
+        successMessage: "Borrado masivo exitoso!",
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorDeleted:
+            "No logro eliminar la lista de artículos: ${e.toString()}",
+      );
     }
   }
 }
