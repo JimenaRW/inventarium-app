@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -11,7 +13,6 @@ class ArticleRepository implements IArticleRepository {
   final FirebaseStorage _storage;
 
   ArticleRepository(this.db, this._storage) : super();
-
 
   @override
   Future<Article> addArticle(Article article) async {
@@ -109,6 +110,21 @@ class ArticleRepository implements IArticleRepository {
     return exactResults;
   }
 
+  Future<String> uploadArticleImage(File imageFile, String sku) async {
+    try {
+      final storageRef = _storage.ref();
+      final articlesRef = storageRef.child(
+        'articles/${FirebaseAuth.instance.currentUser!.uid}/$sku.jpg',
+      );
+      await articlesRef.putFile(imageFile);
+      final downloadUrl = await articlesRef.getDownloadURL();
+      print('Image uploaded successfully: $downloadUrl');
+      return downloadUrl.toString();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   @override
   Future<void> updateArticle(Article article) async {
     try {
@@ -116,6 +132,18 @@ class ArticleRepository implements IArticleRepository {
           .collection('articles')
           .doc(article.id)
           .set(article.toFirestore(), SetOptions(merge: true));
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateStock(String id, int newStock) async {
+    try {
+      await db
+          .collection('articles')
+          .doc(id)
+          .update({'stock': newStock});
     } catch (e) {
       rethrow;
     }
@@ -195,7 +223,11 @@ class ArticleRepository implements IArticleRepository {
         return "";
       }
 
-      final querySnapshot = await db.collection('articles').where('status', isEqualTo: ArticleStatus.active.name).get();
+      final querySnapshot =
+          await db
+              .collection('articles')
+              .where('status', isEqualTo: ArticleStatus.active.name)
+              .get();
       final articles =
           querySnapshot.docs.map((doc) {
             return Article.fromFirestore(
@@ -248,7 +280,7 @@ class ArticleRepository implements IArticleRepository {
       final querySnapshot =
           await db
               .collection('articles')
-              .where('stock', isLessThanOrEqualTo: threshold, isNotEqualTo: 0,)
+              .where('stock', isLessThanOrEqualTo: threshold, isNotEqualTo: 0)
               .where('status', isEqualTo: ArticleStatus.active.name)
               .withConverter<Article>(
                 fromFirestore: Article.fromFirestore,

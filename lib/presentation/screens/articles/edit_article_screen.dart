@@ -53,7 +53,7 @@ class _EditArticleScreenState extends ConsumerState<EditArticleScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Editar Artículo')),
-      body: ArticleEditForm(article: article),
+      body: ArticleEditForm(articleId: widget.id),
     );
   }
 }
