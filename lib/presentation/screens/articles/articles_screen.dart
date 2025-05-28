@@ -5,6 +5,7 @@ import 'package:inventarium/data/article_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/presentation/viewmodels/article/notifiers/article_search_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_search_state.dart';
+import 'package:inventarium/presentation/widgets/article_list_card.dart';
 
 class ArticlesScreen extends ConsumerStatefulWidget {
   static const String name = 'articles_screen';
@@ -153,20 +154,38 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
               // onPressed: () async => await removeArticles(notifier, scaffoldMessenger),
               onPressed: () async {
                 try {
-                  await notifier.removeAllArticles();
-                  await notifier.loadInitialData();
-                  // Mostrar mensaje de éxito
-                  scaffoldMessenger.showSnackBar(
-                    SnackBar(content: Text(state.successMessage!)),
+                  if (state.articlesDeleted.isNotEmpty) {
+                    await notifier.removeAllArticles();
+                    await notifier.loadInitialData();
+                    // Mostrar mensaje de éxito
+                    scaffoldMessenger.hideCurrentSnackBar();
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(content: Text(state.successMessage!)),
+                    );
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      ref
+                          .read(articleSearchNotifierProvider.notifier)
+                          .loadInitialData();
+                    });
+                  }
+                  else {
+                    scaffoldMessenger.hideCurrentSnackBar();
+                    scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text("Debe selecionar un artículo a eliminar."),
+                    ),
                   );
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    ref
-                        .read(articleSearchNotifierProvider.notifier)
-                        .loadInitialData();
-                  });
+                  }
                 } catch (e) {
+                  scaffoldMessenger.hideCurrentSnackBar();
                   scaffoldMessenger.showSnackBar(
-                    SnackBar(content: Text(state.errorDeleted != null ? state.errorDeleted! : e.toString())),
+                    SnackBar(
+                      content: Text(
+                        state.errorDeleted != null
+                            ? state.errorDeleted!
+                            : e.toString(),
+                      ),
+                    ),
                   );
                 }
               },
@@ -225,98 +244,32 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
         }
         return true;
       },
-      child: ListView(
-        children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columns: [
-                if (state.isDeleted) DataColumn(label: Text('')),
-                DataColumn(label: Text('SKU')),
-                DataColumn(label: Text('Descripción')),
-                DataColumn(label: Text('Stock'), numeric: true),
-                DataColumn(label: Text('Precio1'), numeric: true),
-              ],
-              rows:
-                  state.filteredArticles.map((article) {
-                    return DataRow(
-                      cells: [
-                        if (state.isDeleted)
-                          DataCell(
-                            Checkbox(
-                              value: state.articlesDeleted.contains(article.id),
-                              onChanged: (value) {
-                                setState(() {
-                                  if (value == true) {
-                                    notifier.toggleDeleteList(
-                                      true,
-                                      article.id!,
-                                    );
-                                  } else {
-                                    notifier.toggleDeleteList(
-                                      false,
-                                      article.id!,
-                                    );
-                                  }
-                                });
-                                print(state.articlesDeleted);
-                              },
-                            ),
-                          ),
-                        DataCell(Text(article.sku)),
-                        DataCell(
-                          Text(article.descripcion),
-                          onTap: () {
-                            print(
-                              article,
-                            ); // Verifica si el artículo es null o no
-                            _showArticleDetails(context, article, ref);
-                          },
-                        ),
-                        DataCell(Text(article.stock.toString())),
-                        DataCell(
-                          Text('\$${article.precio1?.toStringAsFixed(2)}'),
-                        ),
-                      ],
-                    );
-                  }).toList(),
-            ),
-          ),
-          if (state.isLoadingMore)
-            const Center(child: CircularProgressIndicator()),
-        ],
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 2),
+        itemCount:
+            state.filteredArticles.length + (state.isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index < state.filteredArticles.length) {
+            final article = state.filteredArticles[index];
+            return GestureDetector(
+              onTap: () => _showArticleDetails(context, article, ref),
+              child: ArticleListCard(
+                article: article,
+                showCheckbox:
+                    state
+                        .isDeleted, // Mostrar checkbox solo en modo eliminación
+                checkboxValue: state.articlesDeleted.contains(article.id),
+                onCheckboxChanged: (value) {
+                  notifier.toggleDeleteList(value ?? false, article.id!);
+                },
+              ),
+            );
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        },
       ),
     );
-  }
-}
-
-Future<void> _showDeleteConfirmation(
-  BuildContext context,
-  ArticleSearchNotifier notifier,
-) async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder:
-        (context) => AlertDialog(
-          title: const Text('Confirmar eliminado masivo'),
-          content: const Text(
-            '¿Estás seguro de querer eliminar los artículos seleccinados?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Eliminar'),
-            ),
-          ],
-        ),
-  );
-
-  if (confirmed == true) {
-    await notifier.removeAllArticles();
   }
 }
 
@@ -445,9 +398,7 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                     ),
                   ],
                 ),
-                const SizedBox(
-                  height: 20,
-                ), // Agrega un poco de espacio extra al final
+                const SizedBox(height: 20),
               ],
             ),
           ],
@@ -461,9 +412,17 @@ Widget _buildDetailRow(String label, String value) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 5),
     child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-        Text(value),
+        Expanded(
+          child: Text(
+            value,
+            softWrap: true,
+            maxLines: null,
+            overflow: TextOverflow.visible,
+          ),
+        ),
       ],
     ),
   );
