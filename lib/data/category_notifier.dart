@@ -8,7 +8,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
   bool _mounted = true; // Agrega una bandera para rastrear el estado del widget
 
   CategoryNotifier(this._repository) : super(const AsyncValue.loading()) {
-    loadCategories();
+    loadCategoriesByStatus(CategoryStatus.active);
   }
 
   @override

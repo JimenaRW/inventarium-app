@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/data/category_repository_provider.dart';
 import 'package:inventarium/domain/category.dart';
-import 'package:inventarium/presentation/screens/categories/edit_category_screen.dart';
+import 'package:inventarium/presentation/widgets/category_list_card.dart';
 
 class CategoriesScreen extends ConsumerStatefulWidget {
   static const String name = 'categories_screen';
@@ -18,6 +18,18 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   CategoryStatus _selectedStatus = CategoryStatus.active;
 
   Category? _selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(categoriesNotifierProvider.notifier).loadCategoriesByStatus(_selectedStatus);
+    });
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _searchController.clear();
+    });
+  }
 
   @override
   void dispose() {
@@ -116,7 +128,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                         onPressed: () {
                           _searchController.clear();
 
-                          notifier.loadCategories();
+                          notifier.loadCategoriesByStatus(_selectedStatus);
                         },
                       ),
                       border: const OutlineInputBorder(),
@@ -137,12 +149,13 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               error: (error, stack) => Center(child: Text('Error: $error')),
               data:
                   (categories) => ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     itemCount: categories.length,
                     itemBuilder: (context, index) {
                       final category = categories[index];
-                      return ListTile(
-                        title: Text(category.descripcion),
-                        selected: _selectedCategory?.id == category.id,
+                      return CategoryListCard(
+                        category: category,
+                        isSelected: _selectedCategory?.id == category.id,
                         onTap: () {
                           setState(() => _selectedCategory = category);
                           _showCategoryDetails(context, category, ref);
@@ -222,10 +235,10 @@ void _showCategoryDetails(
                 _buildDetailRow('ID', category.id),
                 _buildDetailRow('Descripción', category.descripcion),
                 _buildDetailRow(
-                  'Estado', 
-                  category.estado == CategoryStatus.active.name 
-                    ? 'Activo' 
-                    : 'Inactivo',
+                  'Estado',
+                  category.estado == CategoryStatus.active.name
+                      ? 'Activo'
+                      : 'Inactivo',
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -261,9 +274,17 @@ Widget _buildDetailRow(String label, String value) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 5),
     child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-        Text(value),
+        Expanded(
+          child: Text(
+            value,
+            softWrap: true,
+            maxLines: null,
+            overflow: TextOverflow.visible,
+          ),
+        ),
       ],
     ),
   );
