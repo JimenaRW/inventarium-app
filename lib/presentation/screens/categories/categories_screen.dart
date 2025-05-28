@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/data/category_repository_provider.dart';
 import 'package:inventarium/domain/category.dart';
-import 'package:inventarium/presentation/screens/categories/edit_category_screen.dart';
 import 'package:inventarium/presentation/widgets/category_list_card.dart';
 
 class CategoriesScreen extends ConsumerStatefulWidget {
@@ -19,6 +18,18 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   CategoryStatus _selectedStatus = CategoryStatus.active;
 
   Category? _selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(categoriesNotifierProvider.notifier).loadCategoriesByStatus(_selectedStatus);
+    });
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _searchController.clear();
+    });
+  }
 
   @override
   void dispose() {
@@ -117,7 +128,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                         onPressed: () {
                           _searchController.clear();
 
-                          notifier.loadCategories();
+                          notifier.loadCategoriesByStatus(_selectedStatus);
                         },
                       ),
                       border: const OutlineInputBorder(),
