@@ -23,13 +23,19 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
-      /* ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false); */
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _searchController.clear();
     });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchController.clear();
     super.dispose();
   }
 
@@ -59,8 +65,9 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   onTap:
                       () => {
                         context.push('/articles/create'),
-                        ref.read(articleSearchNotifierProvider.notifier),
-                        /*  .toggleDeleteMode(false) */
+                        ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false),
+                        ref.read(articleSearchNotifierProvider.notifier).loadInitialData(),
+                        _searchController.clear(),
                       },
                 ),
                 _ActionButton(
@@ -69,8 +76,9 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   onTap:
                       () => {
                         context.push('/articles/import-csv'),
-                        ref.read(articleSearchNotifierProvider.notifier),
-                        /* .toggleDeleteMode(false) */
+                        ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false),
+                        ref.read(articleSearchNotifierProvider.notifier).loadInitialData(),
+                        _searchController.clear(),
                       },
                 ),
                 _ActionButton(
@@ -79,8 +87,9 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   onTap:
                       () => {
                         context.push('/articles/exports-csv'),
-                        ref.read(articleSearchNotifierProvider.notifier),
-                        /* .toggleDeleteMode(false) */
+                        ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false),
+                        ref.read(articleSearchNotifierProvider.notifier).loadInitialData(),
+                        _searchController.clear(),
                       },
                 ),
               ],
