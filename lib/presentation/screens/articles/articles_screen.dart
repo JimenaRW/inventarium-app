@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/data/article_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/role.dart';
 import 'package:inventarium/presentation/viewmodels/article/notifiers/article_search_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_search_state.dart';
+import 'package:inventarium/presentation/viewmodels/users/provider.dart';
 import 'package:inventarium/presentation/widgets/article_list_card.dart';
 
 class ArticlesScreen extends ConsumerStatefulWidget {
@@ -30,6 +32,9 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _searchController.clear();
     });
+    Future.microtask(() {
+      ref.read(userNotifierProvider.notifier).loadCurrentUser();
+    });
   }
 
   @override
@@ -43,6 +48,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(articleSearchNotifierProvider);
     final notifier = ref.read(articleSearchNotifierProvider.notifier);
+    final userState = ref.read(userNotifierProvider);
+    final currentRol = userState.user?.role;
 
     return Scaffold(
       appBar: AppBar(
@@ -65,8 +72,12 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   onTap:
                       () => {
                         context.push('/articles/create'),
-                        ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false),
-                        ref.read(articleSearchNotifierProvider.notifier).loadInitialData(),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .loadInitialData(),
                         _searchController.clear(),
                       },
                 ),
@@ -76,8 +87,12 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   onTap:
                       () => {
                         context.push('/articles/import-csv'),
-                        ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false),
-                        ref.read(articleSearchNotifierProvider.notifier).loadInitialData(),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .loadInitialData(),
                         _searchController.clear(),
                       },
                 ),
@@ -87,8 +102,12 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   onTap:
                       () => {
                         context.push('/articles/exports-csv'),
-                        ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false),
-                        ref.read(articleSearchNotifierProvider.notifier).loadInitialData(),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .loadInitialData(),
                         _searchController.clear(),
                       },
                 ),
@@ -97,7 +116,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
             const SizedBox(
               height: 24,
             ), // Espacio entre los botones y el buscador
-            _buildSearchField(notifier, state),
+            _buildSearchField(notifier, state, currentRol),
             const SizedBox(height: 16),
             Expanded(child: _buildContent(state, notifier)),
           ],
@@ -109,6 +128,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   Widget _buildSearchField(
     ArticleSearchNotifier notifier,
     ArticleSearchState state,
+    UserRole? currentRol,
   ) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     return ConstrainedBox(
@@ -141,7 +161,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
               ),
             ),
           ),
-          if (!state.isDeleted) ...[
+          if (!state.isDeleted && currentRol?.name != UserRole.viewer.name) ...[
             IconButton(
               onPressed: () => notifier.toggleDeleteMode(true),
               icon: const Icon(Icons.delete_outline_outlined),
@@ -173,14 +193,15 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                           .read(articleSearchNotifierProvider.notifier)
                           .loadInitialData();
                     });
-                  }
-                  else {
+                  } else {
                     scaffoldMessenger.hideCurrentSnackBar();
                     scaffoldMessenger.showSnackBar(
-                    SnackBar(
-                      content: Text("Debe selecionar un artículo a eliminar."),
-                    ),
-                  );
+                      SnackBar(
+                        content: Text(
+                          "Debe selecionar un artículo a eliminar.",
+                        ),
+                      ),
+                    );
                   }
                 } catch (e) {
                   scaffoldMessenger.hideCurrentSnackBar();

@@ -28,6 +28,8 @@ import 'package:inventarium/presentation/screens/users/users_screen.dart';
 class AuthStreamListenable extends ChangeNotifier {
   StreamSubscription<User?>? _subscription; // Hacerlo nullable
 
+
+
   AuthStreamListenable() {
     init();
   }
@@ -47,6 +49,12 @@ class AuthStreamListenable extends ChangeNotifier {
 
 final _authStreamListenable = AuthStreamListenable();
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
+   final restrictedRoutes = {
+    'viewer': ['/edit', '/create', '/delete', '/users','/import-csv','/stock'],
+    'editor': ['/users'], // 'editor' no puede acceder a usuarios ni borrar
+    // 'admin' no tiene restricciones
+  };
 
 final appRouterProvider = Provider<GoRouter>(
   (ref) => GoRouter(
@@ -72,9 +80,13 @@ final appRouterProvider = Provider<GoRouter>(
 
         final userRole = userDoc.data()?['role'] as String?;
 
-        // Si intenta acceder a /users y no es ADMIN, redirigir a otra página (por ejemplo, home)
-        if (location.startsWith('/users') && userRole != 'admin') {
-          return '/unauthorized'; // o '/unauthorized' o donde quieras redirigir
+        if (userRole == null) {
+          return '/unauthorized';
+        }
+
+        final userRestrictions = restrictedRoutes[userRole] ?? [];
+        if (userRestrictions.any((route) => location.contains(route))) {
+          return '/unauthorized';
         }
       }
       return null;
