@@ -21,6 +21,7 @@ import 'package:inventarium/presentation/screens/categories/categories_screen.da
 import 'package:inventarium/presentation/screens/categories/category_create_screen.dart';
 import 'package:inventarium/presentation/screens/categories/edit_category_screen.dart';
 import 'package:inventarium/presentation/screens/home_screen.dart';
+import 'package:inventarium/presentation/screens/theme/theme_screen.dart';
 
 class AuthStreamListenable extends ChangeNotifier {
   StreamSubscription<User?>? _subscription; // Hacerlo nullable
@@ -149,6 +150,11 @@ final appRouterProvider = Provider<GoRouter>(
         name: StockScreen.name,
         path: '/stock',
         builder: (context, state) => StockScreen(),
+      ),
+      GoRoute(
+        name: ThemeScreen.name,
+        path: '/theme',
+        builder: (context, state) => ThemeScreen(),
       ),
     ],
     observers: [ref.read(routeObserverProvider)],

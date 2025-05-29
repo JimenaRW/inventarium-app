@@ -44,6 +44,12 @@ const List<MenuItem> appMenuItems = [
     icon: Icons.inventory,
     route: '/stock',
   ),
+  MenuItem(
+    title: 'Tema',
+    subtitle: 'Cambiar tema',
+    icon: Icons.brightness_6_outlined,
+    route: '/theme',
+  ),
 ];
 
 // Este item lo podés seguir teniendo si querés usarlo manualmente
