@@ -224,7 +224,14 @@ void _showCategoryDetails(
   Category category,
   WidgetRef ref,
 ) {
+
+   final userState = ref.read(userNotifierProvider);
+    final currentRol = userState.user?.role;
+    final enableBotton = currentRol == UserRole.admin || currentRol == UserRole.editor;
+
+
   showModalBottomSheet(
+    
     context: context,
     isScrollControlled: true,
     builder: (BuildContext bc) {
@@ -255,6 +262,7 @@ void _showCategoryDetails(
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
+                    if (enableBotton)
                     ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pop();
@@ -262,6 +270,7 @@ void _showCategoryDetails(
                       },
                       child: const Text('Editar'),
                     ),
+                    if (enableBotton)
                     ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pop();

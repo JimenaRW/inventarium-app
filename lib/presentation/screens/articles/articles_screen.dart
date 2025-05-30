@@ -50,8 +50,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     final notifier = ref.read(articleSearchNotifierProvider.notifier);
     final userState = ref.read(userNotifierProvider);
     final currentRol = userState.user?.role;
-    final showCreateButton = currentRol == UserRole.admin || currentRol == UserRole.editor;
-    final showImportExportButtons = currentRol == UserRole.admin || currentRol == UserRole.editor;
+    final enableBotton = currentRol == UserRole.admin || currentRol == UserRole.editor;
+  
   
   
     return Scaffold(
@@ -66,11 +66,11 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-             if (showCreateButton || showImportExportButtons)
+             if (enableBotton)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-               if (showCreateButton)
+               if (enableBotton)
                 _ActionButton(
                   icon: Icons.add_circle_outline,
                   label: 'CREAR\nARTÍCULO',
@@ -86,7 +86,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                         _searchController.clear(),
                       },
                 ),
-                 if (showImportExportButtons)
+                 if (enableBotton)
                 _ActionButton(
                   icon: Icons.upload_file,
                   label: 'IMPORTAR\nCSV',
@@ -139,9 +139,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
      // Determinar permisos basados en el rol
-    final canDelete = currentRol == UserRole.admin || currentRol == UserRole.editor;
-    final canMassDelete = currentRol == UserRole.admin || currentRol == UserRole.editor; 
-
+    final enableBotton = currentRol == UserRole.admin || currentRol == UserRole.editor;
+   
     return ConstrainedBox(
       constraints: const BoxConstraints(
         minHeight: 64,
@@ -174,8 +173,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
           ),
 
       //currentRol?.name != UserRole.viewer.name
-          if (!state.isDeleted && canDelete) ...[
-            if (canMassDelete)
+          if (!state.isDeleted && enableBotton) ...[
+            if (enableBotton)
             IconButton(
               onPressed: () => notifier.toggleDeleteMode(true),
               icon: const Icon(Icons.delete_outline_outlined),
@@ -183,7 +182,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
               padding: const EdgeInsets.all(12),
             ),
           ],
-          if (state.isDeleted && canMassDelete) ...[
+          if (state.isDeleted && enableBotton) ...[
             IconButton(
               onPressed: () => notifier.toggleDeleteMode(false),
               icon: const Icon(Icons.cancel_outlined),
@@ -345,19 +344,10 @@ class _ActionButton extends StatelessWidget {
 }
 
 void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
-  print('Artículo:');
-  print('ID: ${article.id}');
-  print('SKU: ${article.sku}');
-  print('Categoría: ${article.categoriaDescripcion}');
-  print('Código de Barras: ${article.codigoBarras}');
-  print('Descripción: ${article.descripcion}');
-  print('Fabricante: ${article.fabricante}');
-  print('IVA: ${article.iva}');
-  print('Precio 1: ${article.precio1}');
-  print('Precio 2: ${article.precio2}');
-  print('Precio 3: ${article.precio3}');
-  print('Stock: ${article.stock}');
-  print('Ubicación: ${article.ubicacion}');
+    final userState = ref.read(userNotifierProvider);
+    final currentRol = userState.user?.role;
+    final enableBotton = currentRol == UserRole.admin || currentRol == UserRole.editor;
+
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -415,6 +405,7 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
+                    if (enableBotton)
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pop(bc);
@@ -429,6 +420,7 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                       },
                       child: const Text('Editar'),
                     ),
+                    if (enableBotton)
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pop(bc);
