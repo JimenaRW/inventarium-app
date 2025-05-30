@@ -58,6 +58,12 @@ const List<MenuItem> appMenuItems = [
     route: '/users',
     allowedRoles: [UserRole.admin], // Solo admin
   ),
+  MenuItem(
+    title: 'Tema',
+    subtitle: 'Cambiar tema',
+    icon: Icons.brightness_6_outlined,
+    route: '/theme',
+  ),
 ];
 
 
