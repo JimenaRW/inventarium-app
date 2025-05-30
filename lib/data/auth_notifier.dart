@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/auth_repository.dart';
+import 'package:inventarium/data/user_repository.dart';
+import 'package:inventarium/domain/user.dart';
+import 'package:inventarium/domain/user.dart' as user;
 import 'package:inventarium/presentation/viewmodels/article/states/auth_state.dart';
 
 class AuthNotifier extends StateNotifier<AuthState> {
@@ -51,6 +54,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // Manejar error
     }
   }
+
+final UserRepository _userRepository = UserRepository();
+
+Future<user.User?> getCurrentUser() async {
+  return await _userRepository.getCurrentUser();
+}
 
   String? getUserEmail() {
     return _userEmail;
