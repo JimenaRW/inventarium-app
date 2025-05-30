@@ -57,9 +57,10 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     final currentRol = userState.user?.role;
     final showCreateButton = currentRol == UserRole.admin || currentRol == UserRole.editor;
    
+
     return Scaffold(
       appBar: AppBar(title: const Text('Categorías')),
-
+  
       body: Column(
         children: [
           Text(

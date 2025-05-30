@@ -10,7 +10,9 @@ class DrawerMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authNotifier = ref.read(authStateProvider.notifier);
+    final authNotifier = 
+ref.read
+(authStateProvider.notifier);
 
     return Drawer(
       child: Column(
@@ -18,7 +20,9 @@ class DrawerMenu extends ConsumerWidget {
           Expanded(
             child: ListView(
               children:
-                  appMenuItems.map((item) => MenuTile(item: item)).toList(),
+                  
+appMenuItems.map
+((item) => MenuTile(item: item)).toList(),
             ),
           ),
           const Divider(),
@@ -43,4 +47,5 @@ class DrawerMenu extends ConsumerWidget {
       ),
     );
   }
-}
+} 
+

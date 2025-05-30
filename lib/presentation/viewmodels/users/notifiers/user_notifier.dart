@@ -6,16 +6,13 @@ import 'package:inventarium/presentation/viewmodels/users/states/user_state.dart
 class UserNotifier extends StateNotifier<UserState> {
   final UserRepository _userRepository;
 
-   UserNotifier(this._userRepository) : super(UserState.initial()) {
-    // Cargar ususario actual al inicializar
-    loadCurrentUser();
-  }
+  UserNotifier(this._userRepository) : super(UserState.initial());
 
-    Future<void> loadCurrentUser() async {
+  Future<void> loadCurrentUser() async {
     state = state.copyWith(loading: true);
     try {
-      final user = await this._userRepository.getCurrentUser();
-      state = state.copyWith(user: user, loading: false, error: null);
+      final user = await _userRepository.getCurrentUser();
+      state = state.copyWith(user: user, loading: false);
     } catch (e) {
       state = state.copyWith(error: e.toString(), loading: false);
     }
