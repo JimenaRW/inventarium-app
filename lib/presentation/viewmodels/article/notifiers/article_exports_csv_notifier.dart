@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:collection/collection.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/category_repository.dart';
