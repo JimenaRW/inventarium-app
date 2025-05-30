@@ -219,7 +219,6 @@ void _showCategoryDetails(
                   ),
                 ),
                 const SizedBox(height: 20),
-                _buildDetailRow('ID', category.id),
                 _buildDetailRow('Descripción', category.descripcion),
                 _buildDetailRow(
                   'Estado', 
@@ -239,6 +238,10 @@ void _showCategoryDetails(
                       child: const Text('Editar'),
                     ),
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
                       onPressed: () {
                         Navigator.of(context).pop();
                         context.push('/categories/delete/${category.id}');

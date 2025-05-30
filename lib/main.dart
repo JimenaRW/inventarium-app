@@ -18,7 +18,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final appRouter = ref.watch(
       appRouterProvider,
-    ); // Usa appRouterProvider aquí
+    ); 
     return MaterialApp.router(title: 'Inventarium', routerConfig: appRouter);
   }
 }

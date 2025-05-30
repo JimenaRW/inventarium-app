@@ -46,4 +46,54 @@ class UserNotifier extends StateNotifier<UserState> {
       state = state.copyWith(error: e.toString(), updating: false);
     }
   }
+
+  Future<void> softDeleteUserById(String userId) async {
+    try {
+      final user = await _userRepository.getUserById(userId);
+
+      if (user == null) {
+        throw "El usuario no se encuentra disponible en la base de datos.";
+      }
+
+      if (user.estado == 'inactive') {
+        throw "El usuario ya se encuentra inactivo.";
+      }
+
+      await _userRepository.inactivateUser(userId);
+
+      state = state.copyWith(
+        users:
+            state.users.map((u) {
+              if (u.id == userId) {
+                return u.copyWith(estado: 'inactive');
+              }
+              return u;
+            }).toList(),
+        updating: false,
+        error: null,
+      );
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> updateUserStatus(String userId, String newStatus) async {
+  state = state.copyWith(updating: true);
+  try {
+    await _userRepository.updateUserStatus(userId, newStatus);
+    state = state.copyWith(
+      users: state.users.map((u) {
+        if (u.id == userId) {
+          return u.copyWith(estado: newStatus);
+        }
+        return u;
+      }).toList(),
+      updating: false,
+    );
+  } catch (e) {
+    state = state.copyWith(error: e.toString(), updating: false);
+    rethrow;
+  }
+}
 }

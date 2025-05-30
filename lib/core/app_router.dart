@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/navigation_provider.dart';
+import 'package:inventarium/domain/user.dart' as domain;
 import 'package:inventarium/presentation/screens/articles/articles_exports_csv.dart';
 import 'package:inventarium/presentation/screens/articles/articles_import_csv.dart';
 import 'package:inventarium/presentation/screens/articles/articles_share_csv.dart';
@@ -23,6 +24,7 @@ import 'package:inventarium/presentation/screens/categories/categories_screen.da
 import 'package:inventarium/presentation/screens/categories/category_create_screen.dart';
 import 'package:inventarium/presentation/screens/categories/edit_category_screen.dart';
 import 'package:inventarium/presentation/screens/home_screen.dart';
+import 'package:inventarium/presentation/screens/users/edit_user_screen.dart';
 import 'package:inventarium/presentation/screens/users/users_screen.dart';
 
 class AuthStreamListenable extends ChangeNotifier {
@@ -181,6 +183,14 @@ final appRouterProvider = Provider<GoRouter>(
         name: StockScreen.name,
         path: '/stock',
         builder: (context, state) => StockScreen(),
+      ),
+      GoRoute(
+        name: EditUserScreen.name,
+        path: '/users/edit/:id',
+        builder: (context, state) {
+          final user = state.extra as domain.User;
+          return EditUserScreen(user: user);
+        },
       ),
     ],
     observers: [ref.read(routeObserverProvider)],
