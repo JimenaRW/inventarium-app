@@ -1,1 +1,1 @@
-enum AuthState { unauthenticated, authenticated, loading }
+enum AuthState { init, unauthenticated, authenticated, loading, emailVerified, tooManyRequests }

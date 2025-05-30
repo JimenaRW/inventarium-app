@@ -30,15 +30,47 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     ref
         .read(authStateProvider.notifier)
-        .signUpWithEmailAndPassword(
-          _emailController.text,
-          _passwordController.text,
-        );
+        .registerWithEmail(_emailController.text, _passwordController.text);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authState = ref.watch(authStateProvider);
+
+    if (authState == AuthState.emailVerified) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context)
+          ..clearSnackBars()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(
+                "Por favor verifica tu correo electrónico antes de iniciar sesión",
+              ),
+            ),
+          );
+      });
+    }
+
+    if (authState == AuthState.tooManyRequests) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context)
+          ..clearSnackBars()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(
+                "Demasiados intentos de logueo, vuelva a intentarlo más tarde",
+              ),
+            ),
+          );
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     if (authState == AuthState.authenticated) {
       context.go('/');
