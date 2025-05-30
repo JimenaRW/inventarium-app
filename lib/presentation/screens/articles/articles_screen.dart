@@ -50,7 +50,10 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     final notifier = ref.read(articleSearchNotifierProvider.notifier);
     final userState = ref.read(userNotifierProvider);
     final currentRol = userState.user?.role;
-
+    final showCreateButton = currentRol == UserRole.admin || currentRol == UserRole.editor;
+    final showImportExportButtons = currentRol == UserRole.admin || currentRol == UserRole.editor;
+  
+  
     return Scaffold(
       appBar: AppBar(
         title: const Text('Artículos'),
@@ -63,9 +66,11 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+             if (showCreateButton || showImportExportButtons)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+               if (showCreateButton)
                 _ActionButton(
                   icon: Icons.add_circle_outline,
                   label: 'CREAR\nARTÍCULO',
@@ -81,6 +86,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                         _searchController.clear(),
                       },
                 ),
+                 if (showImportExportButtons)
                 _ActionButton(
                   icon: Icons.upload_file,
                   label: 'IMPORTAR\nCSV',
@@ -131,6 +137,11 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     UserRole? currentRol,
   ) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+     // Determinar permisos basados en el rol
+    final canDelete = currentRol == UserRole.admin || currentRol == UserRole.editor;
+    final canMassDelete = currentRol == UserRole.admin || currentRol == UserRole.editor; 
+
     return ConstrainedBox(
       constraints: const BoxConstraints(
         minHeight: 64,
@@ -161,7 +172,10 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
               ),
             ),
           ),
-          if (!state.isDeleted && currentRol?.name != UserRole.viewer.name) ...[
+
+      //currentRol?.name != UserRole.viewer.name
+          if (!state.isDeleted && canDelete) ...[
+            if (canMassDelete)
             IconButton(
               onPressed: () => notifier.toggleDeleteMode(true),
               icon: const Icon(Icons.delete_outline_outlined),
@@ -169,7 +183,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
               padding: const EdgeInsets.all(12),
             ),
           ],
-          if (state.isDeleted) ...[
+          if (state.isDeleted && canMassDelete) ...[
             IconButton(
               onPressed: () => notifier.toggleDeleteMode(false),
               icon: const Icon(Icons.cancel_outlined),
