@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -17,14 +18,18 @@ import 'package:inventarium/presentation/screens/articles/edit_article_screen.da
 import 'package:inventarium/presentation/screens/auth/login_screen.dart';
 import 'package:inventarium/presentation/screens/auth/password_reset_screen.dart';
 import 'package:inventarium/presentation/screens/auth/register_screen.dart';
+import 'package:inventarium/presentation/screens/auth/unauthorized_screen.dart';
 import 'package:inventarium/presentation/screens/categories/categories_screen.dart';
 import 'package:inventarium/presentation/screens/categories/category_create_screen.dart';
 import 'package:inventarium/presentation/screens/categories/edit_category_screen.dart';
 import 'package:inventarium/presentation/screens/home_screen.dart';
 import 'package:inventarium/presentation/screens/theme/theme_screen.dart';
+import 'package:inventarium/presentation/screens/users/users_screen.dart';
 
 class AuthStreamListenable extends ChangeNotifier {
   StreamSubscription<User?>? _subscription; // Hacerlo nullable
+
+
 
   AuthStreamListenable() {
     init();
@@ -46,6 +51,12 @@ class AuthStreamListenable extends ChangeNotifier {
 final _authStreamListenable = AuthStreamListenable();
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
+   final restrictedRoutes = {
+    'viewer': ['/edit', '/create', '/delete', '/users','/import-csv','/stock'],
+    'editor': ['/users'], // 'editor' no puede acceder a usuarios ni borrar
+    // 'admin' no tiene restricciones
+  };
+
 final appRouterProvider = Provider<GoRouter>(
   (ref) => GoRouter(
     navigatorKey: _rootNavigatorKey,
@@ -57,6 +68,27 @@ final appRouterProvider = Provider<GoRouter>(
       final location = state.uri.toString();
       if (user == null && !location.startsWith('/auth')) {
         return '/auth/login';
+      }
+
+      // Si hay usuario autenticado
+      if (user != null) {
+        // Obtener el documento del usuario en Firestore para verificar su rol
+        final userDoc =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .get();
+
+        final userRole = userDoc.data()?['role'] as String?;
+
+        if (userRole == null) {
+          return '/unauthorized';
+        }
+
+        final userRestrictions = restrictedRoutes[userRole] ?? [];
+        if (userRestrictions.any((route) => location.contains(route))) {
+          return '/unauthorized';
+        }
       }
       return null;
     },
@@ -145,6 +177,18 @@ final appRouterProvider = Provider<GoRouter>(
             (context, state) => DeleteCategoryScreen(
               categoryId: state.pathParameters['id'] ?? '',
             ),
+      ),
+      GoRoute(
+        path: '/unauthorized',
+        name: 'unauthorized_screen',
+        builder: (context, state) => const UnauthorizedScreen(),
+      ),
+      GoRoute(
+        path: '/users',
+        name: 'users_screen',
+        builder: (context, state) {
+          return const UsersScreen();
+        },
       ),
       GoRoute(
         name: StockScreen.name,

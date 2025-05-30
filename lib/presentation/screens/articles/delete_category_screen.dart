@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/category_repository_provider.dart';
-import 'package:inventarium/presentation/viewmodels/article/provider.dart';
-import 'package:inventarium/data/category_repository.dart';
+
 
 class DeleteCategoryScreen extends ConsumerWidget {
   final String categoryId;

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/data/category_repository_provider.dart';
 import 'package:inventarium/domain/category.dart';
+import 'package:inventarium/domain/role.dart';
+import 'package:inventarium/presentation/viewmodels/users/provider.dart';
 import 'package:inventarium/presentation/widgets/category_list_card.dart';
 
 class CategoriesScreen extends ConsumerStatefulWidget {
@@ -29,6 +31,10 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _searchController.clear();
     });
+    
+    Future.microtask(() {
+      ref.read(userNotifierProvider.notifier).loadCurrentUser();
+    });
   }
 
   @override
@@ -47,10 +53,14 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   Widget build(BuildContext context) {
     final categories = ref.watch(categoriesNotifierProvider);
     final notifier = ref.read(categoriesNotifierProvider.notifier);
+    final userState = ref.read(userNotifierProvider);
+    final currentRol = userState.user?.role;
+    final showCreateButton = currentRol == UserRole.admin || currentRol == UserRole.editor;
+   
 
     return Scaffold(
       appBar: AppBar(title: const Text('Categorías')),
-
+  
       body: Column(
         children: [
           Text(
@@ -65,6 +75,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
+              if (showCreateButton)
               _ActionButton(
                 icon: Icons.add_circle_outline,
                 label: 'CREAR\nCATEGORÍA',
@@ -213,7 +224,14 @@ void _showCategoryDetails(
   Category category,
   WidgetRef ref,
 ) {
+
+   final userState = ref.read(userNotifierProvider);
+    final currentRol = userState.user?.role;
+    final enableBotton = currentRol == UserRole.admin || currentRol == UserRole.editor;
+
+
   showModalBottomSheet(
+    
     context: context,
     isScrollControlled: true,
     builder: (BuildContext bc) {
@@ -244,6 +262,7 @@ void _showCategoryDetails(
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
+                    if (enableBotton)
                     ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pop();
@@ -251,6 +270,7 @@ void _showCategoryDetails(
                       },
                       child: const Text('Editar'),
                     ),
+                    if (enableBotton)
                     ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pop();

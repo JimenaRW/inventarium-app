@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/data/article_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/role.dart';
 import 'package:inventarium/presentation/viewmodels/article/notifiers/article_search_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_search_state.dart';
+import 'package:inventarium/presentation/viewmodels/users/provider.dart';
 import 'package:inventarium/presentation/widgets/article_list_card.dart';
 
 class ArticlesScreen extends ConsumerStatefulWidget {
@@ -30,6 +32,9 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _searchController.clear();
     });
+    Future.microtask(() {
+      ref.read(userNotifierProvider.notifier).loadCurrentUser();
+    });
   }
 
   @override
@@ -43,7 +48,12 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(articleSearchNotifierProvider);
     final notifier = ref.read(articleSearchNotifierProvider.notifier);
-
+    final userState = ref.read(userNotifierProvider);
+    final currentRol = userState.user?.role;
+    final enableBotton = currentRol == UserRole.admin || currentRol == UserRole.editor;
+  
+  
+  
     return Scaffold(
       appBar: AppBar(
         title: const Text('Artículos'),
@@ -56,28 +66,39 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+             if (enableBotton)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+               if (enableBotton)
                 _ActionButton(
                   icon: Icons.add_circle_outline,
                   label: 'CREAR\nARTÍCULO',
                   onTap:
                       () => {
                         context.push('/articles/create'),
-                        ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false),
-                        ref.read(articleSearchNotifierProvider.notifier).loadInitialData(),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .loadInitialData(),
                         _searchController.clear(),
                       },
                 ),
+                 if (enableBotton)
                 _ActionButton(
                   icon: Icons.upload_file,
                   label: 'IMPORTAR\nCSV',
                   onTap:
                       () => {
                         context.push('/articles/import-csv'),
-                        ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false),
-                        ref.read(articleSearchNotifierProvider.notifier).loadInitialData(),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .loadInitialData(),
                         _searchController.clear(),
                       },
                 ),
@@ -87,8 +108,12 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   onTap:
                       () => {
                         context.push('/articles/exports-csv'),
-                        ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false),
-                        ref.read(articleSearchNotifierProvider.notifier).loadInitialData(),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .toggleDeleteMode(false),
+                        ref
+                            .read(articleSearchNotifierProvider.notifier)
+                            .loadInitialData(),
                         _searchController.clear(),
                       },
                 ),
@@ -97,7 +122,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
             const SizedBox(
               height: 24,
             ), // Espacio entre los botones y el buscador
-            _buildSearchField(notifier, state),
+            _buildSearchField(notifier, state, currentRol),
             const SizedBox(height: 16),
             Expanded(child: _buildContent(state, notifier)),
           ],
@@ -109,8 +134,13 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   Widget _buildSearchField(
     ArticleSearchNotifier notifier,
     ArticleSearchState state,
+    UserRole? currentRol,
   ) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+     // Determinar permisos basados en el rol
+    final enableBotton = currentRol == UserRole.admin || currentRol == UserRole.editor;
+   
     return ConstrainedBox(
       constraints: const BoxConstraints(
         minHeight: 64,
@@ -141,7 +171,10 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
               ),
             ),
           ),
-          if (!state.isDeleted) ...[
+
+      //currentRol?.name != UserRole.viewer.name
+          if (!state.isDeleted && enableBotton) ...[
+            if (enableBotton)
             IconButton(
               onPressed: () => notifier.toggleDeleteMode(true),
               icon: const Icon(Icons.delete_outline_outlined),
@@ -149,7 +182,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
               padding: const EdgeInsets.all(12),
             ),
           ],
-          if (state.isDeleted) ...[
+          if (state.isDeleted && enableBotton) ...[
             IconButton(
               onPressed: () => notifier.toggleDeleteMode(false),
               icon: const Icon(Icons.cancel_outlined),
@@ -173,14 +206,15 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                           .read(articleSearchNotifierProvider.notifier)
                           .loadInitialData();
                     });
-                  }
-                  else {
+                  } else {
                     scaffoldMessenger.hideCurrentSnackBar();
                     scaffoldMessenger.showSnackBar(
-                    SnackBar(
-                      content: Text("Debe selecionar un artículo a eliminar."),
-                    ),
-                  );
+                      SnackBar(
+                        content: Text(
+                          "Debe selecionar un artículo a eliminar.",
+                        ),
+                      ),
+                    );
                   }
                 } catch (e) {
                   scaffoldMessenger.hideCurrentSnackBar();
@@ -310,19 +344,10 @@ class _ActionButton extends StatelessWidget {
 }
 
 void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
-  print('Artículo:');
-  print('ID: ${article.id}');
-  print('SKU: ${article.sku}');
-  print('Categoría: ${article.categoriaDescripcion}');
-  print('Código de Barras: ${article.codigoBarras}');
-  print('Descripción: ${article.descripcion}');
-  print('Fabricante: ${article.fabricante}');
-  print('IVA: ${article.iva}');
-  print('Precio 1: ${article.precio1}');
-  print('Precio 2: ${article.precio2}');
-  print('Precio 3: ${article.precio3}');
-  print('Stock: ${article.stock}');
-  print('Ubicación: ${article.ubicacion}');
+    final userState = ref.read(userNotifierProvider);
+    final currentRol = userState.user?.role;
+    final enableBotton = currentRol == UserRole.admin || currentRol == UserRole.editor;
+
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -380,6 +405,7 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
+                    if (enableBotton)
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pop(bc);
@@ -394,6 +420,7 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                       },
                       child: const Text('Editar'),
                     ),
+                    if (enableBotton)
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pop(bc);
