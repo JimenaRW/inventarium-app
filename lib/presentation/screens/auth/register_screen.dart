@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,8 +19,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+  void _submit() async {
+    final form = _formKey.currentState;
+    if (form == null || !_formKey.currentState!.validate()) return;
+
+    ScaffoldMessenger.of(context).clearSnackBars();
 
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -27,54 +31,55 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
       return;
     }
-
-    ref
-        .read(authStateProvider.notifier)
-        .registerWithEmail(_emailController.text, _passwordController.text);
+    try {
+      await ref
+          .read(authStateProvider.notifier)
+          .registerWithEmail(_emailController.text, _passwordController.text);
+    } on FirebaseAuthException catch (e) {
+      _handleAuthError(e);
+    } finally {
+      ref.read(authStateProvider.notifier).reset();
+    }
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final authState = ref.watch(authStateProvider);
+  void _handleAuthError(FirebaseAuthException e) {
+    String message;
 
-    if (authState == AuthState.emailVerified) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context)
-          ..clearSnackBars()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(
-                "Por favor verifica tu correo electrónico antes de iniciar sesión",
-              ),
-            ),
-          );
-      });
+    switch (e.code) {
+      case 'invalid-email-verified':
+        message =
+            'Por favor verifica tu correo electrónico antes de iniciar sesión';
+        break;
+      case 'wrong-password':
+      case 'user-not-found':
+        message = 'Correo electrónico o contraseña incorrectos';
+        break;
+      case 'too-many-requests':
+        message = 'Demasiados intentos. Por favor intenta más tarde';
+        break;
+      case 'email-already-in-use':
+        message = 'El mail esta en uso';
+        break;
+      default:
+        message = 'Error al iniciar sesión: ${e.message}';
     }
 
-    if (authState == AuthState.tooManyRequests) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context)
-          ..clearSnackBars()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(
-                "Demasiados intentos de logueo, vuelva a intentarlo más tarde",
-              ),
-            ),
-          );
-      });
-    }
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    if (authState == AuthState.authenticated) {
-      context.go('/');
-    }
+    ref.listen<AuthState>(authStateProvider, (_, next) {
+      if (next == AuthState.authenticated) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) context.go('/');
+        });
+      }
+    });
 
     return Scaffold(
       body: Center(

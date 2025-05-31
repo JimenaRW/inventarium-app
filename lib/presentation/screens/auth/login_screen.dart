@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,25 +17,61 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  void _submit() {
+  void _submit() async {
     final form = _formKey.currentState;
     if (form == null || !form.validate()) return;
 
-    ref
-        .read(authStateProvider.notifier)
-        .signInWithEmailAndPassword(
-          _emailController.text,
-          _passwordController.text,
-        );
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    try {
+      await ref
+          .read(authStateProvider.notifier)
+          .signInWithEmailAndPassword(
+            _emailController.text,
+            _passwordController.text,
+          );
+    } on FirebaseAuthException catch (e) {
+      _handleAuthError(e);
+    } finally {
+      ref.read(authStateProvider.notifier).reset();
+    }
+  }
+
+  void _handleAuthError(FirebaseAuthException e) {
+    String message;
+
+    switch (e.code) {
+      case 'invalid-email-verified':
+        message =
+            'Por favor verifica tu correo electrónico antes de iniciar sesión';
+        break;
+      case 'wrong-password':
+      case 'user-not-found':
+        message = 'Correo electrónico o contraseña incorrectos';
+        break;
+      case 'too-many-requests':
+        message = 'Demasiados intentos. Por favor intenta más tarde';
+        break;
+      default:
+        message = 'Error al iniciar sesión: ${e.message}';
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
 
-    if (authState == AuthState.authenticated) {
-      context.go('/'); // Navega al home si el login fue exitoso
-    }
+    ref.listen<AuthState>(authStateProvider, (_, next) {
+      if (next == AuthState.authenticated) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) context.go('/');
+        });
+      }
+    });
 
     return Scaffold(
       body: Center(
