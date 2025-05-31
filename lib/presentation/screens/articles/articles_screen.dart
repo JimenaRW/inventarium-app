@@ -44,6 +44,9 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
         ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
       }
     });
+    Future.microtask(() {
+      ref.read(userNotifierProvider.notifier).loadCurrentUser();
+    });
   }
 
   @override
@@ -62,8 +65,6 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     final enableBotton =
         currentRol == UserRole.admin || currentRol == UserRole.editor;
 
-    print('Current Role: $currentRol');
-    print('Enable Button: $enableBotton');
     return Scaffold(
       appBar: AppBar(
         title: const Text('Artículos'),
