@@ -23,7 +23,6 @@ class AuthRepository {
         );
       }
     } catch (e) {
-      print('Error de inicio de sesión: ${e}');
       rethrow;
     }
   }
@@ -54,7 +53,6 @@ class AuthRepository {
 
       return userCredential;
     } catch (e) {
-      print('Error de registro: ${e}');
       rethrow;
     }
   }

@@ -145,17 +145,17 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     ArticleSearchState state,
     UserRole? currentRol,
   ) {
-    // Usar addPostFrameCallback para mostrar el SnackBar después del build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (FirebaseAuth.instance.currentUser == null) {
         FirebaseAuth.instance.signOut().then(
           (value) =>
+              // ignore: use_build_context_synchronously
               ScaffoldMessenger.of(context)
                 ..clearSnackBars()
                 ..showSnackBar(
                   SnackBar(content: Text("Por favor verifica iniciar sesión")),
                 ),
-        ); // O con tu método de autenticación
+        );
       }
     });
     final scaffoldMessenger = ScaffoldMessenger.of(context);

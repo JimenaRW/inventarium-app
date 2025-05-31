@@ -1,19 +1,15 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/core/menu/drawer_menu.dart';
 import 'package:inventarium/data/category_repository_provider.dart';
-
 import 'package:inventarium/data/low_stock_provider.dart';
 import 'package:inventarium/data/navigation_provider.dart';
 import 'package:inventarium/data/no_stock_provider.dart';
 import 'package:inventarium/data/top_categories_provider.dart';
 import 'package:inventarium/data/total_articles_provider.dart';
 import 'package:inventarium/presentation/widgets/all_articles_card.dart';
-
 import 'package:inventarium/presentation/widgets/category_dashboard.dart';
-
 import 'package:inventarium/presentation/widgets/low_stock_card.dart';
 import 'package:inventarium/presentation/widgets/no_stock_card.dart';
 

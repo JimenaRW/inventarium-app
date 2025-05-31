@@ -17,7 +17,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _userEmail = email;
       state = AuthState.authenticated;
     } catch (e) {
-      print("Mensaje de error: ${e}");
       rethrow;
     }
   }
@@ -28,7 +27,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _authRepository.registerWithEmail(email, password);
       state = AuthState.authenticated;
     } catch (e) {
-      print("Mensaje de error: ${e}");
       rethrow;
     }
   }
