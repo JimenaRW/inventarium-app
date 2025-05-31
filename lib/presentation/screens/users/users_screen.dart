@@ -188,6 +188,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                       },
                       child: const Text('Editar'),
                     ),
+                    if(user.estado== 'active')
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
@@ -208,7 +209,11 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                                 child: const Text('Cancelar'),
                               ),
                               TextButton(
-                                onPressed: () => Navigator.pop(ctx, true),
+                                onPressed: () => {
+                                  ref.read(userNotifierProvider.notifier).loadUsers(),
+                                  ref.read(userNotifierProvider.notifier).reset(),
+                                  Navigator.pop(ctx, true),
+                                },
                                 child: const Text(
                                   'Eliminar',
                                   style: TextStyle(color: Colors.red),
