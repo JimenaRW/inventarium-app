@@ -18,7 +18,8 @@ class AuthRepository {
 
         throw FirebaseAuthException(
           code: 'invalid-email-verified',
-          message: 'Por favor verifica tu correo electrónico antes de iniciar sesión',
+          message:
+              'Por favor verifica tu correo electrónico antes de iniciar sesión',
         );
       }
     } catch (e) {
@@ -51,7 +52,11 @@ class AuthRepository {
             'id': userCredential.user?.uid,
           });
 
-        return userCredential;
+      return userCredential;
+    } catch (e) {
+      print('Error de registro: ${e}');
+      rethrow;
+    }
   }
 
   Future<void> signOut() async {
