@@ -271,7 +271,8 @@ class ArticleRepository implements IArticleRepository {
       final querySnapshot =
           await db
               .collection('articles')
-              .where('stock', isLessThanOrEqualTo: threshold, isNotEqualTo: 0)
+              .where('stock', isGreaterThan: 0)
+              .where('stock', isLessThanOrEqualTo: threshold)
               .where('status', isEqualTo: ArticleStatus.active.name)
               .withConverter<Article>(
                 fromFirestore: Article.fromFirestore,

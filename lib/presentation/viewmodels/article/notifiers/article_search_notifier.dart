@@ -174,6 +174,28 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
     }
   }
 
+  Future<void> searchArticlesByNoStock() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final articles = await _articleNotifier.getArticlesWithNoStock();
+      state = state.copyWith(filteredArticles: articles, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> searchArticlesByLowStock(int threshold) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final articles = await _articleNotifier.getArticlesWithLowStock(
+        threshold,
+      );
+      state = state.copyWith(filteredArticles: articles, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
   Future<void> removeAllArticles() async {
     state = state.copyWith(isLoading: true);
 

@@ -25,16 +25,24 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false);
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _searchController.clear();
-    });
-    Future.microtask(() {
-      ref.read(userNotifierProvider.notifier).loadCurrentUser();
+      final state = GoRouterState.of(context);
+      final arguments = state.extra as Map<String, dynamic>?;
+      if (arguments != null && arguments['filter'] != null) {
+        switch (arguments['filter']) {
+          case 'no_stock':
+            ref
+                .read(articleSearchNotifierProvider.notifier)
+                .searchArticlesByNoStock();
+            break;
+          case 'low_stock':
+            ref
+                .read(articleSearchNotifierProvider.notifier)
+                .searchArticlesByLowStock(10); // Umbral de stock bajo
+            break;
+        }
+      } else {
+        ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
+      }
     });
   }
 
@@ -54,6 +62,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     final enableBotton =
         currentRol == UserRole.admin || currentRol == UserRole.editor;
 
+    print('Current Role: $currentRol');
+    print('Enable Button: $enableBotton');
     return Scaffold(
       appBar: AppBar(
         title: const Text('Artículos'),

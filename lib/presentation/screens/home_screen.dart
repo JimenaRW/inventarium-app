@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inventarium/core/menu/drawer_menu.dart';
 import 'package:inventarium/data/category_repository_provider.dart';
 
@@ -111,9 +112,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
                 childAspectRatio: 1.0,
-                children: const <Widget>[
-                  NoStockCard(),
-                  LowStockCard(),
+                children: <Widget>[
+                  GestureDetector(
+                    onTap: () {
+                      context.push('/articles', extra: {'filter': 'no_stock'});
+                    },
+                    child: NoStockCard(),
+                  ),
+
+                  GestureDetector(
+                    onTap: () {
+                      context.push('/articles', extra: {'filter': 'low_stock'});
+                    },
+                    child: LowStockCard(),
+                  ),
                   TotalArticlesCard(),
                 ],
               ),

@@ -145,4 +145,12 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
   Future<void> updateStock(String id, int newStock) {
     return _repository.updateStock(id, newStock);
   }
+
+  Future<List<Article>> getArticlesWithNoStock() async {
+    return await _repository.getArticlesWithNoStock();
+  }
+
+  Future<List<Article>> getArticlesWithLowStock(int threshold) async {
+    return await _repository.getArticlesWithLowStock(threshold);
+  }
 }
