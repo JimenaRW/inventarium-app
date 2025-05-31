@@ -28,14 +28,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
-  Map<String, int> topCategories = {
-    'Electrónica': 50,
-    'Ropa': 80,
-    'Hogar': 120,
-    'Libros': 65,
-    'Alimentos': 90,
-  };
-
   @override
   void initState() {
     super.initState();
