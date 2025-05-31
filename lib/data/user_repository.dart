@@ -25,4 +25,36 @@ class UserRepository {
       'role': newRole.toString().split('.').last,
     });
   }
+
+  Future<void> inactivateUser(String userId) async {
+    await _firestore.collection('users').doc(userId).update({
+      'status': 'inactive',
+    });
+  }
+
+Future<user.User?> getUserById(String id) async {
+  try {
+    final doc = await _firestore
+        .collection('users')
+        .doc(id)
+        .get();
+
+    if (!doc.exists || doc.data() == null) {
+      return null;
+    }
+
+    final data = doc.data()!;
+    return user.User.fromJson({...data, 'id': doc.id});
+  } catch (e) {
+    print('Error obteniendo usuario: $e');
+    return null;
+  }
+}
+
+Future<void> updateUserStatus(String userId, String newStatus) async {
+  await _firestore.collection('users').doc(userId).update({
+    'status': newStatus,
+  });
+}
+
 }
