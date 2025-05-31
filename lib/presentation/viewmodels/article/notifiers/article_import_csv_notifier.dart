@@ -5,6 +5,7 @@ import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/category_repository.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
+import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_import_csv_state.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -150,10 +151,10 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
               id: '', // se asignará más adelante si es update
               codigoBarras: values[0].trim(),
               sku: values[1].trim(),
-              descripcion: values[2].trim(),
+              descripcion: capitalizarPrimeraLetra(values[2].trim()),
               categoria: values[3].trim(), // descripcion futura
-              fabricante: values[4].trim(),
-              ubicacion: values[5].trim(),
+              fabricante: capitalizarPrimeraLetra(values[4].trim()),
+              ubicacion: capitalizarPrimeraLetra(values[5].trim()),
               stock: int.tryParse(values[6].trim()) ?? 0,
               precio1: double.tryParse(values[7].trim()) ?? 0.0,
               precio2: double.tryParse(values[8].trim()) ?? 0.0,
@@ -208,12 +209,13 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
       final catSnapshot = await categoriasRef.get();
       final Map<String, String> categoriasActuales = {
         for (var doc in catSnapshot.docs)
-          (doc.data()['description'] ?? '').toString().trim(): doc.id,
+          capitalizarPrimeraLetra((doc.data()['description'] ?? '').toString().trim()):
+              doc.id,
       };
 
       final Set<String> catImportadas =
           state.potentialArticles!
-              .map((a) => a.categoria.trim())
+              .map((a) => a.categoria.trim().toLowerCase())
               .where((e) => e.isNotEmpty)
               .toSet();
 
@@ -228,7 +230,10 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
       for (final descripcion in categoriasAInsertar) {
         operacionesCategorias.add((batch) {
           final ref = categoriasRef.doc();
-          batch.set(ref, {'description': descripcion, 'id': ref.id});
+          batch.set(ref, {
+            'description': capitalizarPrimeraLetra(descripcion.trim()),
+            'id': ref.id,
+          });
         });
       }
 
@@ -236,9 +241,9 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
       for (final descripcion in categoriasADesactivar) {
         final id = categoriasActuales[descripcion];
         if (id != null) {
+          final ref = categoriasRef.doc(id);
           operacionesCategorias.add((batch) {
-            final docRef = categoriasRef.doc(id);
-            batch.delete(docRef);
+            batch.update(ref, {'status': CategoryStatus.inactive.name});
           });
         }
       }
@@ -252,7 +257,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
       final nuevaSnapshot = await categoriasRef.get();
       final Map<String, String> catDescripcionToId = {
         for (var doc in nuevaSnapshot.docs)
-          (doc.data()['description'] ?? '').toString().trim(): doc.id,
+          capitalizarPrimeraLetra((doc.data()['description'] ?? '').toString().trim()): doc.id,
       };
 
       // Snapshot actual de artículos
@@ -347,5 +352,10 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
       await batch.commit();
       await Future.delayed(const Duration(milliseconds: 200));
     }
+  }
+
+  String capitalizarPrimeraLetra(String texto) {
+    if (texto.isEmpty) return texto;
+    return texto[0].toUpperCase() + texto.substring(1).toLowerCase();
   }
 }

@@ -86,6 +86,8 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
   }
 
   Future<void> loadCategoriesByStatus(CategoryStatus status) async {
+    if (!_mounted) return;
+  
     print('Cargando categorías por estado: ${status.name}');
     state = const AsyncLoading();
     try {
@@ -93,6 +95,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
       print('Categorías obtenidas: ${categories.length}');
       state = AsyncData(categories);
     } catch (e) {
+      if (!_mounted) return;
       print('Error al cargar categorías: $e');
       state = AsyncError(e, StackTrace.current);
     }
