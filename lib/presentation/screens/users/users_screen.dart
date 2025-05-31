@@ -190,49 +190,66 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                       },
                       child: const Text('Editar'),
                     ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder:
-                              (ctx) => AlertDialog(
-                                title: const Text('¿Eliminar usuario?'),
-                                content: const Text(
-                                  '¿Seguro que querés eliminar este usuario?',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx, false),
-                                    child: const Text('Cancelar'),
+                    if (user.estado == 'active')
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder:
+                                (ctx) => AlertDialog(
+                                  title: const Text('¿Eliminar usuario?'),
+                                  content: const Text(
+                                    '¿Seguro que querés eliminar este usuario?',
                                   ),
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx, true),
-                                    child: const Text(
-                                      'Eliminar',
-                                      style: TextStyle(color: Colors.red),
+                                  actions: [
+                                    TextButton(
+                                      onPressed:
+                                          () => Navigator.pop(ctx, false),
+                                      child: const Text('Cancelar'),
                                     ),
-                                  ),
-                                ],
-                              ),
-                        );
-                        if (confirmed == true) {
-                          await ref
-                              .read(userNotifierProvider.notifier)
-                              .softDeleteUserById(user.id);
-                          ref.read(userNotifierProvider.notifier).loadUsers();
-                          // ignore: use_build_context_synchronously
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Usuario eliminado")),
+                                    TextButton(
+                                      onPressed:
+                                          () => {
+                                            ref
+                                                .read(
+                                                  userNotifierProvider.notifier,
+                                                )
+                                                .loadUsers(),
+                                            ref
+                                                .read(
+                                                  userNotifierProvider.notifier,
+                                                )
+                                                .reset(),
+                                            Navigator.pop(ctx, true),
+                                          },
+                                      child: const Text(
+                                        'Eliminar',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                           );
-                        }
-                      },
-                      child: const Text('Eliminar'),
-                    ),
+                          if (confirmed == true) {
+                            await ref
+                                .read(userNotifierProvider.notifier)
+                                .softDeleteUserById(user.id);
+                            ref.read(userNotifierProvider.notifier).loadUsers();
+                            // ignore: use_build_context_synchronously
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Usuario eliminado"),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text('Eliminar'),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 20),

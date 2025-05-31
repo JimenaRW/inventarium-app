@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -133,6 +134,19 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     ArticleSearchState state,
     UserRole? currentRol,
   ) {
+    // Usar addPostFrameCallback para mostrar el SnackBar después del build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (FirebaseAuth.instance.currentUser == null) {
+        FirebaseAuth.instance.signOut().then(
+          (value) =>
+              ScaffoldMessenger.of(context)
+                ..clearSnackBars()
+                ..showSnackBar(
+                  SnackBar(content: Text("Por favor verifica iniciar sesión")),
+                ),
+        ); // O con tu método de autenticación
+      }
+    });
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     final enableBotton =
@@ -188,7 +202,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   if (state.articlesDeleted.isNotEmpty) {
                     await notifier.removeAllArticles();
                     await notifier.loadInitialData();
-                    scaffoldMessenger.hideCurrentSnackBar();
+                    // Mostrar mensaje de éxito
+                    scaffoldMessenger.clearSnackBars();
                     scaffoldMessenger.showSnackBar(
                       SnackBar(content: Text(state.successMessage!)),
                     );
@@ -198,7 +213,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                           .loadInitialData();
                     });
                   } else {
-                    scaffoldMessenger.hideCurrentSnackBar();
+                    scaffoldMessenger.clearSnackBars();
                     scaffoldMessenger.showSnackBar(
                       SnackBar(
                         content: Text(
@@ -208,7 +223,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                     );
                   }
                 } catch (e) {
-                  scaffoldMessenger.hideCurrentSnackBar();
+                  scaffoldMessenger.clearSnackBars();
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text(

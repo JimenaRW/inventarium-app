@@ -3,12 +3,9 @@ import 'package:inventarium/data/user_repository_provider.dart';
 import 'notifiers/user_notifier.dart';
 import 'states/user_state.dart';
 
-
-final userNotifierProvider = StateNotifierProvider<UserNotifier, UserState>((ref) {
-  final notifier = UserNotifier(
-ref.read
-(userRepositoryProvider));
+final userNotifierProvider = StateNotifierProvider<UserNotifier, UserState>((
+  ref,
+) {
+  final notifier = UserNotifier(ref.read(userRepositoryProvider));
   return notifier;
-}); 
-
-
+});

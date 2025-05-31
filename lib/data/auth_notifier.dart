@@ -8,7 +8,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
   String? _userEmail;
 
-  AuthNotifier(this._authRepository) : super(AuthState.unauthenticated);
+  AuthNotifier(this._authRepository) : super(AuthState.init);
 
   Future<void> signInWithEmailAndPassword(String email, String password) async {
     state = AuthState.loading;
@@ -17,18 +17,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _userEmail = email;
       state = AuthState.authenticated;
     } catch (e) {
-      state = AuthState.unauthenticated;
+      print("Mensaje de error: ${e}");
+      rethrow;
     }
   }
 
-  Future<void> signUpWithEmailAndPassword(String email, String password) async {
+  Future<void> registerWithEmail(String email, String password) async {
     state = AuthState.loading;
     try {
-      await _authRepository.signUpWithEmailAndPassword(email, password);
-      _userEmail = email;
+      await _authRepository.registerWithEmail(email, password);
       state = AuthState.authenticated;
     } catch (e) {
-      state = AuthState.unauthenticated;
+      print("Mensaje de error: ${e}");
+      rethrow;
     }
   }
 
@@ -37,7 +38,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _authRepository.signOut();
       _userEmail = null;
-      state = AuthState.unauthenticated;
+      state = AuthState.init;
     } catch (e) {
       state = AuthState.unauthenticated;
     }
@@ -51,5 +52,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   String? getUserEmail() {
     return _userEmail;
+  }
+
+  void reset() {
+    state = AuthState.init;
   }
 }

@@ -6,35 +6,52 @@ class AuthRepository {
 
   Stream<User?> authStateChanges() => _firebaseAuth.authStateChanges();
 
-  Future<UserCredential> signInWithEmailAndPassword(
-    String email,
-    String password,
-  ) async {
-    return await _firebaseAuth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+  Future<void> signInWithEmailAndPassword(String email, String password) async {
+    try {
+      UserCredential userCredential = await _firebaseAuth
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      if (userCredential.user != null && !userCredential.user!.emailVerified) {
+        await userCredential.user?.sendEmailVerification();
+
+        await _firebaseAuth.signOut();
+
+        throw FirebaseAuthException(
+          code: 'invalid-email-verified',
+          message: 'Por favor verifica tu correo electrónico antes de iniciar sesión',
+        );
+      }
+    } catch (e) {
+      print('Error de inicio de sesión: ${e}');
+      rethrow;
+    }
   }
 
-  Future<UserCredential> signUpWithEmailAndPassword(
+  Future<UserCredential> registerWithEmail(
     String email,
     String password,
   ) async {
-    final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    try {
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userCredential.user!.uid)
-        .set({
-          'email': email,
-          'role': 'viewer',
-          'id': userCredential.user?.uid,
-        });
+      await userCredential.user?.sendEmailVerification();
 
-    return userCredential;
+      await FirebaseAuth.instance.signOut();
+
+      // 2. Guardar rol en Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({
+            'email': email,
+            'role': 'viewer', // Asignar rol aquí
+            'id': userCredential.user?.uid,
+          });
+
+        return userCredential;
   }
 
   Future<void> signOut() async {
