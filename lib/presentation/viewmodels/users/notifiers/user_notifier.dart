@@ -96,4 +96,8 @@ class UserNotifier extends StateNotifier<UserState> {
     rethrow;
   }
 }
+
+  void reset() {
+    state = state.copyWith(error: null);
+  }
 }

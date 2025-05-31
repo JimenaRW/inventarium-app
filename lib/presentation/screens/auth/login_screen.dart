@@ -47,6 +47,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         break;
       case 'wrong-password':
       case 'user-not-found':
+      case 'invalid-credential':
         message = 'Correo electrónico o contraseña incorrectos';
         break;
       case 'too-many-requests':
