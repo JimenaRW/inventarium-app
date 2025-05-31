@@ -42,6 +42,17 @@ class ArticleListCard extends ConsumerWidget {
                               fit: BoxFit.contain,
                             ),
                           ),
+                        )
+                      else
+                        Padding(
+                          padding: EdgeInsets.only(right: 12.0),
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.15,
+                            child: Image.asset(
+                              'assets/images/no_image.png',
+                              fit: BoxFit.contain,
+                            ),
+                          ),
                         ),
 
                       Expanded(
