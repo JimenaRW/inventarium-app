@@ -9,8 +9,8 @@ final allArticlesProvider = FutureProvider<List<Article>>((ref) async {
   try {
     final articles = await articlesRepository.getAllArticles();
     return articles;
-  } catch (error, stackTrace) {
-    throw error;
+  } catch (error) {
+    rethrow;
   }
 });
 

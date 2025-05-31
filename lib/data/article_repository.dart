@@ -87,6 +87,7 @@ class ArticleRepository implements IArticleRepository {
 
     final articles = await docs.get();
 
+    // ignore: no_leading_underscores_for_local_identifiers
     final _articles = articles.docs.map((doc) => doc.data()).toList();
 
     if (query.trim().isEmpty) return _articles;
@@ -155,6 +156,7 @@ class ArticleRepository implements IArticleRepository {
 
     final articles = await docs.get();
 
+    // ignore: no_leading_underscores_for_local_identifiers
     final _articles = articles.docs.map((doc) => doc.data()).toList();
 
     return _articles;

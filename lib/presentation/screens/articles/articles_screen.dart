@@ -354,6 +354,7 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                 ),
                 const SizedBox(height: 10),
                 if (article.imageUrl != null && article.imageUrl!.isNotEmpty)
+                  // ignore: sized_box_for_whitespace
                   Container(
                     width: MediaQuery.of(context).size.width * 0.4,
                     child: Image.network(

@@ -81,8 +81,10 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen> {
             .updateUserStatus(widget.user.id, selectedStatus);
       }
 
+      // ignore: use_build_context_synchronously
       Navigator.pop(context, true);
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al actualizar: ${e.toString()}')),
       );

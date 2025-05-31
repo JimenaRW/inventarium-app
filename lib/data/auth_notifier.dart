@@ -38,7 +38,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _authRepository.signOut();
       _userEmail = null;
       state = AuthState.unauthenticated;
-    } catch (e) {}
+    } catch (e) {
+      state = AuthState.unauthenticated;
+    }
   }
 
   final UserRepository _userRepository = UserRepository();

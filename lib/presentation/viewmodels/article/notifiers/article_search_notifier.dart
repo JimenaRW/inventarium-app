@@ -56,7 +56,6 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
         page: _currentPage,
         limit: _itemsPerPage,
       );
-      print('Artículos cargados: ${articles.length}');
       state = state.copyWith(
         articles: articles,
         filteredArticles: articles,
@@ -151,7 +150,9 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
         filteredArticles: getFilteredArticles(updatedArticles),
       );
     } catch (e) {
-      print('Error al actualizar stock: $e');
+      state = state.copyWith(
+        error: 'Error al actualizar el stock: ${e.toString()}',
+      );
     }
   }
 

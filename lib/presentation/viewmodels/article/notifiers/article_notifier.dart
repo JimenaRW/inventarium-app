@@ -112,7 +112,12 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
         );
         state = state.copyWith(articles: [...state.articles, updatedArticle]);
       }
-    } catch (e) {}
+    } catch (e) {
+      state = state.copyWith(
+        error: 'Error al cargar artículo: ${e.toString()}',
+      );
+      rethrow;
+    }
   }
 
   Future<void> softDeleteById(String id) async {

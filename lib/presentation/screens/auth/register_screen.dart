@@ -7,6 +7,8 @@ import 'package:inventarium/presentation/viewmodels/article/states/auth_state.da
 class RegisterScreen extends ConsumerStatefulWidget {
   static const String name = 'register';
 
+  const RegisterScreen({super.key});
+
   @override
   ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }

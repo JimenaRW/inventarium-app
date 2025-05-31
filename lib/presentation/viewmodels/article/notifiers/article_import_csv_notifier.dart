@@ -9,7 +9,9 @@ import 'package:inventarium/presentation/viewmodels/article/states/article_impor
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
+  // ignore: unused_field
   final ArticleRepository _repository;
+  // ignore: unused_field
   final CategoryRepository _repositoryCategories;
 
   ArticleImportCsvNotifier(this._repository, this._repositoryCategories)
@@ -314,7 +316,9 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
     for (int i = 0; i < operaciones.length; i += maxBatch) {
       final batch = FirebaseFirestore.instance.batch();
       final grupo = operaciones.skip(i).take(maxBatch);
-      for (final op in grupo) op(batch);
+      for (final op in grupo) {
+        op(batch);
+      }
       await batch.commit();
       await Future.delayed(const Duration(milliseconds: 200));
     }

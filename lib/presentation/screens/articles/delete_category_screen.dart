@@ -58,17 +58,18 @@ class DeleteCategoryScreen extends ConsumerWidget {
                                 .read(categoryDeleteNotifierProvider.notifier)
                                 .deleteCategory(categoryId);
                             await Future.delayed(const Duration(seconds: 2));
+                            // ignore: use_build_context_synchronously
                             Navigator.pop(context);
                           },
                   child:
-                      categoryState.isLoading!
+                      categoryState.isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text('Eliminar'),
                 ),
               ],
             ),
 
-            if (categoryState.success!)
+            if (categoryState.success)
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
                 child: Text(

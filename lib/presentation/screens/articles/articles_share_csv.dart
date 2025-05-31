@@ -96,6 +96,7 @@ class ArticlesShareCsv extends ConsumerWidget {
               TextButton(
                 onPressed: () async {
                   await notifier.shareFileWithDownload(fileUrl);
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(ctx);
                 },
                 child: const Text('Compartir'),

@@ -82,6 +82,7 @@ class CategoryRepository implements ICategoryRepository {
 
     final categories = await docs.get();
 
+    // ignore: no_leading_underscores_for_local_identifiers
     final _categories = categories.docs.map((doc) => doc.data()).toList();
 
     if (query.trim().isEmpty) return _categories;

@@ -5,6 +5,7 @@ import 'package:inventarium/presentation/screens/auth/login_screen.dart';
 import 'package:inventarium/presentation/screens/home_screen.dart'; // Importa tu pantalla de login si es necesario
 
 class UnauthorizedScreen extends ConsumerWidget {
+  // ignore: use_super_parameters
   const UnauthorizedScreen({Key? key}) : super(key: key);
 
   @override

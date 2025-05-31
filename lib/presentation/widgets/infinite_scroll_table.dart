@@ -241,7 +241,7 @@ class _InfiniteScrollTableState<T>
                           final cell = row.cells[i];
                           cells.add(
                             DataCell(
-                              cell.child ?? const SizedBox(),
+                              cell.child,
                               onTap: () => _showDetails(context, item),
                             ),
                           );

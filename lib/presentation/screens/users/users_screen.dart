@@ -132,7 +132,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
             users.map((user) {
               return DataRow(
                 onSelectChanged: (_) {
-                  final freshUser = state.users.firstWhere(
+                  state.users.firstWhere(
                     (u) => u.id == user.id,
                     orElse: () => user,
                   );
@@ -225,6 +225,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                               .read(userNotifierProvider.notifier)
                               .softDeleteUserById(user.id);
                           ref.read(userNotifierProvider.notifier).loadUsers();
+                          // ignore: use_build_context_synchronously
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("Usuario eliminado")),
                           );

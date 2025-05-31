@@ -237,6 +237,7 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
     ArticleExportsCsvNotifier notifier,
   ) {
     notifier.exportArticles().then((_) {
+      // ignore: use_build_context_synchronously
       context.pushNamed(ArticlesShareCsv.name);
     });
   }

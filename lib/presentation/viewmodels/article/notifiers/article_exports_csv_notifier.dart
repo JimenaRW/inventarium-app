@@ -96,11 +96,14 @@ class ArticleExportsCsvNotifier extends StateNotifier<ArticleExportsCsvState> {
 
       await tempFile.writeAsBytes(response.bodyBytes);
 
+      // ignore: deprecated_member_use
       await Share.shareXFiles([
         XFile(tempFile.path),
       ], text: 'Compartir archivo');
     } catch (e) {
-      print("Error al compartir archivo: $e");
+      state = state.copyWith(
+        error: 'Error al compartir archivo: ${e.toString()}',
+      );
     }
   }
 

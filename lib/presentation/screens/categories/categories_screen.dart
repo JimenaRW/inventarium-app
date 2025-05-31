@@ -43,6 +43,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   void dispose() {
     try {
       ref.invalidate(categoriesNotifierProvider);
+      // ignore: empty_catches
     } catch (e) {}
     _searchController.dispose();
 
@@ -192,6 +193,7 @@ class _ActionButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    // ignore: unused_element_parameter
     this.fontSize,
     this.iconSize,
   });

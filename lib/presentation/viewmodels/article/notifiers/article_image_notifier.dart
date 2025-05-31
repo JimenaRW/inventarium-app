@@ -15,7 +15,6 @@ class ArticleImageNotifier extends StateNotifier<ArticleImageState> {
     state = state.copyWith(isLoading: true);
     try {
       final imageUrl = await _repository.uploadArticleImage(image, sku);
-      print('Image URL: $imageUrl');
       state = state.copyWith(
         isLoading: false,
         imageUrl: imageUrl,
@@ -32,9 +31,10 @@ class ArticleImageNotifier extends StateNotifier<ArticleImageState> {
       final tempDir = await getTemporaryDirectory();
       final tempFile = File('${tempDir.path}/image.jpg');
       await tempFile.writeAsBytes(response.bodyBytes);
+      // ignore: deprecated_member_use
       await Share.shareXFiles([XFile(tempFile.path)], text: 'Compartir imagen');
     } catch (e) {
-      print("Error al compartir imagen: $e");
+      state = state.copyWith(error: e.toString());
     }
   }
 

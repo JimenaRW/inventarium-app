@@ -7,6 +7,8 @@ import 'package:inventarium/presentation/viewmodels/article/states/auth_state.da
 class LoginScreen extends ConsumerStatefulWidget {
   static const String name = 'login';
 
+  const LoginScreen({super.key});
+
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
