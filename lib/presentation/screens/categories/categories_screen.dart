@@ -25,13 +25,15 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(categoriesNotifierProvider.notifier).loadCategoriesByStatus(_selectedStatus);
+      ref
+          .read(categoriesNotifierProvider.notifier)
+          .loadCategoriesByStatus(_selectedStatus);
     });
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _searchController.clear();
     });
-    
+
     Future.microtask(() {
       ref.read(userNotifierProvider.notifier).loadCurrentUser();
     });
@@ -41,9 +43,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   void dispose() {
     try {
       ref.invalidate(categoriesNotifierProvider);
-    } catch (e) {
-      // Ignorar la excepción
-    }
+    } catch (e) {}
     _searchController.dispose();
 
     super.dispose();
@@ -55,12 +55,12 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     final notifier = ref.read(categoriesNotifierProvider.notifier);
     final userState = ref.read(userNotifierProvider);
     final currentRol = userState.user?.role;
-    final showCreateButton = currentRol == UserRole.admin || currentRol == UserRole.editor;
-   
+    final showCreateButton =
+        currentRol == UserRole.admin || currentRol == UserRole.editor;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Categorías')),
-  
+
       body: Column(
         children: [
           Text(
@@ -76,12 +76,12 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               if (showCreateButton)
-              _ActionButton(
-                icon: Icons.add_circle_outline,
-                label: 'CREAR\nCATEGORÍA',
-                iconSize: 50,
-                onTap: () => context.push('/categories/create'),
-              ),
+                _ActionButton(
+                  icon: Icons.add_circle_outline,
+                  label: 'CREAR\nCATEGORÍA',
+                  iconSize: 50,
+                  onTap: () => context.push('/categories/create'),
+                ),
             ],
           ),
           const SizedBox(height: 16),
@@ -149,8 +149,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 ),
               ),
 
-              // Botones adicionales
-              SizedBox(width: 8), // Espacio entre botones
+              SizedBox(width: 8),
             ],
           ),
 
@@ -224,14 +223,12 @@ void _showCategoryDetails(
   Category category,
   WidgetRef ref,
 ) {
-
-   final userState = ref.read(userNotifierProvider);
-    final currentRol = userState.user?.role;
-    final enableBotton = currentRol == UserRole.admin || currentRol == UserRole.editor;
-
+  final userState = ref.read(userNotifierProvider);
+  final currentRol = userState.user?.role;
+  final enableBotton =
+      currentRol == UserRole.admin || currentRol == UserRole.editor;
 
   showModalBottomSheet(
-    
     context: context,
     isScrollControlled: true,
     builder: (BuildContext bc) {
@@ -262,25 +259,25 @@ void _showCategoryDetails(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
                     if (enableBotton)
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        context.push('/categories/edit/${category.id}');
-                      },
-                      child: const Text('Editar'),
-                    ),
-                    if (enableBotton)
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          context.push('/categories/edit/${category.id}');
+                        },
+                        child: const Text('Editar'),
                       ),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        context.push('/categories/delete/${category.id}');
-                      },
-                      child: const Text('Eliminar'),
-                    ),
+                    if (enableBotton)
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          context.push('/categories/delete/${category.id}');
+                        },
+                        child: const Text('Eliminar'),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 20),

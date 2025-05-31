@@ -33,9 +33,7 @@ final articleSearchProvider = StateNotifierProvider.autoDispose<
 final articleUpdateProvider = StateNotifierProvider.autoDispose<
   ArticleUpdateNotifier,
   ArticleUpdateState
->(
-  (ref) => ArticleUpdateNotifier(ref.read(articleRepositoryProvider), ref),
-); // ¡Pasa 'ref' aquí!
+>((ref) => ArticleUpdateNotifier(ref.read(articleRepositoryProvider), ref));
 
 Provider<ArticleRepository> articleRepositoryProvider =
     Provider<ArticleRepository>((ref) => ArticleRepository(db, storage));
@@ -56,13 +54,10 @@ final articleImportCsvNotifierProvider =
       ),
     );
 
-
 final articleDeleteNotifierProvider = StateNotifierProvider.autoDispose<
   ArticleDeleteNotifier,
   ArticleDeleteState
 >((ref) {
-      final repository = ref.read(
-        articleNotifierProvider.notifier,
-      ); // Esto lo obtienes de tu provider
-      return ArticleDeleteNotifier(repository);
-    });
+  final repository = ref.read(articleNotifierProvider.notifier);
+  return ArticleDeleteNotifier(repository);
+});

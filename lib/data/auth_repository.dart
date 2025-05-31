@@ -24,17 +24,17 @@ class AuthRepository {
       email: email,
       password: password,
     );
-    // 2. Guardar rol en Firestore
+
     await FirebaseFirestore.instance
         .collection('users')
         .doc(userCredential.user!.uid)
         .set({
           'email': email,
-          'role': 'viewer', // Asignar rol aquí
+          'role': 'viewer',
           'id': userCredential.user?.uid,
         });
 
-        return userCredential;
+    return userCredential;
   }
 
   Future<void> signOut() async {

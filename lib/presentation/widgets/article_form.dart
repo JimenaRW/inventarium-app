@@ -241,9 +241,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
                     _codigoBarrasController.text = result;
                   } else {
                     final error = ref.read(upcNotifierProvider).error;
-                    if (error != null) {
-                      // Maneja el error
-                    }
+                    if (error != null) {}
                     ;
                   }
                 },

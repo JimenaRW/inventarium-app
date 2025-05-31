@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/category_repository_provider.dart';
 
-
 class DeleteCategoryScreen extends ConsumerWidget {
   final String categoryId;
   static const String name = 'delete_category_screen';
@@ -11,11 +10,7 @@ class DeleteCategoryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final categoryState = ref.watch(
-      categoryDeleteNotifierProvider,
-    ); // Observa el estado
-
-    // Limpia el estado al salir de la pantalla
+    final categoryState = ref.watch(categoryDeleteNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Eliminar Categoría')),
@@ -32,7 +27,6 @@ class DeleteCategoryScreen extends ConsumerWidget {
             Text('ID del artículo: $categoryId'),
             const SizedBox(height: 16),
 
-            // Muestra el mensaje de error si existe
             if (categoryState.errorMessage != null)
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
@@ -45,14 +39,12 @@ class DeleteCategoryScreen extends ConsumerWidget {
                 ),
               ),
 
-            // Botones de confirmación
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    // Regresar sin hacer nada (cancelar)
                     Navigator.pop(context);
                   },
                   child: const Text('Cancelar'),
@@ -76,7 +68,6 @@ class DeleteCategoryScreen extends ConsumerWidget {
               ],
             ),
 
-            // Si la eliminación fue exitosa, mostramos un mensaje
             if (categoryState.success!)
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),

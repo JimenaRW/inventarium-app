@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
@@ -60,7 +59,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       print('Artículos cargados: ${articles.length}');
       state = state.copyWith(
         articles: articles,
-        filteredArticles: articles, // Agrega esto
+        filteredArticles: articles,
         isLoading: false,
         hasMore: articles.length == _itemsPerPage,
       );
@@ -152,7 +151,6 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
         filteredArticles: getFilteredArticles(updatedArticles),
       );
     } catch (e) {
-      // Maneja el error
       print('Error al actualizar stock: $e');
     }
   }

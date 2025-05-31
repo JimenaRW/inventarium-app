@@ -30,10 +30,7 @@ class CustomFormField extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: 400,
-            maxHeight: 50, // Limita el ancho máximo
-          ),
+          constraints: const BoxConstraints(maxWidth: 400, maxHeight: 50),
           child: TextFormField(
             controller: controller,
             decoration: InputDecoration(

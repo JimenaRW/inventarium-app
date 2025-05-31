@@ -26,9 +26,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
-  final _searchController = TextEditingController();
-
-  // Simulación de los datos del gráfico
   Map<String, int> topCategories = {
     'Electrónica': 50,
     'Ropa': 80,
@@ -67,18 +64,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
 
   @override
   void didPopNext() {
-    print('didPopNext llamado');
-    Future.microtask(
-      _reloadData,
-    ); // Usar Future.microtask para ejecutar después del build actual
+    Future.microtask(_reloadData);
   }
 
   @override
   void didPush() {
-    print('didPush llamado');
-    Future.microtask(
-      _reloadData,
-    ); // Usar Future.microtask para ejecutar después del build actual
+    Future.microtask(_reloadData);
   }
 
   Future<void> _reloadData() async {

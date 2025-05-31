@@ -12,7 +12,7 @@ class UnauthorizedScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Acceso no autorizado'),
-        automaticallyImplyLeading: false, // Oculta el botón de retroceso
+        automaticallyImplyLeading: false,
       ),
       body: Center(
         child: Padding(
@@ -28,10 +28,7 @@ class UnauthorizedScreen extends ConsumerWidget {
               const SizedBox(height: 20),
               const Text(
                 'No tienes permisos para acceder a esta sección',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
@@ -43,16 +40,13 @@ class UnauthorizedScreen extends ConsumerWidget {
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () {
-                  // Navega a la pantalla principal o a donde sea apropiado
-                  context.goNamed(HomeScreen.name); // Usando go_router
+                  context.goNamed(HomeScreen.name);
                 },
                 child: const Text('Volver al inicio'),
               ),
               const SizedBox(height: 15),
               TextButton(
                 onPressed: () {
-                  // Opcional: Cerrar sesión si es necesario
-                  // ref.read(authNotifierProvider.notifier).logout();
                   context.goNamed(LoginScreen.name);
                 },
                 child: const Text('Iniciar sesión con otra cuenta'),

@@ -33,7 +33,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authStateProvider);
 
     if (authState == AuthState.authenticated) {
-      context.go('/'); // Navega al home si el login fue exitoso
+      context.go('/');
     }
 
     return Scaffold(
@@ -88,9 +88,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 SizedBox(height: 10),
                 TextButton(
                   onPressed: () {
-                    context.go(
-                      '/auth/register',
-                    ); // Navega a la pantalla de registro
+                    context.go('/auth/register');
                   },
                   child: const Text('¿No tienes cuenta? Registra aquí'),
                 ),

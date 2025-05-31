@@ -51,7 +51,6 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Sección de confirmación de exportación
             const Text(
               'ARTÍCULO',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

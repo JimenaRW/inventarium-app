@@ -121,7 +121,6 @@ class CategoryRepository implements ICategoryRepository {
 
   Future<List<Category>> getCategoriesByStatus(String status) async {
     try {
-      print('Buscando categorías con estado: $status');
       final docs = db
           .collection('categories')
           .where('status', isEqualTo: status)
@@ -131,10 +130,8 @@ class CategoryRepository implements ICategoryRepository {
           );
 
       final categories = await docs.get();
-      print('Categorías obtenidas: ${categories.docs.length}');
       return categories.docs.map((doc) => doc.data()).toList();
     } catch (e) {
-      print('Error al obtener categorías: $e');
       rethrow;
     }
   }

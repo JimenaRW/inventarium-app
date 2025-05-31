@@ -5,7 +5,6 @@ import 'package:inventarium/presentation/viewmodels/article/states/no_stock_stat
 
 class NoStockArticlesNotifier
     extends AutoDisposeAsyncNotifier<NoStockArticlesState> {
-  // Cambiado a AutoDisposeAsyncNotifier
   Future<ArticleRepository> get _articleRepository async =>
       ref.read(articleRepositoryProvider);
 
@@ -13,7 +12,7 @@ class NoStockArticlesNotifier
   Future<NoStockArticlesState> build() async {
     try {
       final result = await _fetchNoStockArticles();
-      return result; // Devolver directamente el estado
+      return result;
     } catch (e) {
       return NoStockArticlesState(error: e.toString());
     }

@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:inventarium/data/article_repository.dart';
-import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_image_state.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';

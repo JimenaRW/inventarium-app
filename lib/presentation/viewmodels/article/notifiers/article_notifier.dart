@@ -98,10 +98,8 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
   }
 
   Future<void> loadArticleById(String id) async {
-    print('Cargando artículo con ID: $id');
     try {
       final article = await _repository.getArticleById(id);
-      print('Artículo cargado en loadarticleById: $article');
       final categories = await _repositoryCategories.getAllCategories();
       final categoriaDescripcion =
           categories
@@ -113,11 +111,8 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
           categoriaDescripcion: categoriaDescripcion,
         );
         state = state.copyWith(articles: [...state.articles, updatedArticle]);
-        print('Artículos en el estado: ${state.articles}');
       }
-    } catch (e) {
-      // Manejar el error
-    }
+    } catch (e) {}
   }
 
   Future<void> softDeleteById(String id) async {
