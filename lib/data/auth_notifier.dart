@@ -26,6 +26,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = AuthState.loading;
     try {
       await _authRepository.registerWithEmail(email, password);
+      state = AuthState.authenticated;
     } catch (e) {
       print("Mensaje de error: ${e}");
       rethrow;

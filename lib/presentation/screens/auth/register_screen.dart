@@ -75,6 +75,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     ref.listen<AuthState>(authStateProvider, (_, next) {
       if (next == AuthState.authenticated) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Usuario creado con exito!")));
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) context.go('/');
         });
