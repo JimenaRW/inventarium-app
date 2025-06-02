@@ -10,14 +10,17 @@ class UserRepository {
   Future<user.User?> getCurrentUser() async {
     final firebaseUser = _auth.currentUser;
     if (firebaseUser == null) return null;
-    
-    final doc = await _firestore.collection('users').doc(firebaseUser.uid).get();
+
+    final doc =
+        await _firestore.collection('users').doc(firebaseUser.uid).get();
     return doc.exists ? user.User.fromJson(doc.data()!..['id'] = doc.id) : null;
   }
 
   Future<List<user.User>> getAllUsers() async {
     final snapshot = await _firestore.collection('users').get();
-    return snapshot.docs.map((doc) => user.User.fromJson(doc.data()..['id'] = doc.id)).toList();
+    return snapshot.docs
+        .map((doc) => user.User.fromJson(doc.data()..['id'] = doc.id))
+        .toList();
   }
 
   Future<void> updateUserRole(String userId, UserRole newRole) async {
@@ -32,29 +35,24 @@ class UserRepository {
     });
   }
 
-Future<user.User?> getUserById(String id) async {
-  try {
-    final doc = await _firestore
-        .collection('users')
-        .doc(id)
-        .get();
+  Future<user.User?> getUserById(String id) async {
+    try {
+      final doc = await _firestore.collection('users').doc(id).get();
 
-    if (!doc.exists || doc.data() == null) {
+      if (!doc.exists || doc.data() == null) {
+        return null;
+      }
+
+      final data = doc.data()!;
+      return user.User.fromJson({...data, 'id': doc.id});
+    } catch (e) {
       return null;
     }
-
-    final data = doc.data()!;
-    return user.User.fromJson({...data, 'id': doc.id});
-  } catch (e) {
-    print('Error obteniendo usuario: $e');
-    return null;
   }
-}
 
-Future<void> updateUserStatus(String userId, String newStatus) async {
-  await _firestore.collection('users').doc(userId).update({
-    'status': newStatus,
-  });
-}
-
+  Future<void> updateUserStatus(String userId, String newStatus) async {
+    await _firestore.collection('users').doc(userId).update({
+      'status': newStatus,
+    });
+  }
 }

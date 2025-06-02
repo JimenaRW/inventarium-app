@@ -9,7 +9,9 @@ import 'package:inventarium/presentation/viewmodels/article/states/article_impor
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
+  // ignore: unused_field
   final ArticleRepository _repository;
+  // ignore: unused_field
   final CategoryRepository _repositoryCategories;
 
   ArticleImportCsvNotifier(this._repository, this._repositoryCategories)
@@ -46,33 +48,25 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
           continue;
         }
 
-        // Validaciones por índice
         if (values[0].trim().isEmpty || values[0].trim() == "0") {
-          // codigo de barras
           errores.add('Fila ${i + 1}: código de barras no puede estar vacío');
         }
         if (values[1].trim().isEmpty || values[1].trim() == "0") {
-          // codigo interno
           errores.add('Fila ${i + 1}: SKU no puede estar vacía');
         }
         if (values[2].trim().isEmpty) {
-          // descripcion
           errores.add('Fila ${i + 1}: descripción no puede estar vacía');
         }
         if (values[3].trim().isEmpty) {
-          // categoria
           errores.add('Fila ${i + 1}: categoría no puede estar vacía');
         }
         if (values[4].trim().isEmpty) {
-          // fabricante
           errores.add('Fila ${i + 1}: fabricante no puede estar vacía');
         }
         if (values[5].trim().isEmpty) {
-          // ubicacion
           errores.add('Fila ${i + 1}: ubicación no puede estar vacía');
         }
         if (values[6].trim().isEmpty) {
-          // stock
           errores.add('Fila ${i + 1}: stock no puede estar vacía');
         } else {
           final ivaValue = int.tryParse(values[6].trim());
@@ -85,7 +79,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
           }
         }
         if (values[7].trim().isEmpty) {
-          // precio 1
           errores.add('Fila ${i + 1}: precio 1 no puede estar vacía');
         } else {
           final ivaValue = double.tryParse(values[7].trim());
@@ -98,7 +91,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
           }
         }
         if (values[8].trim().isEmpty) {
-          // precio 2
           errores.add('Fila ${i + 1}: precio 2 no puede estar vacía');
         } else {
           final ivaValue = double.tryParse(values[8].trim());
@@ -111,7 +103,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
           }
         }
         if (values[9].trim().isEmpty) {
-          // precio 3
           errores.add('Fila ${i + 1}: precio 3 no puede estar vacía');
         } else {
           final ivaValue = double.tryParse(values[9].trim());
@@ -124,7 +115,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
           }
         }
         if (values[10].trim().isEmpty) {
-          // IVA
           errores.add('Fila ${i + 1}: El campo IVA no puede estar vacío');
         } else {
           final ivaValue = double.tryParse(values[10].trim());
@@ -147,11 +137,11 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
 
           try {
             final articulo = Article(
-              id: '', // se asignará más adelante si es update
+              id: '',
               codigoBarras: values[0].trim(),
               sku: values[1].trim(),
               descripcion: values[2].trim(),
-              categoria: values[3].trim(), // descripcion futura
+              categoria: values[3].trim(),
               fabricante: values[4].trim(),
               ubicacion: values[5].trim(),
               stock: int.tryParse(values[6].trim()) ?? 0,
@@ -202,9 +192,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
 
       final List<void Function(WriteBatch)> operaciones = [];
 
-      // === 1. CATEGORÍAS ===
-
-      // Snapshot actual de categorías
       final catSnapshot = await categoriasRef.get();
       final Map<String, String> categoriasActuales = {
         for (var doc in catSnapshot.docs)
@@ -224,7 +211,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
 
       final List<void Function(WriteBatch)> operacionesCategorias = [];
 
-      // Insertar nuevas categorías
       for (final descripcion in categoriasAInsertar) {
         operacionesCategorias.add((batch) {
           final ref = categoriasRef.doc();
@@ -232,7 +218,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         });
       }
 
-      // Borrar categorías no presentes
       for (final descripcion in categoriasADesactivar) {
         final id = categoriasActuales[descripcion];
         if (id != null) {
@@ -243,19 +228,14 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         }
       }
 
-      // Ejecutar Fase 1 (categorías)
       await _ejecutarBatch(operacionesCategorias);
 
-      // === 2. ARTÍCULOS ===
-
-      // Refrescar categorías con los IDs definitivos
       final nuevaSnapshot = await categoriasRef.get();
       final Map<String, String> catDescripcionToId = {
         for (var doc in nuevaSnapshot.docs)
           (doc.data()['description'] ?? '').toString().trim(): doc.id,
       };
 
-      // Snapshot actual de artículos
       final artSnapshot = await articlesRef.get();
       final Map<String, String> articulosActuales = {
         for (var doc in artSnapshot.docs)
@@ -270,7 +250,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
       final skusParaActualizar = skusImportados.intersection(skusExistentes);
       final skusParaDesactivar = skusExistentes.difference(skusImportados);
 
-      // Crear artículos con IDs de categoría mapeados
       Article mapCategoriaId(Article a) {
         final catId = catDescripcionToId[a.categoria.trim()] ?? '';
         return a.copyWith(categoria: catId);
@@ -291,7 +270,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
               })
               .toList();
 
-      // Insertar nuevos artículos
       for (final articulo in paraInsertar) {
         operaciones.add((batch) {
           final ref = articlesRef.doc();
@@ -299,7 +277,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         });
       }
 
-      // Actualizar existentes
       for (final articulo in paraActualizar) {
         final ref = articlesRef.doc(articulo.id);
         operaciones.add((batch) {
@@ -307,7 +284,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         });
       }
 
-      // Desactivar artículos que ya no están
       for (final sku in skusParaDesactivar) {
         final id = articulosActuales[sku];
         if (id != null) {
@@ -318,9 +294,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         }
       }
 
-      // === 3. COMMIT EN BATCHES DE 500 ===
-
-      // Ejecutar Fase 2 (artículos)
       await _ejecutarBatch(operaciones);
 
       state = state.copyWith(isLoading: false, importSuccess: true);
@@ -343,7 +316,9 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
     for (int i = 0; i < operaciones.length; i += maxBatch) {
       final batch = FirebaseFirestore.instance.batch();
       final grupo = operaciones.skip(i).take(maxBatch);
-      for (final op in grupo) op(batch);
+      for (final op in grupo) {
+        op(batch);
+      }
       await batch.commit();
       await Future.delayed(const Duration(milliseconds: 200));
     }

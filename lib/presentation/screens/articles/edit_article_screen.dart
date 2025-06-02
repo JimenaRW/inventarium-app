@@ -20,7 +20,6 @@ class _EditArticleScreenState extends ConsumerState<EditArticleScreen> {
   @override
   void initState() {
     super.initState();
-    print('ID del artículo en edit article screen: ${widget.id}');
     ref.read(articleNotifierProvider.notifier).loadArticleById(widget.id).then((
       _,
     ) {

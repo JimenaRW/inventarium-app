@@ -31,8 +31,6 @@ import 'package:inventarium/presentation/screens/users/users_screen.dart';
 class AuthStreamListenable extends ChangeNotifier {
   StreamSubscription<User?>? _subscription; // Hacerlo nullable
 
-
-
   AuthStreamListenable() {
     init();
   }
@@ -53,11 +51,11 @@ class AuthStreamListenable extends ChangeNotifier {
 final _authStreamListenable = AuthStreamListenable();
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-   final restrictedRoutes = {
-    'viewer': ['/edit', '/create', '/delete', '/users','/import-csv','/stock'],
-    'editor': ['/users'], // 'editor' no puede acceder a usuarios ni borrar
-    // 'admin' no tiene restricciones
-  };
+final restrictedRoutes = {
+  'viewer': ['/edit', '/create', '/delete', '/users', '/import-csv', '/stock'],
+  'editor': ['/users'], // 'editor' no puede acceder a usuarios ni borrar
+  // 'admin' no tiene restricciones
+};
 
 final appRouterProvider = Provider<GoRouter>(
   (ref) => GoRouter(
@@ -72,9 +70,7 @@ final appRouterProvider = Provider<GoRouter>(
         return '/auth/login';
       }
 
-      // Si hay usuario autenticado
       if (user != null) {
-        // Obtener el documento del usuario en Firestore para verificar su rol
         final userDoc =
             await FirebaseFirestore.instance
                 .collection('users')

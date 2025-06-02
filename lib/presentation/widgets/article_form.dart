@@ -10,7 +10,6 @@ import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/presentation/viewmodels/article/notifiers/upc_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/widgets/custom_form_field.dart';
-import 'package:share_plus/share_plus.dart';
 
 class ArticleForm extends ConsumerStatefulWidget {
   const ArticleForm({super.key});
@@ -239,12 +238,6 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
                       .scanUPC(context);
                   if (result != null) {
                     _codigoBarrasController.text = result;
-                  } else {
-                    final error = ref.read(upcNotifierProvider).error;
-                    if (error != null) {
-                      // Maneja el error
-                    }
-                    ;
                   }
                 },
               ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:inventarium/data/low_stock_provider.dart'; // Asegúrate de la ruta correcta
+import 'package:inventarium/data/low_stock_provider.dart';
 import 'package:inventarium/presentation/widgets/inventory_card.dart';
 
 class LowStockCard extends ConsumerWidget {

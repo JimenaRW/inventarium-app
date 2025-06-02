@@ -8,6 +8,8 @@ import 'package:inventarium/presentation/viewmodels/article/states/auth_state.da
 class LoginScreen extends ConsumerStatefulWidget {
   static const String name = 'login';
 
+  const LoginScreen({super.key});
+
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
@@ -83,6 +85,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Image.asset(
+                  'assets/images/logo-login.png',
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+
+                SizedBox(height: 20),
                 Text(
                   'Iniciar sesión',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -126,9 +135,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 SizedBox(height: 10),
                 TextButton(
                   onPressed: () {
-                    context.go(
-                      '/auth/register',
-                    ); // Navega a la pantalla de registro
+                    context.go('/auth/register');
                   },
                   child: const Text('¿No tienes cuenta? Registra aquí'),
                 ),
