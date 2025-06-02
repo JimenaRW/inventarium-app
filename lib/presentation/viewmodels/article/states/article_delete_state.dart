@@ -9,7 +9,6 @@ class ArticleDeleteState {
     required this.success,
   });
 
-  // Define un constructor de copia para modificar solo las propiedades necesarias
   ArticleDeleteState copyWith({
     bool? isLoading,
     String? errorMessage,

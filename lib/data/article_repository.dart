@@ -43,7 +43,6 @@ class ArticleRepository implements IArticleRepository {
 
   @override
   Future<List<Article>> getAllArticles() async {
-    // Future.delayed(const Duration(seconds: 2), () => _articles);
     try {
       final docs = db
           .collection('articles')
@@ -88,6 +87,7 @@ class ArticleRepository implements IArticleRepository {
 
     final articles = await docs.get();
 
+    // ignore: no_leading_underscores_for_local_identifiers
     final _articles = articles.docs.map((doc) => doc.data()).toList();
 
     if (query.trim().isEmpty) return _articles;
@@ -118,7 +118,6 @@ class ArticleRepository implements IArticleRepository {
       );
       await articlesRef.putFile(imageFile);
       final downloadUrl = await articlesRef.getDownloadURL();
-      print('Image uploaded successfully: $downloadUrl');
       return downloadUrl.toString();
     } catch (e) {
       rethrow;
@@ -140,10 +139,7 @@ class ArticleRepository implements IArticleRepository {
   @override
   Future<void> updateStock(String id, int newStock) async {
     try {
-      await db
-          .collection('articles')
-          .doc(id)
-          .update({'stock': newStock});
+      await db.collection('articles').doc(id).update({'stock': newStock});
     } catch (e) {
       rethrow;
     }
@@ -160,6 +156,7 @@ class ArticleRepository implements IArticleRepository {
 
     final articles = await docs.get();
 
+    // ignore: no_leading_underscores_for_local_identifiers
     final _articles = articles.docs.map((doc) => doc.data()).toList();
 
     return _articles;
@@ -210,14 +207,13 @@ class ArticleRepository implements IArticleRepository {
 
   Future<String> exportArticles() async {
     try {
-      // 1. Verifica el rol en Firestore antes de subir:
       final userDoc =
           await FirebaseFirestore.instance
               .collection('users')
               .doc(FirebaseAuth.instance.currentUser!.uid)
               .get();
 
-      final userRole = userDoc.data()!['role']; // 'admin', 'user', etc.
+      final userRole = userDoc.data()!['role'];
       final admin = UserRole.admin.name;
       if (userRole.toLowerCase() != admin.toLowerCase()) {
         return "";
@@ -236,10 +232,8 @@ class ArticleRepository implements IArticleRepository {
             );
           }).toList();
 
-      // 2. Generar contenido CSV
       final csvContent = _generateCsvContent(articles);
 
-      // 3. Subir a Firebase Storage
       final fileName =
           'articulos_export_${DateTime.now().millisecondsSinceEpoch}.csv';
       final ref = _storage.ref().child(
@@ -248,14 +242,12 @@ class ArticleRepository implements IArticleRepository {
 
       await ref.putString(csvContent);
 
-      // 4. Obtener URL de descarga
       return await ref.getDownloadURL();
     } catch (e) {
       rethrow;
     }
   }
 
-  // Nuevo método para obtener artículos con stock 0
   Future<List<Article>> getArticlesWithNoStock() async {
     try {
       final querySnapshot =
@@ -270,8 +262,7 @@ class ArticleRepository implements IArticleRepository {
               .get();
       return querySnapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
-      print('Error getting articles with no stock: $e');
-      rethrow; // Importante: relanza la excepción para que Riverpod la maneje
+      rethrow;
     }
   }
 
@@ -280,7 +271,8 @@ class ArticleRepository implements IArticleRepository {
       final querySnapshot =
           await db
               .collection('articles')
-              .where('stock', isLessThanOrEqualTo: threshold, isNotEqualTo: 0)
+              .where('stock', isGreaterThan: 0)
+              .where('stock', isLessThanOrEqualTo: threshold)
               .where('status', isEqualTo: ArticleStatus.active.name)
               .withConverter<Article>(
                 fromFirestore: Article.fromFirestore,
@@ -289,7 +281,6 @@ class ArticleRepository implements IArticleRepository {
               .get();
       return querySnapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
-      print('Error getting articles with low stock: $e');
       rethrow;
     }
   }
@@ -297,7 +288,6 @@ class ArticleRepository implements IArticleRepository {
   String _generateCsvContent(List<Article> articles) {
     final buffer = StringBuffer();
 
-    // Escribir encabezado
     buffer.writeAll([
       'ID',
       'SKU',
@@ -316,7 +306,6 @@ class ArticleRepository implements IArticleRepository {
     ], '\t');
     buffer.writeln();
 
-    // Escribir filas
     for (final article in articles) {
       buffer.writeAll([
         article.id,
@@ -343,7 +332,6 @@ class ArticleRepository implements IArticleRepository {
   String _escapeCsvField(dynamic field) {
     if (field == null) return '';
     final str = field.toString();
-    // Escapar comillas y saltos de línea si es necesario
     if (str.contains('"') || str.contains('\t') || str.contains('\n')) {
       return '"${str.replaceAll('"', '""')}"';
     }

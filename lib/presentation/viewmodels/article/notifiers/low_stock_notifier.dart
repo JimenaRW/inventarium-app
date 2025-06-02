@@ -3,7 +3,7 @@ import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/article_repository_provider.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/low_stock_state.dart';
 
-const int _lowStockThreshold = 10; // Valor configurable para stock bajo
+const int _lowStockThreshold = 10;
 
 class LowStockArticlesNotifier
     extends AutoDisposeAsyncNotifier<LowStockArticlesState> {
@@ -12,12 +12,9 @@ class LowStockArticlesNotifier
 
   @override
   Future<LowStockArticlesState> build() async {
-    print('LowStockNotifier build() llamado - Estado actual: ${state}');
     final result = await _fetchLowStockArticles();
-    print(
-      'LowStockNotifier build() - Estado final (AsyncData): AsyncData($result)',
-    );
-    return result; // <---- RETORNA DIRECTAMENTE EL ESTADO
+
+    return result;
   }
 
   Future<LowStockArticlesState> _fetchLowStockArticles() async {
@@ -26,12 +23,9 @@ class LowStockArticlesNotifier
       final articles = await repository.getArticlesWithLowStock(
         _lowStockThreshold,
       );
-      print(
-        'LowStockNotifier _fetchLowStockArticles() - Datos obtenidos: $articles',
-      );
+
       return LowStockArticlesState(articles: articles);
-    } catch (e, stackTrace) {
-      print('Error loading articles with low stock: $e\n$stackTrace');
+    } catch (e) {
       return LowStockArticlesState(error: e.toString());
     }
   }

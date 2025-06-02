@@ -10,7 +10,6 @@ import 'package:inventarium/domain/article_status.dart';
 import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/widgets/custom_form_field.dart';
-import 'package:share_plus/share_plus.dart';
 
 class ArticleEditForm extends ConsumerStatefulWidget {
   final String articleId;

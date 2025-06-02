@@ -29,19 +29,12 @@ class CategoryList extends StatelessWidget {
       itemBuilder: (context, index) {
         final category = topCategories.keys.elementAt(index);
         final count = topCategories[category];
-        final color =
-            barColors[index %
-                barColors.length]; // Obtiene el color correspondiente
+        final color = barColors[index % barColors.length];
         return ListTile(
           leading: Container(
             width: 16,
             height: 16,
-            decoration: BoxDecoration(
-              color: color,
-              shape:
-                  BoxShape
-                      .rectangle, // Puedes cambiar a BoxShape.circle para un bullet
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.rectangle),
           ),
           title: Text(category),
           trailing: Text('$count artículos'),

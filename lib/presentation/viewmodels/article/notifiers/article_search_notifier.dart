@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
@@ -57,10 +56,9 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
         page: _currentPage,
         limit: _itemsPerPage,
       );
-      print('Artículos cargados: ${articles.length}');
       state = state.copyWith(
         articles: articles,
-        filteredArticles: articles, // Agrega esto
+        filteredArticles: articles,
         isLoading: false,
         hasMore: articles.length == _itemsPerPage,
       );
@@ -152,8 +150,9 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
         filteredArticles: getFilteredArticles(updatedArticles),
       );
     } catch (e) {
-      // Maneja el error
-      print('Error al actualizar stock: $e');
+      state = state.copyWith(
+        error: 'Error al actualizar el stock: ${e.toString()}',
+      );
     }
   }
 
@@ -172,6 +171,28 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
           ...state.articlesDeleted.where((art) => art != idArticle),
         ],
       );
+    }
+  }
+
+  Future<void> searchArticlesByNoStock() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final articles = await _articleNotifier.getArticlesWithNoStock();
+      state = state.copyWith(filteredArticles: articles, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> searchArticlesByLowStock(int threshold) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final articles = await _articleNotifier.getArticlesWithLowStock(
+        threshold,
+      );
+      state = state.copyWith(filteredArticles: articles, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 

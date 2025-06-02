@@ -5,7 +5,7 @@ import 'package:inventarium/domain/category.dart';
 class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
   final CategoryRepository _repository;
   String _searchQuery = '';
-  bool _mounted = true; // Agrega una bandera para rastrear el estado del widget
+  bool _mounted = true;
 
   CategoryNotifier(this._repository) : super(const AsyncValue.loading()) {
     loadCategoriesByStatus(CategoryStatus.active);
@@ -13,30 +13,28 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
 
   @override
   void dispose() {
-    _mounted =
-        false; // Establece la bandera a false cuando se elimina el notifier
+    _mounted = false;
     super.dispose();
   }
 
   void resetSearch() {
-    if (!_mounted) return; // Verifica mounted
+    if (!_mounted) return;
     state = state.whenData((_) => []);
     loadCategories();
   }
 
   void clearSearch() {
-    if (!_mounted) return; // Verifica mounted
+    if (!_mounted) return;
     _searchQuery = '';
     loadCategories();
   }
 
   Future<void> loadCategories() async {
-    if (!_mounted) return; // Verifica mounted
+    if (!_mounted) return;
     state = const AsyncValue.loading();
     try {
       final categories = await _repository.getAllCategories();
-      if (!_mounted)
-        return; // Verifica mounted después de la operación asíncrona
+      if (!_mounted) return;
       state = AsyncValue.data(
         _searchQuery.isEmpty
             ? categories
@@ -49,7 +47,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
                 .toList(),
       );
     } catch (e) {
-      if (!_mounted) return; // Verifica mounted en caso de error
+      if (!_mounted) return;
       state = AsyncValue.error(e, StackTrace.current);
     }
   }
@@ -72,13 +70,21 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
     loadCategories();
   }
 
-  Future<void> updateCategory(String categoryId, String newDescription, String newStatus) async {
+  Future<void> updateCategory(
+    String categoryId,
+    String newDescription,
+    String newStatus,
+  ) async {
     try {
       state = const AsyncValue.loading();
       await _repository.updateCategory(
-        Category(id: categoryId, descripcion: newDescription, estado: newStatus),
+        Category(
+          id: categoryId,
+          descripcion: newDescription,
+          estado: newStatus,
+        ),
       );
-      await loadCategories(); // Forzar recarga
+      await loadCategories();
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
       rethrow;
@@ -86,17 +92,19 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
   }
 
   Future<void> loadCategoriesByStatus(CategoryStatus status) async {
+
     if (!_mounted) return;
   
     print('Cargando categorías por estado: ${status.name}');
+
     state = const AsyncLoading();
     try {
       final categories = await _repository.getCategoriesByStatus(status.name);
-      print('Categorías obtenidas: ${categories.length}');
       state = AsyncData(categories);
     } catch (e) {
       if (!_mounted) return;
       print('Error al cargar categorías: $e');
+
       state = AsyncError(e, StackTrace.current);
     }
   }
