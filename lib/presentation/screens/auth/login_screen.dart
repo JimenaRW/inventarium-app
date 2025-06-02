@@ -85,6 +85,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Image.asset(
+                  'assets/images/logo-login.png',
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+
+                SizedBox(height: 20),
                 Text(
                   'Iniciar sesión',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
