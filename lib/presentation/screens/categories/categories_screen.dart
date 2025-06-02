@@ -268,7 +268,7 @@ void _showCategoryDetails(
                         },
                         child: const Text('Editar'),
                       ),
-                    if (enableBotton)
+                    if (enableBotton && category.estado == CategoryStatus.active.name)
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
