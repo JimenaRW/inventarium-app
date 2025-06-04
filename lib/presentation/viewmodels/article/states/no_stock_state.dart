@@ -11,7 +11,6 @@ class NoStockArticlesState {
     this.error,
   });
 
-  // Opcional:
   NoStockArticlesState copyWith({
     List<Article>? articles,
     bool? isLoading,

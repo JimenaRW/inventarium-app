@@ -32,14 +32,12 @@ class CategoryChart extends StatelessWidget {
     topCategories.forEach((category, count) {
       barGroups.add(
         BarChartGroupData(
-          x: index, // Usamos el índice como valor para el eje X
+          x: index,
           barRods: [
             BarChartRodData(
               toY: count.toDouble(),
-              color:
-                  barColors[index %
-                      barColors.length], // Asigna un color basado en el índice
-              width: 22, // Ajusta el ancho de las barras si es necesario
+              color: barColors[index % barColors.length],
+              width: 22,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(6),
                 topRight: Radius.circular(6),
@@ -62,11 +60,7 @@ class CategoryChart extends StatelessWidget {
           gridData: const FlGridData(show: true, horizontalInterval: 20),
           titlesData: FlTitlesData(
             show: true,
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: false, // Ocultamos las etiquetas del eje X
-              ),
-            ),
+            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
@@ -87,7 +81,7 @@ class CategoryChart extends StatelessWidget {
           ),
           borderData: FlBorderData(show: false),
           barGroups: barGroups,
-          maxY: maxY * 1.2, // Ajusta el maxY para que las etiquetas quepan
+          maxY: maxY * 1.2,
           barTouchData: BarTouchData(
             enabled: true,
             touchTooltipData: BarTouchTooltipData(

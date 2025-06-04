@@ -10,11 +10,7 @@ class DeleteArticleScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final articleState = ref.watch(
-      articleDeleteNotifierProvider,
-    ); // Observa el estado
-
-    // Limpia el estado al salir de la pantalla
+    final articleState = ref.watch(articleDeleteNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Eliminar Artículo')),
@@ -31,7 +27,6 @@ class DeleteArticleScreen extends ConsumerWidget {
             Text('ID del artículo: $articleId'),
             const SizedBox(height: 16),
 
-            // Muestra el mensaje de error si existe
             if (articleState.errorMessage != null)
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
@@ -44,14 +39,12 @@ class DeleteArticleScreen extends ConsumerWidget {
                 ),
               ),
 
-            // Botones de confirmación
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    // Regresar sin hacer nada (cancelar)
                     Navigator.pop(context);
                   },
                   child: const Text('Cancelar'),
@@ -63,9 +56,7 @@ class DeleteArticleScreen extends ConsumerWidget {
                           : () {
                             ref
                                 .read(articleDeleteNotifierProvider.notifier)
-                                .deleteArticle(
-                                  articleId,
-                                ); // Llama al método para eliminar
+                                .deleteArticle(articleId);
                           },
                   child:
                       articleState.isLoading
@@ -75,7 +66,6 @@ class DeleteArticleScreen extends ConsumerWidget {
               ],
             ),
 
-            // Si la eliminación fue exitosa, mostramos un mensaje
             if (articleState.success)
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),

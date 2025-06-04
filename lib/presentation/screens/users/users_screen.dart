@@ -14,7 +14,7 @@ class UsersScreen extends ConsumerStatefulWidget {
 
 class _UsersScreenState extends ConsumerState<UsersScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _statusFilter = 'Activo'; // Valor inicial
+  String _statusFilter = 'Activo';
 
   @override
   void initState() {
@@ -34,24 +34,26 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(userNotifierProvider);
-    
-    final filteredUsers = state.users.where((user) {
-      // Filtro por estado
-      if (_statusFilter == 'Activo') {
-        return user.estado == 'active';
-      } else {
-        return user.estado == 'inactive';
-      }
-    }).where((user) {
-      // Filtro por búsqueda
-      if (_searchController.text.isEmpty) return true;
-      return user.email.toLowerCase().contains(
-            _searchController.text.toLowerCase(),
-          ) ||
-          user.role.toString().toLowerCase().contains(
-                _searchController.text.toLowerCase(),
-              );
-    }).toList();
+
+    final filteredUsers =
+        state.users
+            .where((user) {
+              if (_statusFilter == 'Activo') {
+                return user.estado == 'active';
+              } else {
+                return user.estado == 'inactive';
+              }
+            })
+            .where((user) {
+              if (_searchController.text.isEmpty) return true;
+              return user.email.toLowerCase().contains(
+                    _searchController.text.toLowerCase(),
+                  ) ||
+                  user.role.toString().toLowerCase().contains(
+                    _searchController.text.toLowerCase(),
+                  );
+            })
+            .toList();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Gestión de Usuarios')),
@@ -61,7 +63,6 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                // Filtro de búsqueda
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
@@ -74,7 +75,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                   onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 12),
-                // Filtro por estado (simplificado)
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -127,21 +128,22 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
           DataColumn(label: Text('Email')),
           DataColumn(label: Text('Rol')),
         ],
-        rows: users.map((user) {
-          return DataRow(
-            onSelectChanged: (_) {
-              final freshUser = state.users.firstWhere(
-                (u) => u.id == user.id,
-                orElse: () => user,
+        rows:
+            users.map((user) {
+              return DataRow(
+                onSelectChanged: (_) {
+                  state.users.firstWhere(
+                    (u) => u.id == user.id,
+                    orElse: () => user,
+                  );
+                  _showUserDetails(context, user, ref);
+                },
+                cells: [
+                  DataCell(Text(user.email)),
+                  DataCell(Text(user.role.toString().split('.').last)),
+                ],
               );
-              _showUserDetails(context, user, ref);
-            },
-            cells: [
-              DataCell(Text(user.email)),
-              DataCell(Text(user.role.toString().split('.').last)),
-            ],
-          );
-        }).toList(),
+            }).toList(),
       ),
     );
   }
@@ -188,52 +190,66 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                       },
                       child: const Text('Editar'),
                     ),
-                    if(user.estado== 'active')
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            title: const Text('¿Eliminar usuario?'),
-                            content: const Text(
-                              '¿Seguro que querés eliminar este usuario?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, false),
-                                child: const Text('Cancelar'),
-                              ),
-                              TextButton(
-                                onPressed: () => {
-                                  ref.read(userNotifierProvider.notifier).loadUsers(),
-                                  ref.read(userNotifierProvider.notifier).reset(),
-                                  Navigator.pop(ctx, true),
-                                },
-                                child: const Text(
-                                  'Eliminar',
-                                  style: TextStyle(color: Colors.red),
+                    if (user.estado == 'active')
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder:
+                                (ctx) => AlertDialog(
+                                  title: const Text('¿Eliminar usuario?'),
+                                  content: const Text(
+                                    '¿Seguro que querés eliminar este usuario?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed:
+                                          () => Navigator.pop(ctx, false),
+                                      child: const Text('Cancelar'),
+                                    ),
+                                    TextButton(
+                                      onPressed:
+                                          () => {
+                                            ref
+                                                .read(
+                                                  userNotifierProvider.notifier,
+                                                )
+                                                .loadUsers(),
+                                            ref
+                                                .read(
+                                                  userNotifierProvider.notifier,
+                                                )
+                                                .reset(),
+                                            Navigator.pop(ctx, true),
+                                          },
+                                      child: const Text(
+                                        'Eliminar',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                        if (confirmed == true) {
-                          await ref
-                              .read(userNotifierProvider.notifier)
-                              .softDeleteUserById(user.id);
-                          ref.read(userNotifierProvider.notifier).loadUsers();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Usuario eliminado")),
                           );
-                        }
-                      },
-                      child: const Text('Eliminar'),
-                    ),
+                          if (confirmed == true) {
+                            await ref
+                                .read(userNotifierProvider.notifier)
+                                .softDeleteUserById(user.id);
+                            ref.read(userNotifierProvider.notifier).loadUsers();
+                            // ignore: use_build_context_synchronously
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Usuario eliminado"),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text('Eliminar'),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 20),

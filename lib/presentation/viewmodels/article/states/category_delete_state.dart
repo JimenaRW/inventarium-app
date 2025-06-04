@@ -9,7 +9,6 @@ class CategoryDeleteState {
     required this.success,
   });
 
-  // Define un constructor de copia para modificar solo las propiedades necesarias
   CategoryDeleteState copyWith({
     bool? isLoading,
     String? errorMessage,

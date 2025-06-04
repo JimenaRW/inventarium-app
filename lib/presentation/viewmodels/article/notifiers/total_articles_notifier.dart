@@ -16,9 +16,8 @@ class TotalArticlesNotifier extends AutoDisposeAsyncNotifier<int> {
       final repository = await _articleRepository;
       final articles = await repository.getAllArticles();
       return articles.length;
-    } catch (e, stackTrace) {
-      print('Error getting total articles: $e\n$stackTrace');
-      return 0; // O manejar el error de otra forma
+    } catch (e) {
+      return 0;
     }
   }
 }

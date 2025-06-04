@@ -20,8 +20,6 @@ final categoryDeleteNotifierProvider = StateNotifierProvider.autoDispose<
   CategoryDeleteNotifier,
   CategoryDeleteState
 >((ref) {
-  final repository = ref.read(
-    categoriesNotifierProvider.notifier,
-  ); // Esto lo obtienes de tu provider
+  final repository = ref.read(categoriesNotifierProvider.notifier);
   return CategoryDeleteNotifier(repository);
 });

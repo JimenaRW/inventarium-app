@@ -1,5 +1,3 @@
-import 'package:inventarium/domain/category.dart';
-
 class TopCategoriesState {
   final Map<String, int> topCategories;
   final bool isLoading;

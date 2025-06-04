@@ -42,23 +42,29 @@ class ArticlesImportCsv extends ConsumerWidget {
                 const SizedBox(height: 12),
 
                 if (state.selectedFile != null)
-                  Text('Archivo: ${state.selectedFile!.path.split(Platform.pathSeparator).last}'),
+                  Text(
+                    'Archivo: ${state.selectedFile!.path.split(Platform.pathSeparator).last}',
+                  ),
 
                 const SizedBox(height: 24),
 
                 if (state.validationErrors.isNotEmpty) ...[
                   const Text(
                     'Errores de validación:',
-                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Expanded(
                     child: ListView.builder(
                       itemCount: state.validationErrors.length,
-                      itemBuilder: (ctx, index) => Text(
-                        '• ${state.validationErrors[index]}',
-                        style: const TextStyle(color: Colors.red),
-                      ),
+                      itemBuilder:
+                          (ctx, index) => Text(
+                            '• ${state.validationErrors[index]}',
+                            style: const TextStyle(color: Colors.red),
+                          ),
                     ),
                   ),
                 ] else if (state.potentialArticles != null) ...[
@@ -84,7 +90,10 @@ class ArticlesImportCsv extends ConsumerWidget {
                     padding: EdgeInsets.only(top: 24),
                     child: Text(
                       'Importación completada exitosamente ✅',
-                      style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
               ],
@@ -92,6 +101,7 @@ class ArticlesImportCsv extends ConsumerWidget {
 
             if (state.isLoading)
               Container(
+                // ignore: deprecated_member_use
                 color: Colors.black.withOpacity(0.3),
                 child: const Center(child: CircularProgressIndicator()),
               ),

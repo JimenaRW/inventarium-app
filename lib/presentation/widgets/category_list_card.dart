@@ -17,7 +17,7 @@ class CategoryListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-      color: isSelected ? Colors.blue[50] : null, // Resalta si está seleccionada
+      color: isSelected ? Colors.blue[50] : null,
       elevation: 2,
       child: InkWell(
         onTap: onTap,

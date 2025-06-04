@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:inventarium/presentation/viewmodels/article/notifiers/article_exports_csv_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 
-
 class ArticlesShareCsv extends ConsumerWidget {
   static const String name = 'articles_share_csv';
   const ArticlesShareCsv({super.key});
@@ -15,10 +14,12 @@ class ArticlesShareCsv extends ConsumerWidget {
       articleExportsCsvNotifierProvider.select((state) => state.exportedCount),
     );
     final lastExportedUrl = ref.watch(
-      articleExportsCsvNotifierProvider.select((state) => state.lastExportedCsvUrl),
+      articleExportsCsvNotifierProvider.select(
+        (state) => state.lastExportedCsvUrl,
+      ),
     );
 
-final notifier = ref.read(articleExportsCsvNotifierProvider.notifier);
+    final notifier = ref.read(articleExportsCsvNotifierProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -51,14 +52,15 @@ final notifier = ref.read(articleExportsCsvNotifierProvider.notifier);
               '$exportedCount registros exportados',
               style: const TextStyle(fontSize: 16),
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             Center(
               child: ElevatedButton(
-                onPressed: lastExportedUrl != null 
-                    ? () => _shareFile(context, lastExportedUrl, notifier)
-                    : null,
+                onPressed:
+                    lastExportedUrl != null
+                        ? () => _shareFile(context, lastExportedUrl, notifier)
+                        : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   minimumSize: const Size(200, 50),
@@ -69,35 +71,38 @@ final notifier = ref.read(articleExportsCsvNotifierProvider.notifier);
                 ),
               ),
             ),
-            
           ],
         ),
       ),
     );
   }
 
-  void _shareFile(BuildContext context, String fileUrl, ArticleExportsCsvNotifier notifier) {
-    // Implementa la lógica de compartir usando plugins como `share_plus`
+  void _shareFile(
+    BuildContext context,
+    String fileUrl,
+    ArticleExportsCsvNotifier notifier,
+  ) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Compartir archivo'),
-        content: Text('¿Compartir reporte?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Compartir archivo'),
+            content: Text('¿Compartir reporte?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await notifier.shareFileWithDownload(fileUrl);
+                  // ignore: use_build_context_synchronously
+                  Navigator.pop(ctx);
+                },
+                child: const Text('Compartir'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () async {
-              // Ejemplo con share_plus:
-            await notifier.shareFileWithDownload(fileUrl);
-              Navigator.pop(ctx);
-            },
-            child: const Text('Compartir'),
-          ),
-        ],
-      ),
     );
   }
 }

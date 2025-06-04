@@ -7,7 +7,7 @@ import 'package:inventarium/data/no_stock_provider.dart'; // Importa noStockProv
 
 class ArticleUpdateNotifier extends StateNotifier<ArticleUpdateState> {
   final ArticleRepository _articleRepository;
-  final Ref _ref; // Inyecta el Ref
+  final Ref _ref;
 
   ArticleUpdateNotifier(this._articleRepository, this._ref)
     : super(ArticleUpdateState.initial());
@@ -18,7 +18,6 @@ class ArticleUpdateNotifier extends StateNotifier<ArticleUpdateState> {
       await _articleRepository.updateArticle(article);
       state = state.copyWith(isLoading: false, isSuccess: true);
 
-      // Invalida el noStockProvider si el stock es 0 después de la actualización
       if (article.stock == 0) {
         _ref.invalidate(noStockProvider);
       }
@@ -32,7 +31,6 @@ class ArticleUpdateNotifier extends StateNotifier<ArticleUpdateState> {
   }
 }
 
-// Asegúrate de proporcionar el Ref al crear el provider
 final articleUpdateProvider =
     StateNotifierProvider<ArticleUpdateNotifier, ArticleUpdateState>((ref) {
       return ArticleUpdateNotifier(ref.read(articleRepositoryProvider), ref);

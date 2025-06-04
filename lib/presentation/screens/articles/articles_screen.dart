@@ -25,13 +25,24 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(articleSearchNotifierProvider.notifier).toggleDeleteMode(false);
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _searchController.clear();
+      final state = GoRouterState.of(context);
+      final arguments = state.extra as Map<String, dynamic>?;
+      if (arguments != null && arguments['filter'] != null) {
+        switch (arguments['filter']) {
+          case 'no_stock':
+            ref
+                .read(articleSearchNotifierProvider.notifier)
+                .searchArticlesByNoStock();
+            break;
+          case 'low_stock':
+            ref
+                .read(articleSearchNotifierProvider.notifier)
+                .searchArticlesByLowStock(10); // Umbral de stock bajo
+            break;
+        }
+      } else {
+        ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
+      }
     });
     Future.microtask(() {
       ref.read(userNotifierProvider.notifier).loadCurrentUser();
@@ -51,10 +62,9 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     final notifier = ref.read(articleSearchNotifierProvider.notifier);
     final userState = ref.read(userNotifierProvider);
     final currentRol = userState.user?.role;
-    final enableBotton = currentRol == UserRole.admin || currentRol == UserRole.editor;
-  
-  
-  
+    final enableBotton =
+        currentRol == UserRole.admin || currentRol == UserRole.editor;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Artículos'),
@@ -67,62 +77,60 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-             if (enableBotton)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-               if (enableBotton)
-                _ActionButton(
-                  icon: Icons.add_circle_outline,
-                  label: 'CREAR\nARTÍCULO',
-                  onTap:
-                      () => {
-                        context.push('/articles/create'),
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false),
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .loadInitialData(),
-                        _searchController.clear(),
-                      },
-                ),
-                 if (enableBotton)
-                _ActionButton(
-                  icon: Icons.upload_file,
-                  label: 'IMPORTAR\nCSV',
-                  onTap:
-                      () => {
-                        context.push('/articles/import-csv'),
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false),
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .loadInitialData(),
-                        _searchController.clear(),
-                      },
-                ),
-                _ActionButton(
-                  icon: Icons.save_alt,
-                  label: 'EXPORTAR\nCSV',
-                  onTap:
-                      () => {
-                        context.push('/articles/exports-csv'),
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false),
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .loadInitialData(),
-                        _searchController.clear(),
-                      },
-                ),
-              ],
-            ),
-            const SizedBox(
-              height: 24,
-            ), // Espacio entre los botones y el buscador
+            if (enableBotton)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  if (enableBotton)
+                    _ActionButton(
+                      icon: Icons.add_circle_outline,
+                      label: 'CREAR\nARTÍCULO',
+                      onTap:
+                          () => {
+                            context.push('/articles/create'),
+                            ref
+                                .read(articleSearchNotifierProvider.notifier)
+                                .toggleDeleteMode(false),
+                            ref
+                                .read(articleSearchNotifierProvider.notifier)
+                                .loadInitialData(),
+                            _searchController.clear(),
+                          },
+                    ),
+                  if (enableBotton)
+                    _ActionButton(
+                      icon: Icons.upload_file,
+                      label: 'IMPORTAR\nCSV',
+                      onTap:
+                          () => {
+                            context.push('/articles/import-csv'),
+                            ref
+                                .read(articleSearchNotifierProvider.notifier)
+                                .toggleDeleteMode(false),
+                            ref
+                                .read(articleSearchNotifierProvider.notifier)
+                                .loadInitialData(),
+                            _searchController.clear(),
+                          },
+                    ),
+                  _ActionButton(
+                    icon: Icons.save_alt,
+                    label: 'EXPORTAR\nCSV',
+                    onTap:
+                        () => {
+                          context.push('/articles/exports-csv'),
+                          ref
+                              .read(articleSearchNotifierProvider.notifier)
+                              .toggleDeleteMode(false),
+                          ref
+                              .read(articleSearchNotifierProvider.notifier)
+                              .loadInitialData(),
+                          _searchController.clear(),
+                        },
+                  ),
+                ],
+              ),
+            const SizedBox(height: 24),
             _buildSearchField(notifier, state, currentRol),
             const SizedBox(height: 16),
             Expanded(child: _buildContent(state, notifier)),
@@ -137,36 +145,29 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     ArticleSearchState state,
     UserRole? currentRol,
   ) {
-    // Usar addPostFrameCallback para mostrar el SnackBar después del build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (FirebaseAuth.instance.currentUser == null) {
         FirebaseAuth.instance.signOut().then(
           (value) =>
+              // ignore: use_build_context_synchronously
               ScaffoldMessenger.of(context)
                 ..clearSnackBars()
                 ..showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      "Por favor verifica iniciar sesión",
-                    ),
-                  ),
+                  SnackBar(content: Text("Por favor verifica iniciar sesión")),
                 ),
-        ); // O con tu método de autenticación
+        );
       }
     });
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-     // Determinar permisos basados en el rol
-    final enableBotton = currentRol == UserRole.admin || currentRol == UserRole.editor;
-   
+    final enableBotton =
+        currentRol == UserRole.admin || currentRol == UserRole.editor;
+
     return ConstrainedBox(
-      constraints: const BoxConstraints(
-        minHeight: 64,
-      ), // Ensure minimum tap target size
+      constraints: const BoxConstraints(minHeight: 64),
       child: Row(
         children: [
           Expanded(
-            // This ensures the TextField has a bounded width
             child: Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: TextField(
@@ -183,22 +184,21 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                     },
                   ),
                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  isDense: true, // Reduces the default padding
+                  isDense: true,
                 ),
                 onChanged: notifier.searchArticles,
               ),
             ),
           ),
 
-      //currentRol?.name != UserRole.viewer.name
           if (!state.isDeleted && enableBotton) ...[
             if (enableBotton)
-            IconButton(
-              onPressed: () => notifier.toggleDeleteMode(true),
-              icon: const Icon(Icons.delete_outline_outlined),
-              tooltip: 'Borrado masivo',
-              padding: const EdgeInsets.all(12),
-            ),
+              IconButton(
+                onPressed: () => notifier.toggleDeleteMode(true),
+                icon: const Icon(Icons.delete_outline_outlined),
+                tooltip: 'Borrado masivo',
+                padding: const EdgeInsets.all(12),
+              ),
           ],
           if (state.isDeleted && enableBotton) ...[
             IconButton(
@@ -208,7 +208,6 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
               padding: const EdgeInsets.all(12),
             ),
             IconButton(
-              // onPressed: () async => await removeArticles(notifier, scaffoldMessenger),
               onPressed: () async {
                 try {
                   if (state.articlesDeleted.isNotEmpty) {
@@ -224,8 +223,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                           .read(articleSearchNotifierProvider.notifier)
                           .loadInitialData();
                     });
-                  }
-                  else {
+                  } else {
                     scaffoldMessenger.clearSnackBars();
                     scaffoldMessenger.showSnackBar(
                       SnackBar(
@@ -286,17 +284,13 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
       return const Center(child: Text('No se encontraron artículos'));
     }
 
-    print('Artículos en filteredArticles: ${state.filteredArticles.length}');
-
     return NotificationListener<ScrollNotification>(
       onNotification: (scrollNotification) {
         if (scrollNotification is ScrollEndNotification) {
           final metrics = scrollNotification.metrics;
           if (metrics.pixels >= metrics.maxScrollExtent * 0.9 &&
               metrics.axis == Axis.vertical) {
-            print('Llegó cerca del final de la lista...');
             if (state.hasMore) {
-              print('Cargando más artículos...');
               notifier.loadMoreArticles();
             }
           }
@@ -314,9 +308,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
               onTap: () => _showArticleDetails(context, article, ref),
               child: ArticleListCard(
                 article: article,
-                showCheckbox:
-                    state
-                        .isDeleted, // Mostrar checkbox solo en modo eliminación
+                showCheckbox: state.isDeleted,
                 checkboxValue: state.articlesDeleted.contains(article.id),
                 onCheckboxChanged: (value) {
                   notifier.toggleDeleteList(value ?? false, article.id!);
@@ -363,9 +355,10 @@ class _ActionButton extends StatelessWidget {
 }
 
 void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
-    final userState = ref.read(userNotifierProvider);
-    final currentRol = userState.user?.role;
-    final enableBotton = currentRol == UserRole.admin || currentRol == UserRole.editor;
+  final userState = ref.read(userNotifierProvider);
+  final currentRol = userState.user?.role;
+  final enableBotton =
+      currentRol == UserRole.admin || currentRol == UserRole.editor;
 
   showModalBottomSheet(
     context: context,
@@ -387,6 +380,7 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                 ),
                 const SizedBox(height: 10),
                 if (article.imageUrl != null && article.imageUrl!.isNotEmpty)
+                  // ignore: sized_box_for_whitespace
                   Container(
                     width: MediaQuery.of(context).size.width * 0.4,
                     child: Image.network(
@@ -425,38 +419,40 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
                     if (enableBotton)
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(bc);
-                        context.push('/articles/edit/${article.id}').then((_) {
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(bc);
+                          context.push('/articles/edit/${article.id}').then((
+                            _,
+                          ) {
+                            ref
+                                .read(articleSearchNotifierProvider.notifier)
+                                .loadInitialData();
+                          });
                           ref
                               .read(articleSearchNotifierProvider.notifier)
-                              .loadInitialData();
-                        });
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false);
-                      },
-                      child: const Text('Editar'),
-                    ),
+                              .toggleDeleteMode(false);
+                        },
+                        child: const Text('Editar'),
+                      ),
                     if (enableBotton)
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(bc);
-                        context.push('/articles/delete/${article.id}').then((
-                          _,
-                        ) {
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(bc);
+                          context.push('/articles/delete/${article.id}').then((
+                            _,
+                          ) {
+                            ref
+                                .read(articleSearchNotifierProvider.notifier)
+                                .loadInitialData();
+                          });
+
                           ref
                               .read(articleSearchNotifierProvider.notifier)
-                              .loadInitialData();
-                        });
-
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false);
-                      },
-                      child: const Text('Eliminar'),
-                    ),
+                              .toggleDeleteMode(false);
+                        },
+                        child: const Text('Eliminar'),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 20),

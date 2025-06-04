@@ -15,7 +15,7 @@ class TotalArticlesCard extends ConsumerWidget {
           (total) => InventoryCard(
             title: "Total de Artículos",
             count: total,
-            color: Colors.lightBlue.shade500, // Puedes elegir otro color
+            color: Colors.lightBlue.shade500,
           ),
       loading:
           () => const InventoryCard(

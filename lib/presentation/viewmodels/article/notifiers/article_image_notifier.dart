@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:inventarium/data/article_repository.dart';
-import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_image_state.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -16,7 +15,6 @@ class ArticleImageNotifier extends StateNotifier<ArticleImageState> {
     state = state.copyWith(isLoading: true);
     try {
       final imageUrl = await _repository.uploadArticleImage(image, sku);
-      print('Image URL: $imageUrl');
       state = state.copyWith(
         isLoading: false,
         imageUrl: imageUrl,
@@ -33,9 +31,10 @@ class ArticleImageNotifier extends StateNotifier<ArticleImageState> {
       final tempDir = await getTemporaryDirectory();
       final tempFile = File('${tempDir.path}/image.jpg');
       await tempFile.writeAsBytes(response.bodyBytes);
+      // ignore: deprecated_member_use
       await Share.shareXFiles([XFile(tempFile.path)], text: 'Compartir imagen');
     } catch (e) {
-      print("Error al compartir imagen: $e");
+      state = state.copyWith(error: e.toString());
     }
   }
 
