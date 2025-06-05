@@ -19,11 +19,11 @@ class ArticleRepository implements IArticleRepository {
     try {
       final doc = db.collection('articles').doc();
 
-      final articleFinal = article.copyWith(id: doc.id);
+      final newArticle = article.copyWith(id: doc.id);
 
-      await doc.set(articleFinal.toFirestore());
+      await doc.set(newArticle.toFirestore());
 
-      return articleFinal;
+      return newArticle;
     } catch (e) {
       rethrow;
     }
@@ -87,22 +87,21 @@ class ArticleRepository implements IArticleRepository {
 
     final articles = await docs.get();
 
-    // ignore: no_leading_underscores_for_local_identifiers
-    final _articles = articles.docs.map((doc) => doc.data()).toList();
+    final mappedArticles = articles.docs.map((doc) => doc.data()).toList();
 
-    if (query.trim().isEmpty) return _articles;
+    if (query.trim().isEmpty) return mappedArticles;
 
-    List<Article> exactResults = _articles;
+    List<Article> exactResults = mappedArticles;
 
     final lowerQuery = query.toLowerCase().split(" ");
     for (var element in lowerQuery) {
       if (element.isNotEmpty && element != " ") {
         exactResults =
-            _articles.where((article) {
-              return article.descripcion.toLowerCase().contains(element) ||
+            mappedArticles.where((article) {
+              return article.description.toLowerCase().contains(element) ||
                   article.sku.toLowerCase().contains(element) ||
-                  (article.codigoBarras != null &&
-                      article.codigoBarras!.toLowerCase().contains(element));
+                  (article.barcode != null &&
+                      article.barcode!.toLowerCase().contains(element));
             }).toList();
       }
     }
@@ -156,10 +155,9 @@ class ArticleRepository implements IArticleRepository {
 
     final articles = await docs.get();
 
-    // ignore: no_leading_underscores_for_local_identifiers
-    final _articles = articles.docs.map((doc) => doc.data()).toList();
+    final mappedArticles = articles.docs.map((doc) => doc.data()).toList();
 
-    return _articles;
+    return mappedArticles;
   }
 
   Future<List<Article>> getArticlesPaginado({
@@ -215,7 +213,9 @@ class ArticleRepository implements IArticleRepository {
 
       final userRole = userDoc.data()!['role'];
       final admin = UserRole.admin.name;
-      if (userRole.toLowerCase() != admin.toLowerCase()) {
+      final editor = UserRole.editor.name;
+      final viewer = UserRole.viewer.name;
+      if (userRole.toLowerCase() != admin.toLowerCase() || userRole.toLowerCase() != editor.toLowerCase() || userRole.toLowerCase() != viewer.toLowerCase()) {
         return "";
       }
 
@@ -224,7 +224,8 @@ class ArticleRepository implements IArticleRepository {
               .collection('articles')
               .where('status', isEqualTo: ArticleStatus.active.name)
               .get();
-      final articles =
+
+      final mappedArticles =
           querySnapshot.docs.map((doc) {
             return Article.fromFirestore(
               doc as DocumentSnapshot<Map<String, dynamic>>,
@@ -232,10 +233,11 @@ class ArticleRepository implements IArticleRepository {
             );
           }).toList();
 
-      final csvContent = _generateCsvContent(articles);
+      final csvContent = _generateArticlesCsv(mappedArticles);
 
       final fileName =
           'articulos_export_${DateTime.now().millisecondsSinceEpoch}.csv';
+
       final ref = _storage.ref().child(
         'exports_csv/${userDoc.data()!['id']}/$fileName',
       );
@@ -285,7 +287,7 @@ class ArticleRepository implements IArticleRepository {
     }
   }
 
-  String _generateCsvContent(List<Article> articles) {
+  String _generateArticlesCsv(List<Article> articles) {
     final buffer = StringBuffer();
 
     buffer.writeAll([
@@ -310,18 +312,18 @@ class ArticleRepository implements IArticleRepository {
       buffer.writeAll([
         article.id,
         article.sku,
-        _escapeCsvField(article.descripcion),
-        article.codigoBarras ?? '',
-        article.categoria,
-        article.categoriaDescripcion ?? '',
-        article.ubicacion,
-        article.fabricante,
+        _escapeCsvField(article.description),
+        article.barcode ?? '',
+        article.category,
+        article.categoryDescription ?? '',
+        article.location,
+        article.fabricator,
         article.stock,
-        article.precio1?.toStringAsFixed(2) ?? '0.00',
-        article.precio2?.toStringAsFixed(2) ?? '0.00',
-        article.precio3?.toStringAsFixed(2) ?? '0.00',
+        article.price1?.toStringAsFixed(2) ?? '0.00',
+        article.price2?.toStringAsFixed(2) ?? '0.00',
+        article.price3?.toStringAsFixed(2) ?? '0.00',
         article.iva?.toStringAsFixed(2) ?? '0.00',
-        article.estado,
+        article.status,
       ], '\t');
       buffer.writeln();
     }

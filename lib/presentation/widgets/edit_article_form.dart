@@ -50,24 +50,24 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
       _article = article;
       _skuController = TextEditingController(text: article?.sku);
       _descripcionController = TextEditingController(
-        text: article?.descripcion,
+        text: article?.description,
       );
       _codigoBarrasController = TextEditingController(
-        text: article?.codigoBarras ?? '',
+        text: article?.barcode ?? '',
       );
-      _ubicacionController = TextEditingController(text: article?.ubicacion);
-      _fabricanteController = TextEditingController(text: article?.fabricante);
+      _ubicacionController = TextEditingController(text: article?.location);
+      _fabricanteController = TextEditingController(text: article?.fabricator);
       _stockInicialController = TextEditingController(
         text: article?.stock.toString(),
       );
       _precio1Controller = TextEditingController(
-        text: article?.precio1.toString(),
+        text: article?.price1.toString(),
       );
       _precio2Controller = TextEditingController(
-        text: article?.precio2.toString(),
+        text: article?.price2.toString(),
       );
       _precio3Controller = TextEditingController(
-        text: article?.precio3.toString(),
+        text: article?.price3.toString(),
       );
       _ivaController = TextEditingController(text: article?.iva.toString());
     });
@@ -155,20 +155,20 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
 
       final updatedArticle = _article!.copyWith(
         sku: _skuController.text,
-        descripcion: _descripcionController.text,
-        codigoBarras:
+        description: _descripcionController.text,
+        barcode:
             _codigoBarrasController.text.isNotEmpty
                 ? _codigoBarrasController.text
                 : null,
-        categoria: _selectedCategoria!.id.toString(),
-        ubicacion: _ubicacionController.text,
-        fabricante: _fabricanteController.text,
+        category: _selectedCategoria!.id.toString(),
+        location: _ubicacionController.text,
+        fabricator: _fabricanteController.text,
         iva: double.tryParse(_ivaController.text) ?? 0.00,
         stock: int.tryParse(_stockInicialController.text) ?? 0,
-        precio1: double.tryParse(_precio1Controller.text) ?? 0.00,
-        precio2: double.tryParse(_precio2Controller.text) ?? 0.00,
-        precio3: double.tryParse(_precio3Controller.text) ?? 0.00,
-        estado: ArticleStatus.active.name,
+        price1: double.tryParse(_precio1Controller.text) ?? 0.00,
+        price2: double.tryParse(_precio2Controller.text) ?? 0.00,
+        price3: double.tryParse(_precio3Controller.text) ?? 0.00,
+        status: ArticleStatus.active.name,
         imageUrl: imageUrl,
       );
 
@@ -298,7 +298,7 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
                       categoriasAsync.when(
                         data:
                             (categorias) => categorias.firstWhereOrNull(
-                              (c) => c.id == _article?.categoria,
+                              (c) => c.id == _article?.category,
                             ),
                         loading: () => null,
                         error: (_, __) => null,
@@ -311,7 +311,7 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
                     data: (categorias) {
                       if (_selectedCategoria == null) {
                         final cat = categorias.firstWhereOrNull(
-                          (c) => c.id == _article?.categoria,
+                          (c) => c.id == _article?.category,
                         );
                         if (cat != null) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -325,7 +325,7 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
                       return categorias.map((categoria) {
                         return DropdownMenuItem<Category>(
                           value: categoria,
-                          child: Text(categoria.descripcion),
+                          child: Text(categoria.description),
                         );
                       }).toList();
                     },

@@ -18,7 +18,6 @@ class DrawerMenu extends ConsumerWidget {
       builder: (context, snapshot) {
         final currentUser = snapshot.data;
 
-        // Filtrar ítems basados en el rol del usuario
         final visibleMenuItems = appMenuItems.where((item) {
           return item.allowedRoles.contains(currentUser?.role);
         }).toList();
@@ -45,7 +44,7 @@ class DrawerMenu extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (currentUser != null) // Mostrar rol si hay usuario
+                    if (currentUser != null)
                       Chip(
                         label: Text(
                           currentUser.role.toString().split('.').last,

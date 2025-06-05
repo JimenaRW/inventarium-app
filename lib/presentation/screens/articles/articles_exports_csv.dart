@@ -146,11 +146,11 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
                 cells: [
                   DataCell(Text(article.sku)),
                   DataCell(
-                    Text(article.descripcion),
+                    Text(article.description),
                     onTap: () => _showArticleDetails(context, article),
                   ),
                   DataCell(Text(article.stock.toString())),
-                  DataCell(Text('\$${article.precio1?.toStringAsFixed(2)}')),
+                  DataCell(Text('\$${article.price1?.toStringAsFixed(2)}')),
                 ],
               );
             }).toList(),
@@ -181,34 +181,34 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
                   _buildDetailRow('SKU', article.sku),
                   _buildDetailRow(
                     'Categoría',
-                    article.categoriaDescripcion ?? 'N/A',
+                    article.categoryDescription ?? 'N/A',
                   ),
                   _buildDetailRow(
                     'Código de Barras',
-                    article.codigoBarras ?? 'Sin Código de Barras',
+                    article.barcode ?? 'Sin Código de Barras',
                   ),
-                  _buildDetailRow('Descripción', article.descripcion),
+                  _buildDetailRow('Descripción', article.description),
                   _buildDetailRow(
                     'Fabricante',
-                    article.fabricante.isEmpty ? article.fabricante : 'N/A',
+                    article.fabricator.isEmpty ? article.fabricator : 'N/A',
                   ),
                   _buildDetailRow('IVA', article.iva.toString()),
                   _buildDetailRow(
                     'Precio 1',
-                    '\$${article.precio1?.toStringAsFixed(2)}',
+                    '\$${article.price1?.toStringAsFixed(2)}',
                   ),
                   _buildDetailRow(
                     'Precio 2',
-                    '\$${article.precio2?.toStringAsFixed(2)}',
+                    '\$${article.price2?.toStringAsFixed(2)}',
                   ),
                   _buildDetailRow(
                     'Precio 3',
-                    '\$${article.precio3?.toStringAsFixed(2)}',
+                    '\$${article.price3?.toStringAsFixed(2)}',
                   ),
                   _buildDetailRow('Stock', article.stock.toString()),
                   _buildDetailRow(
                     'Ubicación',
-                    article.ubicacion.isEmpty ? article.ubicacion : 'N/A',
+                    article.location.isEmpty ? article.location : 'N/A',
                   ),
                   const SizedBox(height: 20),
                 ],

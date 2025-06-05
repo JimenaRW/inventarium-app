@@ -249,10 +249,10 @@ void _showCategoryDetails(
                   ),
                 ),
                 const SizedBox(height: 20),
-                _buildDetailRow('Descripción', category.descripcion),
+                _buildDetailRow('Descripción', category.description),
                 _buildDetailRow(
                   'Estado',
-                  category.estado == CategoryStatus.active.name
+                  category.status == CategoryStatus.active.name
                       ? 'Activo'
                       : 'Inactivo',
                 ),
@@ -268,7 +268,7 @@ void _showCategoryDetails(
                         },
                         child: const Text('Editar'),
                       ),
-                    if (enableBotton && category.estado == CategoryStatus.active.name)
+                    if (enableBotton && category.status == CategoryStatus.active.name)
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,

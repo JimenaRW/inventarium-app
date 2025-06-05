@@ -390,30 +390,30 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                   ),
                 const SizedBox(height: 10),
                 _buildDetailRow('SKU', article.sku),
-                _buildDetailRow('Categoría', article.categoriaDescripcion!),
+                _buildDetailRow('Categoría', article.categoryDescription!),
                 _buildDetailRow(
                   'Código de Barras',
-                  article.codigoBarras != null
-                      ? article.codigoBarras!
+                  article.barcode != null
+                      ? article.barcode!
                       : 'Sin Código de Barras',
                 ),
-                _buildDetailRow('Descripción', article.descripcion),
-                _buildDetailRow('Fabricante', article.fabricante),
+                _buildDetailRow('Descripción', article.description),
+                _buildDetailRow('Fabricante', article.fabricator),
                 _buildDetailRow('IVA', article.iva.toString()),
                 _buildDetailRow(
                   'Precio 1',
-                  '\$${article.precio1?.toStringAsFixed(2)}',
+                  '\$${article.price1?.toStringAsFixed(2)}',
                 ),
                 _buildDetailRow(
                   'Precio 2',
-                  '\$${article.precio2?.toStringAsFixed(2)}',
+                  '\$${article.price2?.toStringAsFixed(2)}',
                 ),
                 _buildDetailRow(
                   'Precio 3',
-                  '\$${article.precio3?.toStringAsFixed(2)}',
+                  '\$${article.price3?.toStringAsFixed(2)}',
                 ),
                 _buildDetailRow('Stock', article.stock.toString()),
-                _buildDetailRow('Ubicación', article.ubicacion),
+                _buildDetailRow('Ubicación', article.location),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,

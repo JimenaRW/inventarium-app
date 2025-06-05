@@ -74,7 +74,7 @@ class ArticlesImportCsv extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
-                    onPressed: () => notifier.importarArticulos(),
+                    onPressed: () => notifier.importArticles(),
                     icon: const Icon(Icons.upload),
                     label: const Text('Importar artículos'),
                     style: ElevatedButton.styleFrom(

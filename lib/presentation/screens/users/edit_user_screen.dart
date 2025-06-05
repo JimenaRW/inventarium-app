@@ -22,12 +22,12 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen> {
   void initState() {
     super.initState();
     selectedRole = widget.user.role;
-    selectedStatus = widget.user.estado;
+    selectedStatus = widget.user.status;
   }
 
   Future<void> _confirmAndUpdate() async {
     if (selectedRole == widget.user.role &&
-        selectedStatus == widget.user.estado) {
+        selectedStatus == widget.user.status) {
       Navigator.pop(context, false);
       return;
     }
@@ -43,7 +43,7 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen> {
               children: [
                 if (selectedRole != widget.user.role)
                   Text('• Cambiar rol a: ${selectedRole.name}'),
-                if (selectedStatus != widget.user.estado)
+                if (selectedStatus != widget.user.status)
                   Text(
                     '• Cambiar estado a ${selectedStatus == 'active' ? 'Activo' : 'Inactivo'}',
                   ),
@@ -75,7 +75,7 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen> {
             .updateUserRole(widget.user.id, selectedRole);
       }
 
-      if (selectedStatus != widget.user.estado) {
+      if (selectedStatus != widget.user.status) {
         await ref
             .read(userNotifierProvider.notifier)
             .updateUserStatus(widget.user.id, selectedStatus);

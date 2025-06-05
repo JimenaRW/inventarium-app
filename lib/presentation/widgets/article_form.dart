@@ -76,21 +76,21 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
 
       final newArticle = Article(
         sku: _skuController.text,
-        descripcion: _descripcionController.text,
-        codigoBarras:
+        description: _descripcionController.text,
+        barcode:
             _codigoBarrasController.text.isNotEmpty
                 ? _codigoBarrasController.text
                 : null,
-        categoria:
+        category:
             _selectedCategoria != null ? _selectedCategoria!.id.toString() : "",
-        ubicacion: _ubicacionController.text,
-        fabricante: _fabricanteController.text,
+        location: _ubicacionController.text,
+        fabricator: _fabricanteController.text,
         iva: double.tryParse(_ivaController.text) ?? 0.00,
         stock: int.tryParse(_stockInicialController.text) ?? 0,
-        precio1: double.tryParse(_precio1Controller.text) ?? 0.00,
-        precio2: double.tryParse(_precio2Controller.text) ?? 0.00,
-        precio3: double.tryParse(_precio3Controller.text) ?? 0.00,
-        estado: ArticleStatus.active.name,
+        price1: double.tryParse(_precio1Controller.text) ?? 0.00,
+        price2: double.tryParse(_precio2Controller.text) ?? 0.00,
+        price3: double.tryParse(_precio3Controller.text) ?? 0.00,
+        status: ArticleStatus.active.name,
         imageUrl: imageUrl,
       );
 
@@ -261,7 +261,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
                             categorias.map((categoria) {
                               return DropdownMenuItem<Category>(
                                 value: categoria,
-                                child: Text(categoria.descripcion),
+                                child: Text(categoria.description),
                               );
                             }).toList(),
                     loading: () => [],

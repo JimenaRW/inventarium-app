@@ -60,7 +60,7 @@ class ArticleListCard extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              article.descripcion,
+                              article.description,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -69,9 +69,9 @@ class ArticleListCard extends ConsumerWidget {
                             const SizedBox(height: 8),
                             Text('SKU: ${article.sku}'),
                             Text('Stock: ${article.stock}'),
-                            if (article.precio1 != null)
+                            if (article.price1 != null)
                               Text(
-                                'Precio: \$${article.precio1!.toStringAsFixed(2)}',
+                                'Precio: \$${article.price1!.toStringAsFixed(2)}',
                               ),
                           ],
                         ),
