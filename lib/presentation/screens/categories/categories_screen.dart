@@ -242,7 +242,7 @@ void _showCategoryDetails(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Detalles de la Categoría',
+                  'Detalles de la categoría',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w500,

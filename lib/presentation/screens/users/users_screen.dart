@@ -56,7 +56,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
             .toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Gestión de Usuarios')),
+      appBar: AppBar(title: const Text('Gestión de usuarios')),
       body: Column(
         children: [
           Padding(
@@ -161,7 +161,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Detalles del Usuario',
+                  'Detalles del usuario',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 20),

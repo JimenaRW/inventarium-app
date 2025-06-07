@@ -99,7 +99,7 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Editar Usuario'),
+        title: const Text('Editar usuario'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context, false),

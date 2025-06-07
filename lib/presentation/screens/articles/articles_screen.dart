@@ -372,7 +372,7 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Detalles del Artículo',
+                  'Detalles del artículo',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w500,
@@ -392,10 +392,10 @@ void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
                 _buildDetailRow('SKU', article.sku),
                 _buildDetailRow('Categoría', article.categoryDescription!),
                 _buildDetailRow(
-                  'Código de Barras',
+                  'Código de barras',
                   article.barcode != null
                       ? article.barcode!
-                      : 'Sin Código de Barras',
+                      : 'Sin código de carras',
                 ),
                 _buildDetailRow('Descripción', article.description),
                 _buildDetailRow('Fabricante', article.fabricator),

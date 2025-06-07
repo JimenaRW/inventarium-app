@@ -29,7 +29,7 @@ class _EditCategoryScreenState extends ConsumerState<EditCategoryScreen> {
         );
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Editar Categoría')),
+          appBar: AppBar(title: const Text('Editar categoría')),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: EditCategoryForm(

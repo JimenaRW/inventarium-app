@@ -40,7 +40,7 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Exportar Master'),
+        title: const Text('Exportar master'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -138,7 +138,7 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
           DataColumn(label: Text('SKU')),
           DataColumn(label: Text('Descripción')),
           DataColumn(label: Text('Stock'), numeric: true),
-          DataColumn(label: Text('Precio1'), numeric: true),
+          DataColumn(label: Text('Precio 1'), numeric: true),
         ],
         rows:
             state.filteredArticles.map((article) {
@@ -171,7 +171,7 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Detalles del Artículo',
+                    'Detalles del artículo',
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w500,
@@ -184,8 +184,8 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
                     article.categoryDescription ?? 'N/A',
                   ),
                   _buildDetailRow(
-                    'Código de Barras',
-                    article.barcode ?? 'Sin Código de Barras',
+                    'Código de barras',
+                    article.barcode ?? 'Sin código de barras',
                   ),
                   _buildDetailRow('Descripción', article.description),
                   _buildDetailRow(
@@ -249,7 +249,7 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
           (ctx) => AlertDialog(
             title: const Text('Generar reporte'),
             content: Text(
-              '¿Estar seguro de querer exportar la totalidad de los articulos?',
+              '¿Estar seguro de querer exportar la totalidad de los artículos?',
             ),
             actions: [
               TextButton(
