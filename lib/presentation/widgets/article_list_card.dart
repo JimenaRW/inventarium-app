@@ -71,7 +71,7 @@ class ArticleListCard extends ConsumerWidget {
                             Text('Stock: ${article.stock}'),
                             if (article.price1 != null)
                               Text(
-                                'Precio: \$${article.price1!.toStringAsFixed(2)}',
+                                'Precio 1: \$${article.price1!.toStringAsFixed(2)}',
                               ),
                           ],
                         ),

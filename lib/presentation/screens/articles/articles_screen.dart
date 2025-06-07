@@ -51,8 +51,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     _searchController.clear();
+    _searchController.dispose();
     super.dispose();
   }
 

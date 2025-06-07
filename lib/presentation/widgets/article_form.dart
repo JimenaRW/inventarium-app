@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -21,75 +20,75 @@ class ArticleForm extends ConsumerStatefulWidget {
 class _ArticleCreateState extends ConsumerState<ArticleForm> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _skuController;
-  late final TextEditingController _descripcionController;
-  late final TextEditingController _codigoBarrasController;
-  Category? _selectedCategoria;
-  late final TextEditingController _ubicacionController;
-  late final TextEditingController _fabricanteController;
-  late final TextEditingController _stockInicialController;
-  late final TextEditingController _precio1Controller;
-  late final TextEditingController _precio2Controller;
-  late final TextEditingController _precio3Controller;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _barcodeController;
+  Category? _selectedCategory;
+  late final TextEditingController _locationController;
+  late final TextEditingController _fabricatorController;
+  late final TextEditingController _stockController;
+  late final TextEditingController _price1Controller;
+  late final TextEditingController _price2Controller;
+  late final TextEditingController _price3Controller;
   late final TextEditingController _ivaController;
-  File? _image;
+  File? _imageUrl;
   final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
     _skuController = TextEditingController();
-    _descripcionController = TextEditingController();
-    _codigoBarrasController = TextEditingController();
-    _selectedCategoria = null;
-    _ubicacionController = TextEditingController();
-    _fabricanteController = TextEditingController();
+    _descriptionController = TextEditingController();
+    _barcodeController = TextEditingController();
+    _selectedCategory = null;
+    _locationController = TextEditingController();
+    _fabricatorController = TextEditingController();
     _ivaController = TextEditingController();
-    _stockInicialController = TextEditingController();
-    _precio1Controller = TextEditingController();
-    _precio2Controller = TextEditingController();
-    _precio3Controller = TextEditingController();
+    _stockController = TextEditingController();
+    _price1Controller = TextEditingController();
+    _price2Controller = TextEditingController();
+    _price3Controller = TextEditingController();
   }
 
   @override
   void dispose() {
     _skuController.dispose();
-    _descripcionController.dispose();
-    _codigoBarrasController.dispose();
-    _ubicacionController.dispose();
-    _fabricanteController.dispose();
+    _descriptionController.dispose();
+    _barcodeController.dispose();
+    _locationController.dispose();
+    _fabricatorController.dispose();
     _ivaController.dispose();
-    _stockInicialController.dispose();
-    _precio1Controller.dispose();
-    _precio2Controller.dispose();
-    _precio3Controller.dispose();
+    _stockController.dispose();
+    _price1Controller.dispose();
+    _price2Controller.dispose();
+    _price3Controller.dispose();
     super.dispose();
   }
 
   Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate() && _selectedCategoria != null) {
+    if (_formKey.currentState!.validate() && _selectedCategory != null) {
       String? imageUrl;
-      if (_image != null) {
+      if (_imageUrl != null) {
         imageUrl = await ref
             .read(articleRepositoryProvider)
-            .uploadArticleImage(_image!, _skuController.text);
+            .uploadArticleImage(_imageUrl!, _skuController.text);
       }
 
       final newArticle = Article(
         sku: _skuController.text,
-        description: _descripcionController.text,
+        description: _descriptionController.text,
         barcode:
-            _codigoBarrasController.text.isNotEmpty
-                ? _codigoBarrasController.text
+            _barcodeController.text.isNotEmpty
+                ? _barcodeController.text
                 : null,
         category:
-            _selectedCategoria != null ? _selectedCategoria!.id.toString() : "",
-        location: _ubicacionController.text,
-        fabricator: _fabricanteController.text,
+            _selectedCategory != null ? _selectedCategory!.id.toString() : "",
+        location: _locationController.text,
+        fabricator: _fabricatorController.text,
         iva: double.tryParse(_ivaController.text) ?? 0.00,
-        stock: int.tryParse(_stockInicialController.text) ?? 0,
-        price1: double.tryParse(_precio1Controller.text) ?? 0.00,
-        price2: double.tryParse(_precio2Controller.text) ?? 0.00,
-        price3: double.tryParse(_precio3Controller.text) ?? 0.00,
+        stock: int.tryParse(_stockController.text) ?? 0,
+        price1: double.tryParse(_price1Controller.text) ?? 0.00,
+        price2: double.tryParse(_price2Controller.text) ?? 0.00,
+        price3: double.tryParse(_price3Controller.text) ?? 0.00,
         status: ArticleStatus.active.name,
         imageUrl: imageUrl,
       );
@@ -107,7 +106,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
     final XFile? photo = await _picker.pickImage(source: ImageSource.gallery);
     if (photo != null) {
       setState(() {
-        _image = File(photo.path);
+        _imageUrl = File(photo.path);
       });
     }
   }
@@ -116,7 +115,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
     final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
     if (photo != null) {
       setState(() {
-        _image = File(photo.path);
+        _imageUrl = File(photo.path);
       });
     }
   }
@@ -154,7 +153,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(articleCreateProvider);
-    final categoriasAsync = ref.watch(categoriesNotifierProvider);
+    final categoriesAsync = ref.watch(categoriesNotifierProvider);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(1.0),
@@ -186,16 +185,16 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     image:
-                        _image != null
+                        _imageUrl != null
                             ? DecorationImage(
                               fit: BoxFit.contain,
-                              image: FileImage(_image!),
+                              image: FileImage(_imageUrl!),
                             )
                             : null,
-                    color: _image == null ? Colors.grey[200] : null,
+                    color: _imageUrl == null ? Colors.grey[200] : null,
                   ),
                   child:
-                      _image == null
+                      _imageUrl == null
                           ? Icon(
                             Icons.camera_alt,
                             size: 40,
@@ -219,15 +218,15 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               keyboardType: TextInputType.name,
             ),
             CustomFormField(
-              controller: _descripcionController,
+              controller: _descriptionController,
               labelText: 'Descripción',
               hintText: 'Ingrese la descripción del artículo',
               minLines: 3,
               maxLines: 100,
             ),
             CustomFormField(
-              controller: _codigoBarrasController,
-              labelText: 'Código de Barras',
+              controller: _barcodeController,
+              labelText: 'Código de barras',
               hintText: 'Ingrese el código de barras (opcional)',
               isRequired: false,
               suffixIcon: IconButton(
@@ -237,7 +236,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
                       .read(upcNotifierProvider.notifier)
                       .scanUPC(context);
                   if (result != null) {
-                    _codigoBarrasController.text = result;
+                    _barcodeController.text = result;
                   }
                 },
               ),
@@ -250,12 +249,12 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
                 ),
                 child: DropdownButtonFormField<Category>(
                   isExpanded: true,
-                  value: _selectedCategoria,
+                  value: _selectedCategory,
                   decoration: const InputDecoration(
                     hintText: 'Seleccione una categoría*',
                     border: OutlineInputBorder(),
                   ),
-                  items: categoriasAsync.when(
+                  items: categoriesAsync.when(
                     data:
                         (categorias) =>
                             categorias.map((categoria) {
@@ -269,7 +268,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
                   ),
                   onChanged: (value) {
                     setState(() {
-                      _selectedCategoria = value;
+                      _selectedCategory = value;
                     });
                   },
                   validator:
@@ -279,14 +278,14 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               ),
             ),
             CustomFormField(
-              controller: _ubicacionController,
+              controller: _locationController,
               labelText: 'Ubicación',
               hintText: 'Ingrese la ubicación del artículo',
               minLines: 3,
               maxLines: 100,
             ),
             CustomFormField(
-              controller: _fabricanteController,
+              controller: _fabricatorController,
               labelText: 'Fabricante',
               hintText: 'Ingrese el nombre del fabricante',
               minLines: 3,
@@ -308,7 +307,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
             ),
             CustomFormField(
               controller: _ivaController,
-              labelText: 'Impuesto al Valor Agregado (IVA)',
+              labelText: 'Impuesto al valor agregado (IVA)',
               hintText: 'Ingrese el porcentaje de IVA',
               keyboardType: TextInputType.number,
               customValidator: (value) {
@@ -323,13 +322,13 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
             ),
 
             CustomFormField(
-              controller: _stockInicialController,
-              labelText: 'Stock Inicial',
-              hintText: 'Ingrese la cantidad inicial en stock',
+              controller: _stockController,
+              labelText: 'Stock',
+              hintText: 'Ingrese la cantidad en stock',
               keyboardType: TextInputType.number,
               customValidator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Por favor ingrese el stock inicial';
+                  return 'Por favor ingrese el stock';
                 }
                 if (int.tryParse(value) == null) {
                   return 'Ingrese un número válido';
@@ -338,7 +337,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               },
             ),
             CustomFormField(
-              controller: _precio1Controller,
+              controller: _price1Controller,
               labelText: 'Precio 1',
               hintText: 'Ingrese el precio de la lista 1',
               keyboardType: TextInputType.number,
@@ -353,7 +352,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               },
             ),
             CustomFormField(
-              controller: _precio2Controller,
+              controller: _price2Controller,
               labelText: 'Precio 2',
               hintText: 'Ingrese el precio de la lista 2',
               keyboardType: TextInputType.number,
@@ -368,7 +367,7 @@ class _ArticleCreateState extends ConsumerState<ArticleForm> {
               },
             ),
             CustomFormField(
-              controller: _precio3Controller,
+              controller: _price3Controller,
               labelText: 'Precio 3',
               hintText: 'Ingrese el precio de la lista 3',
               keyboardType: TextInputType.number,
