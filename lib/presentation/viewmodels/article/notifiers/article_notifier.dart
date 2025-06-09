@@ -21,12 +21,12 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
 
       final updatedArticles =
           articles.map((article) {
-            final categoriaDescripcion =
+            final categoryDescription =
                 categories
                     .firstWhereOrNull((x) => x.id.contains(article.category))
                     ?.description;
 
-            return article.copyWith(categoryDescription: categoriaDescripcion);
+            return article.copyWith(categoryDescription: categoryDescription);
           }).toList();
 
       state = state.copyWith(
@@ -52,7 +52,10 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
                   article.barcode!.toLowerCase().contains(lowerQuery));
         }).toList();
 
-    state = state.copyWith(searchQuery: query, filteredArticles: mappedArticles);
+    state = state.copyWith(
+      searchQuery: query,
+      filteredArticles: mappedArticles,
+    );
   }
 
   Future<void> addArticle(Article article) async {
@@ -82,7 +85,18 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
         page: page,
         limit: limit,
       );
-      return articles;
+      final categories = await _repositoryCategories.getAllCategories();
+      final updatedArticles =
+          articles.map((article) {
+            final categoriaDescripcion =
+                categories
+                    .firstWhereOrNull((x) => x.id.contains(article.category))
+                    ?.description;
+
+            return article.copyWith(categoryDescription: categoriaDescripcion);
+          }).toList();
+
+      return updatedArticles;
     } catch (e) {
       throw Exception('Error al cargar artículos: ${e.toString()}');
     }
