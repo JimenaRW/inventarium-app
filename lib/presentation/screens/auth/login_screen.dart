@@ -1,103 +1,149 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:inventarium/controllers/auth_controller.dart';
+import 'package:inventarium/data/auth_notifier_provider.dart';
+import 'package:inventarium/presentation/viewmodels/article/states/auth_state.dart';
 
-class LoginScreen extends StatefulWidget {
-  static const String name = 'login_screen';
+class LoginScreen extends ConsumerStatefulWidget {
+  static const String name = 'login';
+
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  String? _errorMessage;
-
-  void _submit() {
+  void _submit() async {
     final form = _formKey.currentState;
     if (form == null || !form.validate()) return;
 
-    final username = _usernameController.text.trim();
-    final password = _passwordController.text;
+    ScaffoldMessenger.of(context).clearSnackBars();
 
-    final success = AuthController.login(username, password);
-    if (success) {
-      context.go('/'); // Navega al home si el login fue exitoso
-    } else {
-      setState(() {
-        _errorMessage = 'Usuario o contraseña incorrectos';
-      });
+    try {
+      await ref
+          .read(authStateProvider.notifier)
+          .signInWithEmailAndPassword(
+            _emailController.text,
+            _passwordController.text,
+          );
+    } on FirebaseAuthException catch (e) {
+      _handleAuthError(e);
+    } finally {
+      ref.read(authStateProvider.notifier).reset();
     }
+  }
+
+  void _handleAuthError(FirebaseAuthException e) {
+    String message;
+
+    switch (e.code) {
+      case 'invalid-email-verified':
+        message =
+            'Por favor verifica tu correo electrónico antes de iniciar sesión';
+        break;
+      case 'wrong-password':
+      case 'user-not-found':
+      case 'invalid-credential':
+        message = 'Correo electrónico o contraseña incorrectos';
+        break;
+      case 'too-many-requests':
+        message = 'Demasiados intentos. Por favor intenta más tarde';
+        break;
+      default:
+        message = 'Error al iniciar sesión: ${e.message}';
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authStateProvider);
+
+    ref.listen<AuthState>(authStateProvider, (_, next) {
+      if (next == AuthState.authenticated) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) context.go('/');
+        });
+      }
+    });
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Iniciar sesión'),
-        automaticallyImplyLeading: false,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (_errorMessage != null)
-                Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-              TextFormField(
-                controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre de usuario',
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/logo-login.png',
+                  height: 200,
+                  fit: BoxFit.cover,
                 ),
-                validator:
-                    (value) =>
-                        value != null && value.isNotEmpty
-                            ? null
-                            : 'Ingrese un nombre de usuario',
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Contraseña'),
-                obscureText: true,
-                validator:
-                    (value) =>
-                        value != null && value.length >= 4
-                            ? null
-                            : 'Contraseña muy corta',
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _submit,
-                child: const Text('Iniciar sesión'),
-              ),
-            ],
+
+                SizedBox(height: 20),
+                Text(
+                  'Iniciar sesión',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 20),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Correo electrónico',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Ingrese un correo electrónico';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _passwordController,
+                  decoration: const InputDecoration(
+                    labelText: 'Contraseña',
+                    border: OutlineInputBorder(),
+                  ),
+                  obscureText: true,
+                  validator: (value) {
+                    if (value == null || value.length < 6) {
+                      return 'La contraseña debe tener al menos 6 caracteres';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _submit,
+                  child: const Text('Iniciar sesión'),
+                ),
+                if (authState == AuthState.loading)
+                  const CircularProgressIndicator(),
+                SizedBox(height: 10),
+                TextButton(
+                  onPressed: () {
+                    context.go('/auth/register');
+                  },
+                  child: const Text('¿No tienes cuenta? Registra aquí'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            heroTag: 'btn1',
-            child: const Icon(Icons.person_add),
-            onPressed: () => context.push('/auth/register'),
-          ),
-          const SizedBox(width: 16),
-          FloatingActionButton(
-            heroTag: 'btn2',
-            child: const Icon(Icons.lock_reset),
-            onPressed: () => context.push('/auth/password-reset'),
-          ),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

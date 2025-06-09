@@ -1,58 +1,138 @@
-import 'package:collection/collection.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/domain/i_category_repository.dart';
 
 class CategoryRepository implements ICategoryRepository {
-  final List<Category> _categories = [
-    Category(categoryId: 1, description: 'Categoria 1'),
-    Category(categoryId: 2, description: 'Categoria 2'),
-    Category(categoryId: 3, description: 'Categoria 3'),
-    Category(categoryId: 4, description: 'Categoria 4'),
-    Category(categoryId: 5, description: 'Categoria 5'),
-    Category(categoryId: 6, description: 'Categoria 6'),
-  ];
+  final FirebaseFirestore db;
+
+  CategoryRepository(this.db) : super();
 
   @override
   Future<void> addCategory(Category category) async {
-    await Future.delayed(const Duration(seconds: 1));
-    
-    if (_categories.any((c) => c.description == category.description)) {
-      throw Exception('La categoría ya existe');
+    try {
+      final doc = db.collection('categories').doc();
+      final newCategory = category.copyWith(id: doc.id);
+      await doc.set(newCategory.toFirestore());
+    } catch (e) {
+      rethrow;
     }
-
-    _categories.add(category);
   }
 
   @override
-  Future<void> deleteCategory(int id) {
-    // TODO: implement deleteCategory
-    throw UnimplementedError();
+  Future<void> deleteCategory(Category category) async {
+    try {
+      await db
+          .collection('categories')
+          .doc(category.id)
+          .set(category.toFirestore(), SetOptions(merge: true));
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
-  Future<List<Category>> getAllCategories() =>
-      Future.delayed(const Duration(seconds: 2), () => _categories);
+  Future<List<Category>> getAllCategories() async {
+    try {
+      final docs = db
+          .collection('categories')
+          .withConverter<Category>(
+            fromFirestore: Category.fromFirestore,
+            toFirestore: (Category category, _) => category.toFirestore(),
+          );
+
+      final categories = await docs.get();
+
+      return categories.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
 
   @override
-  Future<Category?> getCategoryById(int id) => Future.delayed(
-    const Duration(seconds: 2),
-    () => _categories.firstWhereOrNull((category) => category.categoryId == id),
-  );
+  Future<Category?> getCategoryById(String id) async {
+    try {
+      final query = db
+          .collection('categories')
+          .where('id', isEqualTo: id)
+          .limit(1)
+          .withConverter<Category>(
+            fromFirestore: Category.fromFirestore,
+            toFirestore: (Category category, _) => category.toFirestore(),
+          );
+
+      final docs = await query.get();
+
+      if (docs.docs.isNotEmpty) {
+        return docs.docs.first.data();
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
 
   @override
   Future<List<Category>> searchCategory(String query) async {
-    await Future.delayed(const Duration(seconds: 1));
-    if (query.trim().isEmpty) return _categories;
+    final docs = db
+        .collection('categories')
+        .withConverter<Category>(
+          fromFirestore: Category.fromFirestore,
+          toFirestore: (Category category, _) => category.toFirestore(),
+        );
 
-    final lowerQuery = query.toLowerCase();
-    return _categories.where((category) {
-      return category.description.toLowerCase().contains(lowerQuery);
-    }).toList();
+    final categories = await docs.get();
+
+    final mappedCategories = categories.docs.map((doc) => doc.data()).toList();
+
+    if (query.trim().isEmpty) return mappedCategories;
+
+    List<Category> exactResults = mappedCategories;
+
+    final lowerQuery = query.toLowerCase().split(" ");
+    for (var element in lowerQuery) {
+      if (element.isNotEmpty && element != " ") {
+        exactResults =
+            mappedCategories
+                .where(
+                  (category) =>
+                      category.description.toLowerCase().contains(element),
+                )
+                .toList();
+      }
+    }
+
+    return exactResults;
   }
 
   @override
-  Future<void> updateCategory(Category category) {
-    // TODO: implement updateCategory
-    throw UnimplementedError();
+  Future<void> updateCategory(Category category) async {
+    try {
+      await db.collection('categories').doc(category.id).update({
+        'description': category.description,
+        'status': category.status,
+      });
+    } catch (e) {
+      if (e.toString().contains('NOT_FOUND')) {
+        throw Exception('La categoría no existe');
+      }
+      rethrow;
+    }
+  }
+
+  Future<List<Category>> getCategoriesByStatus(String status) async {
+    try {
+      final docs = db
+          .collection('categories')
+          .where('status', isEqualTo: status)
+          .withConverter<Category>(
+            fromFirestore: Category.fromFirestore,
+            toFirestore: (Category category, _) => category.toFirestore(),
+          );
+
+      final categories = await docs.get();
+      return categories.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      rethrow;
+    }
   }
 }

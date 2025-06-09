@@ -8,13 +8,9 @@ class CreateArticleScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     return Scaffold(
       appBar: AppBar(title: const Text('Nuevo artículo')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ArticleForm(),
-      ),
+      body: Padding(padding: const EdgeInsets.all(1), child: ArticleForm()),
     );
   }
 }

@@ -1,139 +1,164 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:inventarium/controllers/auth_controller.dart';
-import 'package:inventarium/domain/user.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:inventarium/data/auth_notifier_provider.dart'; //
+import 'package:inventarium/presentation/viewmodels/article/states/auth_state.dart';
 
-class RegisterScreen extends StatefulWidget {
-  static const String name = 'register_screen';
+class RegisterScreen extends ConsumerStatefulWidget {
+  static const String name = 'register';
+
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _usernameController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  Role _selectedRole = Role.user;
-  String? _errorMessage;
+  void _submit() async {
+    final form = _formKey.currentState;
+    if (form == null || !_formKey.currentState!.validate()) return;
 
-  void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
 
-    final user = User(
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-      username: _usernameController.text.trim(),
-      role: _selectedRole,
-    );
-
-    final message = AuthController.register(
-      user,
-      _confirmPasswordController.text,
-    );
-    if (message == 'Registro exitoso.') {
-      context.go('/');
-    } else {
-      setState(() {
-        _errorMessage = message;
-      });
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Las contraseñas no coinciden')),
+      );
+      return;
     }
+    try {
+      await ref
+          .read(authStateProvider.notifier)
+          .registerWithEmail(_emailController.text, _passwordController.text);
+    } on FirebaseAuthException catch (e) {
+      _handleAuthError(e);
+    } finally {
+      ref.read(authStateProvider.notifier).reset();
+    }
+  }
+
+  void _handleAuthError(FirebaseAuthException e) {
+    String message;
+
+    switch (e.code) {
+      case 'invalid-email-verified':
+        message =
+            'Por favor verifica tu correo electrónico antes de iniciar sesión';
+        break;
+      case 'wrong-password':
+      case 'user-not-found':
+        message = 'Correo electrónico o contraseña incorrectos';
+        break;
+      case 'too-many-requests':
+        message = 'Demasiados intentos. Por favor intenta más tarde';
+        break;
+      case 'email-already-in-use':
+        message = 'El mail esta en uso';
+        break;
+      default:
+        message = 'Error al iniciar sesión: ${e.message}';
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Registro')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              if (_errorMessage != null)
-                Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-                validator: (value) {
-                  final emailRegex = RegExp(
-                    r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})*$",
-                  );
-                  if (value == null || value.isEmpty) {
-                    return 'El email es obligatorio';
-                  } else if (!emailRegex.hasMatch(value)) {
-                    return 'Email inválido';
-                  }
-                  return null;
-                },
-              ),
+    final authState = ref.watch(authStateProvider);
 
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre de usuario',
+    ref.listen<AuthState>(authStateProvider, (_, next) {
+      if (next == AuthState.authenticated) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Usuario creado con exito!")));
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) context.go('/');
+        });
+      }
+    });
+
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Registrarse',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                validator:
-                    (value) =>
-                        value != null && value.isNotEmpty
-                            ? null
-                            : 'Campo obligatorio',
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Contraseña'),
-                validator:
-                    (value) =>
-                        value != null && value.length >= 4
-                            ? null
-                            : 'Mínimo 4 caracteres',
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Repetir Contraseña',
+                SizedBox(height: 20),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'El email es obligatorio';
+                    }
+                    return null;
+                  },
                 ),
-                validator:
-                    (value) =>
-                        value != null && value.length >= 4
-                            ? null
-                            : 'Mínimo 4 caracteres',
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<Role>(
-                value: _selectedRole,
-                decoration: const InputDecoration(labelText: 'Rol'),
-                items:
-                    Role.values.map((role) {
-                      return DropdownMenuItem(
-                        value: role,
-                        child: Text(role.name),
-                      );
-                    }).toList(),
-                onChanged: (role) {
-                  if (role != null) {
-                    setState(() {
-                      _selectedRole = role;
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _submit,
-                child: const Text('Registrarse'),
-              ),
-            ],
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Contraseña',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.length < 6) {
+                      return 'La contraseña debe tener al menos 6 caracteres';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Confirmar contraseña',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'La confirmación de contraseña es obligatoria';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _submit,
+                  child: const Text('Registrarse'),
+                ),
+                if (authState == AuthState.loading)
+                  const CircularProgressIndicator(),
+                SizedBox(height: 10),
+                TextButton(
+                  onPressed: () {
+                    context.go('/auth/login');
+                  },
+                  child: const Text('¿Ya tienes cuenta? Inicia sesión'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

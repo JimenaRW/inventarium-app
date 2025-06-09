@@ -1,15 +1,43 @@
-enum Role { admin, user, guest }
+import 'package:inventarium/domain/role.dart';
+
+enum UserStatus { active, inactive }
 
 class User {
+  final String id;
   final String email;
-  final String password;
-  final String username;
-  final Role role;
+  final UserRole role;
+  String status;
 
   User({
+    required this.id,
     required this.email,
-    required this.password,
-    required this.username,
     required this.role,
-  });
+    String? status,
+  }) : status = status ?? UserStatus.active.name;
+
+  // Métodos fromJson/toJson
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'],
+      email: json['email'],
+      role: UserRole.values.firstWhere(
+        (e) => e.toString() == 'UserRole.${json['role']}',
+        orElse: () => UserRole.viewer,
+      ),
+      status: json['status'] ?? UserStatus.active.name,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'email': email, 'role': role.toString().split('.').last, 'status': status};
+  }
+
+  User copyWith({String? id, String? email, UserRole? role, String? status}) {
+    return User(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      status: status ?? this.status,
+    );
+  }
 }
