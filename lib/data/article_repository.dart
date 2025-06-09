@@ -289,40 +289,34 @@ class ArticleRepository implements IArticleRepository {
     final buffer = StringBuffer();
 
     buffer.writeAll([
-      'ID',
-      'SKU',
-      'Descripción',
-      'Código de Barras',
-      'Categoría',
-      'Descripción Categoría',
-      'Ubicación',
-      'Fabricante',
-      'Stock',
-      'Precio1',
-      'Precio2',
-      'Precio3',
+      'Código de Barras,',
+      'SKU,',
+      'Descripción,',
+      'Descripción Categoría,',
+      'Fabricante,',
+      'Ubicación,',
+      'Stock,',
+      'Precio1,',
+      'Precio2,',
+      'Precio3,',
       'IVA',
-      'Activo',
     ], '\t');
     buffer.writeln();
 
     for (final article in articles) {
       buffer.writeAll([
-        article.id,
+        article.codigoBarras ?? '',
         article.sku,
         _escapeCsvField(article.descripcion),
-        article.codigoBarras ?? '',
-        article.categoria,
         article.categoriaDescripcion ?? '',
-        article.ubicacion,
         article.fabricante,
+        article.ubicacion,
         article.stock,
         article.precio1?.toStringAsFixed(2) ?? '0.00',
         article.precio2?.toStringAsFixed(2) ?? '0.00',
         article.precio3?.toStringAsFixed(2) ?? '0.00',
         article.iva?.toStringAsFixed(2) ?? '0.00',
-        article.estado,
-      ], '\t');
+      ], ',');
       buffer.writeln();
     }
 
