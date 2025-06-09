@@ -175,7 +175,7 @@ class _ArticleCardState extends ConsumerState<_ArticleCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.article.descripcion,
+              widget.article.description,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),

@@ -6,14 +6,14 @@ class User {
   final String id;
   final String email;
   final UserRole role;
-  String estado;
+  String status;
 
   User({
     required this.id,
     required this.email,
     required this.role,
-    String? estado,
-  }) : estado = estado ?? UserStatus.active.name;
+    String? status,
+  }) : status = status ?? UserStatus.active.name;
 
   // Métodos fromJson/toJson
   factory User.fromJson(Map<String, dynamic> json) {
@@ -24,20 +24,20 @@ class User {
         (e) => e.toString() == 'UserRole.${json['role']}',
         orElse: () => UserRole.viewer,
       ),
-      estado: json['status'] ?? UserStatus.active.name,
+      status: json['status'] ?? UserStatus.active.name,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'id': id, 'email': email, 'role': role.toString().split('.').last, 'status': estado};
+    return {'id': id, 'email': email, 'role': role.toString().split('.').last, 'status': status};
   }
 
-  User copyWith({String? id, String? email, UserRole? role, String? estado}) {
+  User copyWith({String? id, String? email, UserRole? role, String? status}) {
     return User(
       id: id ?? this.id,
       email: email ?? this.email,
       role: role ?? this.role,
-      estado: estado ?? this.estado,
+      status: status ?? this.status,
     );
   }
 }

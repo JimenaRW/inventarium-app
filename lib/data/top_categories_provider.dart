@@ -59,9 +59,9 @@ class TopCategoriesNotifier
 
       final categoryIdCounts = <String, int>{};
       for (final article in articles) {
-        if (article.categoria.isNotEmpty) {
+        if (article.category.isNotEmpty) {
           categoryIdCounts.update(
-            article.categoria,
+            article.category,
             (value) => value + 1,
             ifAbsent: () => 1,
           );
@@ -71,7 +71,7 @@ class TopCategoriesNotifier
       final categoryDescriptionCounts = <String, int>{};
       for (final category in categories) {
         final count = categoryIdCounts[category.id] ?? 0;
-        categoryDescriptionCounts[category.descripcion] = count;
+        categoryDescriptionCounts[category.description] = count;
       }
 
       final sortedCategoryCounts =

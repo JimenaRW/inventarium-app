@@ -52,8 +52,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     _searchController.clear();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -329,7 +329,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Detalles del Artículo',
+                    'Detalles del artículo',
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w500,
@@ -346,30 +346,30 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                     ),
                   const SizedBox(height: 10),
                   _buildDetailRow('SKU', article.sku),
-                  _buildDetailRow('Categoría', article.categoriaDescripcion!),
+                  _buildDetailRow('Categoría', article.categoryDescription!),
                   _buildDetailRow(
-                    'Código de Barras',
-                    article.codigoBarras != null
-                        ? article.codigoBarras!
-                        : 'Sin Código de Barras',
+                    'Código de barras',
+                    article.barcode != null
+                        ? article.barcode!
+                        : 'Sin código de barras',
                   ),
-                  _buildDetailRow('Descripción', article.descripcion),
-                  _buildDetailRow('Fabricante', article.fabricante),
+                  _buildDetailRow('Descripción', article.description),
+                  _buildDetailRow('Fabricante', article.fabricator),
                   _buildDetailRow('IVA', article.iva.toString()),
                   _buildDetailRow(
                     'Precio 1',
-                    '\$${article.precio1?.toStringAsFixed(2)}',
+                    '\$${article.price1?.toStringAsFixed(2)}',
                   ),
                   _buildDetailRow(
                     'Precio 2',
-                    '\$${article.precio2?.toStringAsFixed(2)}',
+                    '\$${article.price2?.toStringAsFixed(2)}',
                   ),
                   _buildDetailRow(
                     'Precio 3',
-                    '\$${article.precio3?.toStringAsFixed(2)}',
+                    '\$${article.price3?.toStringAsFixed(2)}',
                   ),
                   _buildDetailRow('Stock', article.stock.toString()),
-                  _buildDetailRow('Ubicación', article.ubicacion),
+                  _buildDetailRow('Ubicación', article.location),
                   const SizedBox(height: 20),
                   Consumer(
                     builder: (context, ref, child) {

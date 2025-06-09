@@ -7,7 +7,7 @@ import 'package:inventarium/data/low_stock_provider.dart';
 import 'package:inventarium/data/navigation_provider.dart';
 import 'package:inventarium/data/no_stock_provider.dart';
 import 'package:inventarium/data/top_categories_provider.dart';
-import 'package:inventarium/data/total_articles_provider.dart';
+import 'package:inventarium/data/total_articles_provider.dart'as allarticlesprovider;
 import 'package:inventarium/presentation/widgets/all_articles_card.dart';
 import 'package:inventarium/presentation/widgets/category_dashboard.dart';
 import 'package:inventarium/presentation/widgets/low_stock_card.dart';
@@ -35,7 +35,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
   Future<void> _loadInitialData() async {
     await ref.read(noStockProvider.notifier).build();
     await ref.read(lowStockProvider.notifier).build();
-    await ref.read(totalArticlesProvider.notifier).build();
+    await ref.read(allarticlesprovider.allArticlesProvider.notifier).build();
   }
 
   @override
@@ -65,7 +65,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
   Future<void> _reloadData() async {
     ref.invalidate(noStockProvider);
     ref.invalidate(lowStockProvider);
-    ref.invalidate(totalArticlesProvider);
+    ref.invalidate(allArticlesProvider);
     ref.invalidate(topCategoriesProvider);
     ref.invalidate(categoriesNotifierProvider);
   }
@@ -114,7 +114,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
                     },
                     child: LowStockCard(),
                   ),
-                  TotalArticlesCard(),
+                  AllArticlesCard(),
                 ],
               ),
               const SizedBox(height: 10),

@@ -242,17 +242,17 @@ void _showCategoryDetails(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Detalles de la Categoría',
+                  'Detalles de la categoría',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 20),
-                _buildDetailRow('Descripción', category.descripcion),
+                _buildDetailRow('Descripción', category.description),
                 _buildDetailRow(
                   'Estado',
-                  category.estado == CategoryStatus.active.name
+                  category.status == CategoryStatus.active.name
                       ? 'Activo'
                       : 'Inactivo',
                 ),
@@ -268,7 +268,7 @@ void _showCategoryDetails(
                         },
                         child: const Text('Editar'),
                       ),
-                    if (enableBotton && category.estado == CategoryStatus.active.name)
+                    if (enableBotton && category.status == CategoryStatus.active.name)
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
