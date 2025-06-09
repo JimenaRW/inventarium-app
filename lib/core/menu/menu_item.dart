@@ -10,7 +10,7 @@ class MenuItem {
   final IconData icon;
   final String route;
   final bool isLogout;
-  final List<UserRole> allowedRoles; // Roles que pueden ver este ítem
+  final List<UserRole> allowedRoles;
 
   const MenuItem({
     required this.title,
@@ -18,7 +18,7 @@ class MenuItem {
     required this.icon,
     required this.route,
     this.isLogout = false,
-    this.allowedRoles = const [UserRole.admin, UserRole.editor, UserRole.viewer], // Por defecto visible para todos
+    this.allowedRoles = const [UserRole.admin, UserRole.editor, UserRole.viewer],
   });
 }
 
@@ -28,35 +28,35 @@ const List<MenuItem> appMenuItems = [
     subtitle: 'Inicio',
     icon: Icons.home_outlined,
     route: '/',
-    allowedRoles: [UserRole.admin, UserRole.editor, UserRole.viewer], // Todos pueden ver inicio
+    allowedRoles: [UserRole.admin, UserRole.editor, UserRole.viewer],
   ),
   MenuItem(
     title: 'Artículos',
     subtitle: 'Añadir artículos',
     icon: Icons.inventory_2_outlined,
     route: '/articles',
-    allowedRoles: [UserRole.admin, UserRole.editor, UserRole.viewer], // Solo admin y editor
+    allowedRoles: [UserRole.admin, UserRole.editor, UserRole.viewer],
   ),
   MenuItem(
     title: 'Categorías',
     subtitle: 'Añadir categorías',
     icon: Icons.list_alt_outlined,
     route: '/categories',
-    allowedRoles: [UserRole.admin, UserRole.editor, UserRole.viewer], // Solo admin
+    allowedRoles: [UserRole.admin, UserRole.editor, UserRole.viewer], 
   ),
   MenuItem(
     title: 'Stock',
     subtitle: 'Actualizar stock',
     icon: Icons.inventory,
     route: '/stock',
-    allowedRoles: [UserRole.admin, UserRole.editor], // Solo admin y editor
+    allowedRoles: [UserRole.admin, UserRole.editor],
   ),
   MenuItem(
     title: 'Usuarios',
     subtitle: 'Gestionar usuarios',
     icon: Icons.people_alt_outlined,
     route: '/users',
-    allowedRoles: [UserRole.admin], // Solo admin
+    allowedRoles: [UserRole.admin],
   ),
   MenuItem(
     title: 'Tema',
@@ -74,7 +74,7 @@ const logoutMenuItem = MenuItem(
   icon: Icons.logout,
   route: '/auth/login',
   isLogout: true,
-  allowedRoles: [UserRole.admin, UserRole.editor, UserRole.viewer], // Todos pueden cerrar sesión
+  allowedRoles: [UserRole.admin, UserRole.editor, UserRole.viewer], 
 );
 
 class MenuTile extends ConsumerWidget {
@@ -103,7 +103,7 @@ class MenuTile extends ConsumerWidget {
           
 ref.read
 (authStateProvider.notifier).signOut();
-          context.go(item.route); // Redirige al login
+          context.go(item.route); 
         } else {
           context.push(item.route);
         }

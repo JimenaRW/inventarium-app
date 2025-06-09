@@ -25,17 +25,17 @@ class _EditCategoryScreenState extends ConsumerState<EditCategoryScreen> {
       data: (categories) {
         final category = categories.firstWhere(
           (element) => element.id == widget.id,
-          orElse: () => Category(id: '', descripcion: 'Categoría no encontrada'),
+          orElse: () => Category(id: '', description: 'Categoría no encontrada'),
         );
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Editar Categoría')),
+          appBar: AppBar(title: const Text('Editar categoría')),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: EditCategoryForm(
               categoryId: category.id,
-              initialDescription: category.descripcion,
-              initialStatus: category.estado,
+              initialDescription: category.description,
+              initialStatus: category.status,
             ),
           ),
         );

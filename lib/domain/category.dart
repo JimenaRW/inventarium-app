@@ -4,22 +4,22 @@ enum CategoryStatus { active, inactive }
 
 class Category {
   String id;
-  String descripcion;
-  String estado;
+  String description;
+  String status;
 
-  Category({required this.id, required this.descripcion, String? estado})
-    : estado = estado ?? CategoryStatus.active.name;
+  Category({required this.id, required this.description, String? status})
+    : status = status ?? CategoryStatus.active.name;
 
-  Category copyWith({String? id, String? descripcion, String? estado}) {
+  Category copyWith({String? id, String? description, String? status}) {
     return Category(
       id: id ?? this.id,
-      descripcion: descripcion ?? this.descripcion,
-      estado: estado ?? this.estado,
+      description: description ?? this.description,
+      status: status ?? this.status,
     );
   }
 
   Map<String, dynamic> toFirestore() {
-    return {'id': id, 'description': descripcion, 'status': estado};
+    return {'id': id, 'description': description, 'status': status};
   }
 
   static Category fromFirestore(
@@ -30,11 +30,11 @@ class Category {
 
     return Category(
       id: data?['id'],
-      descripcion: data?['description'],
-      estado: data?['status'] ?? CategoryStatus.active.name,
+      description: data?['description'],
+      status: data?['status'] ?? CategoryStatus.active.name,
     );
   }
 
   @override
-  String toString() => 'Categoría: $descripcion';
+  String toString() => 'Categoría: $description';
 }

@@ -36,17 +36,17 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
 
     if (terms.isEmpty) return state.articles;
 
-    List<Article> filtro =
+    List<Article> mappedArticles =
         state.articles.where((article) {
           final searchableContent = [
-            article.descripcion.toLowerCase(),
+            article.description.toLowerCase(),
             article.sku.toLowerCase(),
-            article.codigoBarras?.toLowerCase() ?? '',
+            article.barcode?.toLowerCase() ?? '',
           ].join(' ');
 
           return terms.every((term) => searchableContent.contains(term));
         }).toList();
-    return filtro;
+    return mappedArticles;
   }
 
   Future<void> loadInitialData() async {
@@ -110,9 +110,9 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
 
     return articles.where((article) {
       final searchableContent = [
-        article.descripcion.toLowerCase(),
+        article.description.toLowerCase(),
         article.sku.toLowerCase(),
-        article.codigoBarras?.toLowerCase() ?? '',
+        article.barcode?.toLowerCase() ?? '',
       ].join(' ');
 
       return terms.every((term) => searchableContent.contains(term));
@@ -203,7 +203,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       final firestore = FirebaseFirestore.instance;
       final articlesRef = firestore.collection('articles');
 
-      final estadosPermitidos = [
+      final allowedStates = [
         ArticleStatus.active.toString(),
         ArticleStatus.suspended.toString(),
       ];
@@ -211,7 +211,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       final querySnapshot =
           await articlesRef
               .where(FieldPath.documentId, whereIn: state.articlesDeleted)
-              .where('status', whereIn: estadosPermitidos)
+              .where('status', whereIn: allowedStates)
               .get();
 
       if (querySnapshot.docs.isEmpty) {

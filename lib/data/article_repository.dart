@@ -99,10 +99,10 @@ class ArticleRepository implements IArticleRepository {
       if (element.isNotEmpty && element != " ") {
         exactResults =
             _articles.where((article) {
-              return article.descripcion.toLowerCase().contains(element) ||
+              return article.description.toLowerCase().contains(element) ||
                   article.sku.toLowerCase().contains(element) ||
-                  (article.codigoBarras != null &&
-                      article.codigoBarras!.toLowerCase().contains(element));
+                  (article.barcode != null &&
+                      article.barcode!.toLowerCase().contains(element));
             }).toList();
       }
     }
@@ -305,16 +305,16 @@ class ArticleRepository implements IArticleRepository {
 
     for (final article in articles) {
       buffer.writeAll([
-        article.codigoBarras ?? '',
+        article.barcode ?? '',
         article.sku,
-        _escapeCsvField(article.descripcion),
-        article.categoriaDescripcion ?? '',
-        article.fabricante,
-        article.ubicacion,
+        _escapeCsvField(article.description),
+        article.categoryDescription ?? '',
+        article.fabricator,
+        article.location,
         article.stock,
-        article.precio1?.toStringAsFixed(2) ?? '0.00',
-        article.precio2?.toStringAsFixed(2) ?? '0.00',
-        article.precio3?.toStringAsFixed(2) ?? '0.00',
+        article.price1?.toStringAsFixed(2) ?? '0.00',
+        article.price2?.toStringAsFixed(2) ?? '0.00',
+        article.price3?.toStringAsFixed(2) ?? '0.00',
         article.iva?.toStringAsFixed(2) ?? '0.00',
       ], ',');
       buffer.writeln();
