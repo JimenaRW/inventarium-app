@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
+import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/domain/i_article_repository.dart';
 import 'package:inventarium/domain/role.dart';
 
@@ -224,6 +226,9 @@ class ArticleRepository implements IArticleRepository {
               .collection('articles')
               .where('status', isEqualTo: ArticleStatus.active.name)
               .get();
+
+
+
       final articles =
           querySnapshot.docs.map((doc) {
             return Article.fromFirestore(
@@ -232,7 +237,28 @@ class ArticleRepository implements IArticleRepository {
             );
           }).toList();
 
-      final csvContent = _generateCsvContent(articles);
+      final docs = db
+          .collection('categories')
+          .withConverter<Category>(
+            fromFirestore: Category.fromFirestore,
+            toFirestore: (Category category, _) => category.toFirestore(),
+          );
+
+      final categories = await docs.get();
+
+      
+      final categoriesDto = categories.docs.map((doc) => doc.data()).toList();
+      
+      final updatedArticles =
+          articles.map((article) {
+            final categoriaDescripcion =
+                categoriesDto.firstWhereOrNull((x) => x.id.contains(article.category))
+                    ?.description;
+
+            return article.copyWith(categoryDescription: categoriaDescripcion);
+          }).toList();
+
+      final csvContent = _generateCsvContent(updatedArticles);
 
       final fileName =
           'articulos_export_${DateTime.now().millisecondsSinceEpoch}.csv';
