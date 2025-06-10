@@ -91,6 +91,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             children: [
               Row(
                 children: [
+                  Text('Filtrar por estado:'),
                   Row(
                     children: [
                       Radio<CategoryStatus>(
@@ -268,7 +269,8 @@ void _showCategoryDetails(
                         },
                         child: const Text('Editar'),
                       ),
-                    if (enableBotton && category.status == CategoryStatus.active.name)
+                    if (enableBotton &&
+                        category.status == CategoryStatus.active.name)
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,

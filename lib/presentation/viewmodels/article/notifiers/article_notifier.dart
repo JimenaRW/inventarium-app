@@ -79,21 +79,26 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
     }
   }
 
-  Future<List<Article>> getArticles({int page = 1, int limit = 20}) async {
+  Future<List<Article>> getArticles({
+    required int page,
+    required int limit,
+    ArticleStatus? status,
+  }) async {
     try {
       final articles = await _repository.getArticlesPaginado(
         page: page,
         limit: limit,
+        status: status,
       );
       final categories = await _repositoryCategories.getAllCategories();
       final updatedArticles =
           articles.map((article) {
-            final categoriaDescripcion =
+            final categoryDescription =
                 categories
                     .firstWhereOrNull((x) => x.id.contains(article.category))
                     ?.description;
 
-            return article.copyWith(categoryDescription: categoriaDescripcion);
+            return article.copyWith(categoryDescription: categoryDescription);
           }).toList();
 
       return updatedArticles;

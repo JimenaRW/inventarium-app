@@ -167,14 +167,23 @@ class ArticleRepository implements IArticleRepository {
   Future<List<Article>> getArticlesPaginado({
     int page = 1,
     int limit = 20,
+    ArticleStatus? status,
   }) async {
     try {
       final int offset = (page - 1) * limit;
 
-      final collectionRef = db
+      Query collectionRef = db
           .collection('articles')
-          .where('status', isEqualTo: ArticleStatus.active.name)
           .orderBy('createdAt', descending: true);
+
+      if (status != null) {
+        collectionRef = collectionRef.where('status', isEqualTo: status.name);
+      } else {
+        collectionRef = collectionRef.where(
+          'status',
+          isEqualTo: ArticleStatus.active.name,
+        );
+      }
 
       QuerySnapshot querySnapshot;
 
@@ -227,8 +236,6 @@ class ArticleRepository implements IArticleRepository {
               .where('status', isEqualTo: ArticleStatus.active.name)
               .get();
 
-
-
       final articles =
           querySnapshot.docs.map((doc) {
             return Article.fromFirestore(
@@ -246,13 +253,13 @@ class ArticleRepository implements IArticleRepository {
 
       final categories = await docs.get();
 
-      
       final categoriesDto = categories.docs.map((doc) => doc.data()).toList();
-      
+
       final updatedArticles =
           articles.map((article) {
             final categoriaDescripcion =
-                categoriesDto.firstWhereOrNull((x) => x.id.contains(article.category))
+                categoriesDto
+                    .firstWhereOrNull((x) => x.id.contains(article.category))
                     ?.description;
 
             return article.copyWith(categoryDescription: categoriaDescripcion);

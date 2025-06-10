@@ -28,6 +28,25 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
     }
   }
 
+  void loadArticlesByStatus(ArticleStatus status) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final articles = await _articleNotifier.getArticles(
+        page: _currentPage,
+        limit: _itemsPerPage,
+        status: status,
+      );
+      state = state.copyWith(
+        articles: articles,
+        filteredArticles: articles,
+        isLoading: false,
+        hasMore: articles.length == _itemsPerPage,
+      );
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+    }
+  }
+
   List<Article> get filteredArticles {
     if (state.searchQuery.isEmpty) return state.articles;
 
