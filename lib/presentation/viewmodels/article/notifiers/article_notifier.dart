@@ -161,10 +161,38 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
   }
 
   Future<List<Article>> getArticlesWithNoStock() async {
-    return await _repository.getArticlesWithNoStock();
+    var articles = await _repository.getArticlesWithNoStock();
+
+    final categories = await _repositoryCategories.getAllCategories();
+
+    final updatedArticles =
+        articles.map((article) {
+          final categoryDescription =
+              categories
+                  .firstWhereOrNull((x) => x.id.contains(article.category))
+                  ?.description;
+
+          return article.copyWith(categoryDescription: categoryDescription);
+        }).toList();
+
+    return updatedArticles;
   }
 
   Future<List<Article>> getArticlesWithLowStock(int threshold) async {
-    return await _repository.getArticlesWithLowStock(threshold);
+    var articles = await _repository.getArticlesWithLowStock(threshold);
+
+    final categories = await _repositoryCategories.getAllCategories();
+
+    final updatedArticles =
+        articles.map((article) {
+          final categoryDescription =
+              categories
+                  .firstWhereOrNull((x) => x.id.contains(article.category))
+                  ?.description;
+
+          return article.copyWith(categoryDescription: categoryDescription);
+        }).toList();
+
+    return updatedArticles;
   }
 }
