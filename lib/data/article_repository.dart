@@ -178,11 +178,6 @@ class ArticleRepository implements IArticleRepository {
 
       if (status != null) {
         collectionRef = collectionRef.where('status', isEqualTo: status.name);
-      } else {
-        collectionRef = collectionRef.where(
-          'status',
-          isEqualTo: ArticleStatus.active.name,
-        );
       }
 
       QuerySnapshot querySnapshot;

@@ -22,7 +22,7 @@ class ArticlesScreen extends ConsumerStatefulWidget {
 
 class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   final _searchController = TextEditingController();
-  ArticleStatus _selectedStatus = ArticleStatus.active;
+  ArticleStatus? _selectedStatus = null;
 
   @override
   void initState() {
@@ -135,10 +135,26 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Text('Filtrar por estado:'),
                   Row(
                     children: [
-                      Radio<ArticleStatus>(
+                      Radio<ArticleStatus?>(
+                        value: null,
+                        groupValue: _selectedStatus,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedStatus = value;
+                            ref
+                                .read(articleSearchNotifierProvider.notifier)
+                                .loadArticlesByStatus(value);
+                          });
+                        },
+                      ),
+                      const Text('Todos'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Radio<ArticleStatus?>(
                         value: ArticleStatus.active,
                         groupValue: _selectedStatus,
                         onChanged: (value) {
@@ -155,7 +171,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   ),
                   Row(
                     children: [
-                      Radio<ArticleStatus>(
+                      Radio<ArticleStatus?>(
                         value: ArticleStatus.inactive,
                         groupValue: _selectedStatus,
                         onChanged: (value) {
