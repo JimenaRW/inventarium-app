@@ -8,6 +8,7 @@ import 'package:inventarium/data/category_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
 import 'package:inventarium/domain/category.dart';
+import 'package:inventarium/presentation/viewmodels/article/notifiers/upc_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/widgets/custom_form_field.dart';
 
@@ -52,14 +53,10 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
       _descriptionController = TextEditingController(
         text: article?.description,
       );
-      _barcodeController = TextEditingController(
-        text: article?.barcode ?? '',
-      );
+      _barcodeController = TextEditingController(text: article?.barcode ?? '');
       _locationController = TextEditingController(text: article?.location);
       _fabricatorController = TextEditingController(text: article?.fabricator);
-      _stockController = TextEditingController(
-        text: article?.stock.toString(),
-      );
+      _stockController = TextEditingController(text: article?.stock.toString());
       _price1Controller = TextEditingController(
         text: article?.price1.toString(),
       );
@@ -157,9 +154,7 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
         sku: _skuController.text,
         description: _descriptionController.text,
         barcode:
-            _barcodeController.text.isNotEmpty
-                ? _barcodeController.text
-                : null,
+            _barcodeController.text.isNotEmpty ? _barcodeController.text : null,
         category: _selectedCategory!.id.toString(),
         location: _locationController.text,
         fabricator: _fabricatorController.text,
@@ -278,9 +273,11 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
               suffixIcon: IconButton(
                 icon: const Icon(Icons.camera_alt),
                 onPressed: () async {
-                  final result = await context.push('/barcode-scanner');
+                  final result = await ref
+                      .read(upcNotifierProvider.notifier)
+                      .scanUPC(context);
                   if (result != null) {
-                    _barcodeController.text = result.toString();
+                    _barcodeController.text = result;
                   }
                 },
               ),
