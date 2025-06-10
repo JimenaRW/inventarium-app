@@ -5,7 +5,6 @@ import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/category_repository.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
-import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_import_csv_state.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 

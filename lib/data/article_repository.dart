@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
+import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/domain/i_article_repository.dart';
 import 'package:inventarium/domain/role.dart';
 
@@ -19,11 +21,11 @@ class ArticleRepository implements IArticleRepository {
     try {
       final doc = db.collection('articles').doc();
 
-      final newArticle = article.copyWith(id: doc.id);
+      final articleFinal = article.copyWith(id: doc.id);
 
-      await doc.set(newArticle.toFirestore());
+      await doc.set(articleFinal.toFirestore());
 
-      return newArticle;
+      return articleFinal;
     } catch (e) {
       rethrow;
     }
@@ -87,17 +89,18 @@ class ArticleRepository implements IArticleRepository {
 
     final articles = await docs.get();
 
-    final mappedArticles = articles.docs.map((doc) => doc.data()).toList();
+    // ignore: no_leading_underscores_for_local_identifiers
+    final _articles = articles.docs.map((doc) => doc.data()).toList();
 
-    if (query.trim().isEmpty) return mappedArticles;
+    if (query.trim().isEmpty) return _articles;
 
-    List<Article> exactResults = mappedArticles;
+    List<Article> exactResults = _articles;
 
     final lowerQuery = query.toLowerCase().split(" ");
     for (var element in lowerQuery) {
       if (element.isNotEmpty && element != " ") {
         exactResults =
-            mappedArticles.where((article) {
+            _articles.where((article) {
               return article.description.toLowerCase().contains(element) ||
                   article.sku.toLowerCase().contains(element) ||
                   (article.barcode != null &&
@@ -155,22 +158,32 @@ class ArticleRepository implements IArticleRepository {
 
     final articles = await docs.get();
 
-    final mappedArticles = articles.docs.map((doc) => doc.data()).toList();
+    // ignore: no_leading_underscores_for_local_identifiers
+    final _articles = articles.docs.map((doc) => doc.data()).toList();
 
-    return mappedArticles;
+    return _articles;
   }
 
   Future<List<Article>> getArticlesPaginado({
     int page = 1,
     int limit = 20,
+    ArticleStatus? status,
   }) async {
     try {
       final int offset = (page - 1) * limit;
 
-      final collectionRef = db
+      Query collectionRef = db
           .collection('articles')
-          .where('status', isEqualTo: ArticleStatus.active.name)
           .orderBy('createdAt', descending: true);
+
+      if (status != null) {
+        collectionRef = collectionRef.where('status', isEqualTo: status.name);
+      } else {
+        collectionRef = collectionRef.where(
+          'status',
+          isEqualTo: ArticleStatus.active.name,
+        );
+      }
 
       QuerySnapshot querySnapshot;
 
@@ -229,7 +242,7 @@ class ArticleRepository implements IArticleRepository {
               .where('status', isEqualTo: ArticleStatus.active.name)
               .get();
 
-      final mappedArticles =
+      final articles =
           querySnapshot.docs.map((doc) {
             return Article.fromFirestore(
               doc as DocumentSnapshot<Map<String, dynamic>>,
@@ -237,11 +250,31 @@ class ArticleRepository implements IArticleRepository {
             );
           }).toList();
 
-      final csvContent = _generateArticlesCsv(mappedArticles);
+      final docs = db
+          .collection('categories')
+          .withConverter<Category>(
+            fromFirestore: Category.fromFirestore,
+            toFirestore: (Category category, _) => category.toFirestore(),
+          );
+
+      final categories = await docs.get();
+
+      final categoriesDto = categories.docs.map((doc) => doc.data()).toList();
+
+      final updatedArticles =
+          articles.map((article) {
+            final categoriaDescripcion =
+                categoriesDto
+                    .firstWhereOrNull((x) => x.id.contains(article.category))
+                    ?.description;
+
+            return article.copyWith(categoryDescription: categoriaDescripcion);
+          }).toList();
+
+      final csvContent = _generateCsvContent(updatedArticles);
 
       final fileName =
           'articulos_export_${DateTime.now().millisecondsSinceEpoch}.csv';
-
       final ref = _storage.ref().child(
         'exports_csv/${userDoc.data()!['id']}/$fileName',
       );
@@ -291,44 +324,38 @@ class ArticleRepository implements IArticleRepository {
     }
   }
 
-  String _generateArticlesCsv(List<Article> articles) {
+  String _generateCsvContent(List<Article> articles) {
     final buffer = StringBuffer();
 
     buffer.writeAll([
-      'ID',
-      'SKU',
-      'Descripción',
-      'Código de Barras',
-      'Categoría',
-      'Descripción Categoría',
-      'Ubicación',
-      'Fabricante',
-      'Stock',
-      'Precio1',
-      'Precio2',
-      'Precio3',
+      'Código de Barras,',
+      'SKU,',
+      'Descripción,',
+      'Descripción Categoría,',
+      'Fabricante,',
+      'Ubicación,',
+      'Stock,',
+      'Precio1,',
+      'Precio2,',
+      'Precio3,',
       'IVA',
-      'Activo',
     ], '\t');
     buffer.writeln();
 
     for (final article in articles) {
       buffer.writeAll([
-        article.id,
+        article.barcode ?? '',
         article.sku,
         _escapeCsvField(article.description),
-        article.barcode ?? '',
-        article.category,
         article.categoryDescription ?? '',
-        article.location,
         article.fabricator,
+        article.location,
         article.stock,
         article.price1?.toStringAsFixed(2) ?? '0.00',
         article.price2?.toStringAsFixed(2) ?? '0.00',
         article.price3?.toStringAsFixed(2) ?? '0.00',
         article.iva?.toStringAsFixed(2) ?? '0.00',
-        article.status,
-      ], '\t');
+      ], ',');
       buffer.writeln();
     }
 
