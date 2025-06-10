@@ -212,10 +212,14 @@ class ArticleRepository implements IArticleRepository {
               .get();
 
       final userRole = userDoc.data()!['role'];
+
       final admin = UserRole.admin.name;
       final editor = UserRole.editor.name;
       final viewer = UserRole.viewer.name;
-      if (userRole.toLowerCase() != admin.toLowerCase() || userRole.toLowerCase() != editor.toLowerCase() || userRole.toLowerCase() != viewer.toLowerCase()) {
+
+      if (userRole.toLowerCase() != admin.toLowerCase() ||
+          userRole.toLowerCase() != editor.toLowerCase() ||
+          userRole.toLowerCase() != viewer.toLowerCase()) {
         return "";
       }
 
