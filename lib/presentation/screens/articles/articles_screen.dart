@@ -135,6 +135,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  Text('Filtrar por estado:'),
                   Row(
                     children: [
                       Radio<ArticleStatus?>(
