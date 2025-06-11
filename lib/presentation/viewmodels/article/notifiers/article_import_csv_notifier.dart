@@ -204,7 +204,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
 
       final Set<String> importedCategories =
           state.potentialArticles!
-              .map((a) => a.category.trim().toLowerCase())
+              .map((a) => _normalizeCategoryName(a.category))
               .where((e) => e.isNotEmpty)
               .toSet();
 
@@ -256,7 +256,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
             .where((a) => articleToInsert.contains(a.sku))
             .map((a) async {
               final categoryKey = _normalizeCategoryName(
-                a.category?.trim() ?? '',
+                a.category ?? '',
               );
               var catId = catDescriptionToId[categoryKey] ?? '';
 
@@ -270,7 +270,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
             .where((a) => articleToUpdate.contains(a.sku))
             .map((a) async {
               final categoryKey = _normalizeCategoryName(
-                a.category?.trim() ?? '',
+                a.category ?? '',
               );
               var catId = catDescriptionToId[categoryKey] ?? '';
 
