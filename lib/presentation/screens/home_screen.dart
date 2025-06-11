@@ -7,7 +7,8 @@ import 'package:inventarium/data/low_stock_provider.dart';
 import 'package:inventarium/data/navigation_provider.dart';
 import 'package:inventarium/data/no_stock_provider.dart';
 import 'package:inventarium/data/top_categories_provider.dart';
-import 'package:inventarium/data/total_articles_provider.dart'as allarticlesprovider;
+import 'package:inventarium/data/total_articles_provider.dart'
+    as allarticlesprovider;
 import 'package:inventarium/presentation/widgets/all_articles_card.dart';
 import 'package:inventarium/presentation/widgets/category_dashboard.dart';
 import 'package:inventarium/presentation/widgets/low_stock_card.dart';
@@ -45,12 +46,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
         .read(routeObserverProvider)
         .subscribe(this, ModalRoute.of(context)! as PageRoute);
   }
-
-  @override
-  void didPushNext() {}
-
-  @override
-  void didPop() {}
 
   @override
   void didPopNext() {
