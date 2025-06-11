@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/article_status.dart';
 
 class ArticleListCard extends ConsumerWidget {
   final Article article;
@@ -82,7 +83,7 @@ class ArticleListCard extends ConsumerWidget {
               ),
             ),
 
-            if (showCheckbox)
+            if (showCheckbox && article.status == ArticleStatus.active.name)
               Positioned(
                 right: 8,
                 bottom: 8,
