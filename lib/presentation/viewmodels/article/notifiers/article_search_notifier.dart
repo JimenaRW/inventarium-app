@@ -28,6 +28,26 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
     }
   }
 
+  void loadArticlesByStatus(ArticleStatus status) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final articles = await _articleNotifier.getArticles(
+        page: _currentPage,
+        limit: _itemsPerPage,
+        status: status,
+      );
+      state = state.copyWith(
+        articles: articles,
+        filteredArticles: articles,
+        isLoading: false,
+        hasMore: articles.length == _itemsPerPage,
+        status: status,
+      );
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+    }
+  }
+
   List<Article> get filteredArticles {
     if (state.searchQuery.isEmpty) return state.articles;
 
@@ -36,17 +56,17 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
 
     if (terms.isEmpty) return state.articles;
 
-    List<Article> filtro =
+    List<Article> mappedArticles =
         state.articles.where((article) {
           final searchableContent = [
-            article.descripcion.toLowerCase(),
+            article.description.toLowerCase(),
             article.sku.toLowerCase(),
-            article.codigoBarras?.toLowerCase() ?? '',
+            article.barcode?.toLowerCase() ?? '',
           ].join(' ');
 
           return terms.every((term) => searchableContent.contains(term));
         }).toList();
-    return filtro;
+    return mappedArticles;
   }
 
   Future<void> loadInitialData() async {
@@ -110,9 +130,9 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
 
     return articles.where((article) {
       final searchableContent = [
-        article.descripcion.toLowerCase(),
+        article.description.toLowerCase(),
         article.sku.toLowerCase(),
-        article.codigoBarras?.toLowerCase() ?? '',
+        article.barcode?.toLowerCase() ?? '',
       ].join(' ');
 
       return terms.every((term) => searchableContent.contains(term));
@@ -127,8 +147,28 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
 
     state = state.copyWith(isSearching: true);
     try {
-      final results = await _articleNotifier.searchArticles(query);
-      state = state.copyWith(filteredArticles: results, isSearching: false);
+      final filteredArticles =
+          state.articles
+              .where(
+                (article) =>
+                    state.status == null ||
+                    article.status == state.status?.name,
+              )
+              .where((article) {
+                final searchableContent = [
+                  article.description.toLowerCase(),
+                  article.sku.toLowerCase(),
+                  article.barcode?.toLowerCase() ?? '',
+                ].join(' ');
+
+                return searchableContent.contains(query.toLowerCase());
+              })
+              .toList();
+
+      state = state.copyWith(
+        filteredArticles: filteredArticles,
+        isSearching: false,
+      );
     } catch (e) {
       state = state.copyWith(isSearching: false, error: e.toString());
     }
@@ -203,7 +243,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       final firestore = FirebaseFirestore.instance;
       final articlesRef = firestore.collection('articles');
 
-      final estadosPermitidos = [
+      final allowedStates = [
         ArticleStatus.active.toString(),
         ArticleStatus.suspended.toString(),
       ];
@@ -211,7 +251,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       final querySnapshot =
           await articlesRef
               .where(FieldPath.documentId, whereIn: state.articlesDeleted)
-              .where('status', whereIn: estadosPermitidos)
+              .where('status', whereIn: allowedStates)
               .get();
 
       if (querySnapshot.docs.isEmpty) {

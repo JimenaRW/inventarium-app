@@ -4,94 +4,94 @@ import 'package:equatable/equatable.dart';
 class Article extends Equatable {
   final String? id;
   final String sku;
-  final String descripcion;
-  final String? codigoBarras;
-  final String categoria;
-  final String? categoriaDescripcion;
-  final String ubicacion;
-  final String fabricante;
+  final String description;
+  final String? barcode;
+  final String category;
+  final String? categoryDescription;
+  final String location;
+  final String fabricator;
   final int stock;
-  final double? precio1;
-  final double? precio2;
-  final double? precio3;
+  final double? price1;
+  final double? price2;
+  final double? price3;
   final double? iva;
-  final String estado;
+  final String status;
   final String? imageUrl;
 
   const Article({
     String? id,
     required this.sku,
-    required this.descripcion,
-    this.codigoBarras,
-    required this.categoria,
-    required this.ubicacion,
-    required this.fabricante,
+    required this.description,
+    this.barcode,
+    required this.category,
+    required this.location,
+    required this.fabricator,
     required this.stock,
-    double? precio1,
-    double? precio2,
-    double? precio3,
+    double? price1,
+    double? price2,
+    double? price3,
     double? iva,
-    String? estado,
-    String? categoriaDescripcion,
+    String? status,
+    String? categoryDescription,
     String? imageUrl,
   }) : id = id ?? "",
-       precio1 = precio1 ?? 0.0,
-       precio2 = precio2 ?? 0.0,
-       precio3 = precio3 ?? 0.0,
+       price1 = price1 ?? 0.0,
+       price2 = price2 ?? 0.0,
+       price3 = price3 ?? 0.0,
        iva = iva ?? 0.00,
-       estado = estado ?? 'active',
-       categoriaDescripcion = categoriaDescripcion ?? "",
+       status = status ?? 'active',
+       categoryDescription = categoryDescription ?? "",
        imageUrl = imageUrl ?? "";
 
   @override
   List<Object?> get props => [
     id,
     sku,
-    descripcion,
-    codigoBarras,
-    categoria,
-    ubicacion,
-    fabricante,
+    description,
+    barcode,
+    category,
+    location,
+    fabricator,
     stock,
-    precio1,
-    precio2,
-    precio3,
+    price1,
+    price2,
+    price3,
     iva,
-    estado,
+    status,
   ];
 
   Article copyWith({
     String? id,
     String? sku,
-    String? descripcion,
-    String? codigoBarras,
-    String? categoria,
-    String? categoriaDescripcion,
-    String? ubicacion,
-    String? fabricante,
+    String? description,
+    String? barcode,
+    String? category,
+    String? categoryDescription,
+    String? location,
+    String? fabricator,
     int? stock,
-    double? precio1,
-    double? precio2,
-    double? precio3,
+    double? price1,
+    double? price2,
+    double? price3,
     double? iva,
-    String? estado,
+    String? status,
     String? imageUrl,
   }) {
     return Article(
       id: id ?? this.id,
       sku: sku ?? this.sku,
-      descripcion: descripcion ?? this.descripcion,
-      codigoBarras: codigoBarras ?? this.codigoBarras,
-      categoria: categoria ?? this.categoria,
-      categoriaDescripcion: categoriaDescripcion ?? this.categoriaDescripcion,
-      ubicacion: ubicacion ?? this.ubicacion,
-      fabricante: fabricante ?? this.fabricante,
+      description: description ?? this.description,
+      barcode: barcode ?? this.barcode,
+      category: category ?? this.category,
+      categoryDescription: categoryDescription ?? this.categoryDescription,
+      location: location ?? this.location,
+      fabricator: fabricator ?? this.fabricator,
       stock: stock ?? this.stock,
-      precio1: precio1 ?? this.precio1,
-      precio2: precio2 ?? this.precio2,
-      precio3: precio3 ?? this.precio3,
+      price1: price1 ?? this.price1,
+      price2: price2 ?? this.price2,
+      price3: price3 ?? this.price3,
       iva: iva ?? this.iva,
-      estado: estado ?? this.estado,
+      status: status ?? this.status,
       imageUrl: imageUrl ?? this.imageUrl,
     );
   }
@@ -100,17 +100,17 @@ class Article extends Equatable {
     return {
       'id': id,
       'sku': sku,
-      'description': descripcion,
-      'barcode': codigoBarras,
-      'category': categoria,
-      'location': ubicacion,
-      'fabricator': fabricante,
+      'description': description,
+      'barcode': barcode,
+      'category': category,
+      'location': location,
+      'fabricator': fabricator,
       'stock': stock,
-      'price1': precio1,
-      'price2': precio2,
-      'price3': precio3,
+      'price1': price1,
+      'price2': price2,
+      'price3': price3,
       'iva': iva,
-      'status': estado,
+      'status': status,
       'createdAt': DateTime.now(),
       'imageUrl': imageUrl,
     };
@@ -125,33 +125,33 @@ class Article extends Equatable {
     return Article(
       id: data?['id'],
       sku: data?['sku'],
-      descripcion: data?['description'],
-      codigoBarras: data?['barcode'],
-      categoria: data?['category'],
-      ubicacion: data?['location'],
-      fabricante: data?['fabricator'],
+      description: data?['description'],
+      barcode: data?['barcode'],
+      category: data?['category'],
+      location: data?['location'],
+      fabricator: data?['fabricator'],
       stock: data?['stock'],
-      precio1:
+      price1:
           data?['price1'] is int
               ? (data?['price1'] as int).toDouble()
               : data?['price1'],
-      precio2:
+      price2:
           data?['price2'] is int
               ? (data?['price2'] as int).toDouble()
               : data?['price2'],
-      precio3:
+      price3:
           data?['price3'] is int
               ? (data?['price3'] as int).toDouble()
               : data?['price3'],
       iva:
           data?['iva'] is int ? (data?['iva'] as int).toDouble() : data?['iva'],
-      estado: data?['status'],
+      status: data?['status'],
       imageUrl: data?['imageUrl'],
     );
   }
 
   @override
   String toString() {
-    return 'Article: id: $id, sku: $sku, descripción: $descripcion, código de barras: $codigoBarras, categoría: $categoria, ubicación: $ubicacion, fabricante: $fabricante, stock inicial: $stock, precio1: $precio1, precio2: $precio2, precio3: $precio3, iva: $iva, estado: $estado, imageUrl: $imageUrl';
+    return 'Article: id: $id, sku: $sku, descripción: $description, código de barras: $barcode, categoría: $category, ubicación: $location, fabricante: $fabricator, stock inicial: $stock, precio1: $price1, precio2: $price2, precio3: $price3, iva: $iva, estado: $status, imageUrl: $imageUrl';
   }
 }

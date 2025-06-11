@@ -13,7 +13,7 @@ class DeleteArticleScreen extends ConsumerWidget {
     final articleState = ref.watch(articleDeleteNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Eliminar Artículo')),
+      appBar: AppBar(title: const Text('Eliminar artículo')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

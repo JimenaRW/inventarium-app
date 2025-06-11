@@ -40,7 +40,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
             ? categories
             : categories
                 .where(
-                  (x) => x.descripcion.toLowerCase().contains(
+                  (x) => x.description.toLowerCase().contains(
                     _searchQuery.toLowerCase(),
                   ),
                 )
@@ -55,7 +55,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
   Future<void> addCategory(String description) async {
     if (!_mounted) return;
     try {
-      final newCategory = Category(id: "", descripcion: description);
+      final newCategory = Category(id: "", description: description);
       if (!_mounted) return;
       state = AsyncValue.data([...?state.value, newCategory]);
       await _repository.addCategory(newCategory);
@@ -80,8 +80,8 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
       await _repository.updateCategory(
         Category(
           id: categoryId,
-          descripcion: newDescription,
-          estado: newStatus,
+          description: newDescription,
+          status: newStatus,
         ),
       );
       await loadCategories();
@@ -92,19 +92,14 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
   }
 
   Future<void> loadCategoriesByStatus(CategoryStatus status) async {
-
     if (!_mounted) return;
   
-    print('Cargando categorías por estado: ${status.name}');
-
     state = const AsyncLoading();
     try {
       final categories = await _repository.getCategoriesByStatus(status.name);
       state = AsyncData(categories);
     } catch (e) {
       if (!_mounted) return;
-      print('Error al cargar categorías: $e');
-
       state = AsyncError(e, StackTrace.current);
     }
   }
@@ -117,12 +112,12 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<Category>>> {
         throw ("La categoría no se encuentra disponible en la base de datos.",);
       }
 
-      if (category.estado == CategoryStatus.inactive.name) {
+      if (category.status == CategoryStatus.inactive.name) {
         throw ("La categoría ya se encuentra inactiva.");
       }
 
       final softDeleteCategory = category.copyWith(
-        estado: CategoryStatus.inactive.name,
+        status: CategoryStatus.inactive.name,
       );
 
       await _repository.deleteCategory(softDeleteCategory);

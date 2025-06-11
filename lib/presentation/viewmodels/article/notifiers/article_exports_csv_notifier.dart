@@ -24,12 +24,12 @@ class ArticleExportsCsvNotifier extends StateNotifier<ArticleExportsCsvState> {
 
       final updatedArticles =
           articles.map((article) {
-            final categoriaDescripcion =
+            final categoryDescription =
                 categories
-                    .firstWhereOrNull((x) => x.id.contains(article.categoria))
-                    ?.descripcion;
+                    .firstWhereOrNull((x) => x.id.contains(article.category))
+                    ?.description;
 
-            return article.copyWith(categoriaDescripcion: categoriaDescripcion);
+            return article.copyWith(categoryDescription: categoryDescription);
           }).toList();
 
       state = state.copyWith(
@@ -50,9 +50,9 @@ class ArticleExportsCsvNotifier extends StateNotifier<ArticleExportsCsvState> {
     final filtered =
         state.articles.where((article) {
           return article.sku.toLowerCase().contains(lowerQuery) ||
-              article.descripcion.toLowerCase().contains(lowerQuery) ||
-              (article.codigoBarras != null &&
-                  article.codigoBarras!.toLowerCase().contains(lowerQuery));
+              article.description.toLowerCase().contains(lowerQuery) ||
+              (article.barcode != null &&
+                  article.barcode!.toLowerCase().contains(lowerQuery));
         }).toList();
 
     state = state.copyWith(searchQuery: query, filteredArticles: filtered);

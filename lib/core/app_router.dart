@@ -29,7 +29,7 @@ import 'package:inventarium/presentation/screens/users/edit_user_screen.dart';
 import 'package:inventarium/presentation/screens/users/users_screen.dart';
 
 class AuthStreamListenable extends ChangeNotifier {
-  StreamSubscription<User?>? _subscription; // Hacerlo nullable
+  StreamSubscription<User?>? _subscription;
 
   AuthStreamListenable() {
     init();
@@ -43,7 +43,7 @@ class AuthStreamListenable extends ChangeNotifier {
 
   @override
   void dispose() {
-    _subscription?.cancel(); // Cancelar solo si existe
+    _subscription?.cancel();
     super.dispose();
   }
 }
@@ -53,8 +53,7 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final restrictedRoutes = {
   'viewer': ['/edit', '/create', '/delete', '/users', '/import-csv', '/stock'],
-  'editor': ['/users'], // 'editor' no puede acceder a usuarios ni borrar
-  // 'admin' no tiene restricciones
+  'editor': ['/users'], 
 };
 
 final appRouterProvider = Provider<GoRouter>(

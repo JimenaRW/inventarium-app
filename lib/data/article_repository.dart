@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
+import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/domain/i_article_repository.dart';
 import 'package:inventarium/domain/role.dart';
 
@@ -99,10 +101,10 @@ class ArticleRepository implements IArticleRepository {
       if (element.isNotEmpty && element != " ") {
         exactResults =
             _articles.where((article) {
-              return article.descripcion.toLowerCase().contains(element) ||
+              return article.description.toLowerCase().contains(element) ||
                   article.sku.toLowerCase().contains(element) ||
-                  (article.codigoBarras != null &&
-                      article.codigoBarras!.toLowerCase().contains(element));
+                  (article.barcode != null &&
+                      article.barcode!.toLowerCase().contains(element));
             }).toList();
       }
     }
@@ -165,14 +167,23 @@ class ArticleRepository implements IArticleRepository {
   Future<List<Article>> getArticlesPaginado({
     int page = 1,
     int limit = 20,
+    ArticleStatus? status,
   }) async {
     try {
       final int offset = (page - 1) * limit;
 
-      final collectionRef = db
+      Query collectionRef = db
           .collection('articles')
-          .where('status', isEqualTo: ArticleStatus.active.name)
           .orderBy('createdAt', descending: true);
+
+      if (status != null) {
+        collectionRef = collectionRef.where('status', isEqualTo: status.name);
+      } else {
+        collectionRef = collectionRef.where(
+          'status',
+          isEqualTo: ArticleStatus.active.name,
+        );
+      }
 
       QuerySnapshot querySnapshot;
 
@@ -214,8 +225,14 @@ class ArticleRepository implements IArticleRepository {
               .get();
 
       final userRole = userDoc.data()!['role'];
+
       final admin = UserRole.admin.name;
-      if (userRole.toLowerCase() != admin.toLowerCase()) {
+      final editor = UserRole.editor.name;
+      final viewer = UserRole.viewer.name;
+
+      if (userRole.toLowerCase() != admin.toLowerCase() ||
+          userRole.toLowerCase() != editor.toLowerCase() ||
+          userRole.toLowerCase() != viewer.toLowerCase()) {
         return "";
       }
 
@@ -224,6 +241,7 @@ class ArticleRepository implements IArticleRepository {
               .collection('articles')
               .where('status', isEqualTo: ArticleStatus.active.name)
               .get();
+
       final articles =
           querySnapshot.docs.map((doc) {
             return Article.fromFirestore(
@@ -232,7 +250,28 @@ class ArticleRepository implements IArticleRepository {
             );
           }).toList();
 
-      final csvContent = _generateCsvContent(articles);
+      final docs = db
+          .collection('categories')
+          .withConverter<Category>(
+            fromFirestore: Category.fromFirestore,
+            toFirestore: (Category category, _) => category.toFirestore(),
+          );
+
+      final categories = await docs.get();
+
+      final categoriesDto = categories.docs.map((doc) => doc.data()).toList();
+
+      final updatedArticles =
+          articles.map((article) {
+            final categoriaDescripcion =
+                categoriesDto
+                    .firstWhereOrNull((x) => x.id.contains(article.category))
+                    ?.description;
+
+            return article.copyWith(categoryDescription: categoriaDescripcion);
+          }).toList();
+
+      final csvContent = _generateCsvContent(updatedArticles);
 
       final fileName =
           'articulos_export_${DateTime.now().millisecondsSinceEpoch}.csv';
@@ -289,40 +328,34 @@ class ArticleRepository implements IArticleRepository {
     final buffer = StringBuffer();
 
     buffer.writeAll([
-      'ID',
-      'SKU',
-      'Descripción',
-      'Código de Barras',
-      'Categoría',
-      'Descripción Categoría',
-      'Ubicación',
-      'Fabricante',
-      'Stock',
-      'Precio1',
-      'Precio2',
-      'Precio3',
+      'Código de Barras,',
+      'SKU,',
+      'Descripción,',
+      'Descripción Categoría,',
+      'Fabricante,',
+      'Ubicación,',
+      'Stock,',
+      'Precio1,',
+      'Precio2,',
+      'Precio3,',
       'IVA',
-      'Activo',
     ], '\t');
     buffer.writeln();
 
     for (final article in articles) {
       buffer.writeAll([
-        article.id,
+        article.barcode ?? '',
         article.sku,
-        _escapeCsvField(article.descripcion),
-        article.codigoBarras ?? '',
-        article.categoria,
-        article.categoriaDescripcion ?? '',
-        article.ubicacion,
-        article.fabricante,
+        _escapeCsvField(article.description),
+        article.categoryDescription ?? '',
+        article.fabricator,
+        article.location,
         article.stock,
-        article.precio1?.toStringAsFixed(2) ?? '0.00',
-        article.precio2?.toStringAsFixed(2) ?? '0.00',
-        article.precio3?.toStringAsFixed(2) ?? '0.00',
+        article.price1?.toStringAsFixed(2) ?? '0.00',
+        article.price2?.toStringAsFixed(2) ?? '0.00',
+        article.price3?.toStringAsFixed(2) ?? '0.00',
         article.iva?.toStringAsFixed(2) ?? '0.00',
-        article.estado,
-      ], '\t');
+      ], ',');
       buffer.writeln();
     }
 

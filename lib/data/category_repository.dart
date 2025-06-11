@@ -11,8 +11,8 @@ class CategoryRepository implements ICategoryRepository {
   Future<void> addCategory(Category category) async {
     try {
       final doc = db.collection('categories').doc();
-      final categoryFinal = category.copyWith(id: doc.id);
-      await doc.set(categoryFinal.toFirestore());
+      final newCategory = category.copyWith(id: doc.id);
+      await doc.set(newCategory.toFirestore());
     } catch (e) {
       rethrow;
     }
@@ -82,21 +82,20 @@ class CategoryRepository implements ICategoryRepository {
 
     final categories = await docs.get();
 
-    // ignore: no_leading_underscores_for_local_identifiers
-    final _categories = categories.docs.map((doc) => doc.data()).toList();
+    final mappedCategories = categories.docs.map((doc) => doc.data()).toList();
 
-    if (query.trim().isEmpty) return _categories;
+    if (query.trim().isEmpty) return mappedCategories;
 
-    List<Category> exactResults = _categories;
+    List<Category> exactResults = mappedCategories;
 
     final lowerQuery = query.toLowerCase().split(" ");
     for (var element in lowerQuery) {
       if (element.isNotEmpty && element != " ") {
         exactResults =
-            _categories
+            mappedCategories
                 .where(
                   (category) =>
-                      category.descripcion.toLowerCase().contains(element),
+                      category.description.toLowerCase().contains(element),
                 )
                 .toList();
       }
@@ -109,8 +108,8 @@ class CategoryRepository implements ICategoryRepository {
   Future<void> updateCategory(Category category) async {
     try {
       await db.collection('categories').doc(category.id).update({
-        'description': category.descripcion,
-        'status': category.estado,
+        'description': category.description,
+        'status': category.status,
       });
     } catch (e) {
       if (e.toString().contains('NOT_FOUND')) {

@@ -13,13 +13,13 @@ class LowStockCard extends ConsumerWidget {
     return lowStockState.when(
       data:
           (state) => InventoryCard(
-            title: "Artículos con Poco Stock",
+            title: "Artículos con poco stock",
             count: state.articles.length,
             color: Colors.orange.shade100,
           ),
       loading:
           () => const InventoryCard(
-            title: "Artículos con Poco Stock",
+            title: "Artículos con poco stock",
             count: 0,
             color: Colors.orange,
           ),
