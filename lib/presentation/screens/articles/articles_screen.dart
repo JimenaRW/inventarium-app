@@ -131,7 +131,6 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                 ],
               ),
             const SizedBox(height: 24),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -160,7 +159,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                       groupValue: _selectedStatus,
                       onChanged: (value) {
                         setState(() {
-                          _selectedStatus = value!;
+                          _selectedStatus = value;
                           ref
                               .read(articleSearchNotifierProvider.notifier)
                               .loadArticlesByStatus(value);
@@ -177,7 +176,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                       groupValue: _selectedStatus,
                       onChanged: (value) {
                         setState(() {
-                          _selectedStatus = value!;
+                          _selectedStatus = value;
                           ref
                               .read(articleSearchNotifierProvider.notifier)
                               .loadArticlesByStatus(value);
