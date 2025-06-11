@@ -28,26 +28,6 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
     }
   }
 
-  void loadArticlesByStatus(ArticleStatus status) async {
-    state = state.copyWith(isLoading: true);
-    try {
-      final articles = await _articleNotifier.getArticles(
-        page: _currentPage,
-        limit: _itemsPerPage,
-        status: status,
-      );
-      state = state.copyWith(
-        articles: articles,
-        filteredArticles: articles,
-        isLoading: false,
-        hasMore: articles.length == _itemsPerPage,
-        status: status,
-      );
-    } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
-    }
-  }
-
   List<Article> get filteredArticles {
     if (state.searchQuery.isEmpty) return state.articles;
 
@@ -147,28 +127,8 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
 
     state = state.copyWith(isSearching: true);
     try {
-      final filteredArticles =
-          state.articles
-              .where(
-                (article) =>
-                    state.status == null ||
-                    article.status == state.status?.name,
-              )
-              .where((article) {
-                final searchableContent = [
-                  article.description.toLowerCase(),
-                  article.sku.toLowerCase(),
-                  article.barcode?.toLowerCase() ?? '',
-                ].join(' ');
-
-                return searchableContent.contains(query.toLowerCase());
-              })
-              .toList();
-
-      state = state.copyWith(
-        filteredArticles: filteredArticles,
-        isSearching: false,
-      );
+      final results = await _articleNotifier.searchArticles(query);
+      state = state.copyWith(filteredArticles: results, isSearching: false);
     } catch (e) {
       state = state.copyWith(isSearching: false, error: e.toString());
     }

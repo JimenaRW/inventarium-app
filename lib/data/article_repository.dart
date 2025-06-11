@@ -1,12 +1,10 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
-import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/domain/i_article_repository.dart';
 import 'package:inventarium/domain/role.dart';
 
@@ -150,7 +148,7 @@ class ArticleRepository implements IArticleRepository {
   Future<List<Article>> getArticles() async {
     final docs = db
         .collection('articles')
-        // .where('status', isEqualTo: ArticleStatus.active.name)
+        .where('status', isEqualTo: ArticleStatus.active.name)
         .withConverter<Article>(
           fromFirestore: Article.fromFirestore,
           toFirestore: (Article article, _) => article.toFirestore(),
@@ -167,23 +165,14 @@ class ArticleRepository implements IArticleRepository {
   Future<List<Article>> getArticlesPaginado({
     int page = 1,
     int limit = 20,
-    ArticleStatus? status,
   }) async {
     try {
       final int offset = (page - 1) * limit;
 
-      Query collectionRef = db
+      final collectionRef = db
           .collection('articles')
+          .where('status', isEqualTo: ArticleStatus.active.name)
           .orderBy('createdAt', descending: true);
-
-      if (status != null) {
-        collectionRef = collectionRef.where('status', isEqualTo: status.name);
-      } else {
-        collectionRef = collectionRef.where(
-          'status',
-          isEqualTo: ArticleStatus.active.name,
-        );
-      }
 
       QuerySnapshot querySnapshot;
 
@@ -225,25 +214,16 @@ class ArticleRepository implements IArticleRepository {
               .get();
 
       final userRole = userDoc.data()!['role'];
-
       final admin = UserRole.admin.name;
-      final editor = UserRole.editor.name;
-      final viewer = UserRole.viewer.name;
-
-      if (userRole.toLowerCase() != admin.toLowerCase() &&
-          userRole.toLowerCase() != editor.toLowerCase() &&
-          userRole.toLowerCase() != viewer.toLowerCase()) {
-        throw Exception(
-          'No tienes permisos para exportar artículos',
-        );
+      if (userRole.toLowerCase() != admin.toLowerCase()) {
+        return "";
       }
 
       final querySnapshot =
           await db
               .collection('articles')
-              // .where('status', isEqualTo: ArticleStatus.active.name)
+              .where('status', isEqualTo: ArticleStatus.active.name)
               .get();
-
       final articles =
           querySnapshot.docs.map((doc) {
             return Article.fromFirestore(
@@ -252,28 +232,7 @@ class ArticleRepository implements IArticleRepository {
             );
           }).toList();
 
-      final docs = db
-          .collection('categories')
-          .withConverter<Category>(
-            fromFirestore: Category.fromFirestore,
-            toFirestore: (Category category, _) => category.toFirestore(),
-          );
-
-      final categories = await docs.get();
-
-      final categoriesDto = categories.docs.map((doc) => doc.data()).toList();
-
-      final updatedArticles =
-          articles.map((article) {
-            final categoriaDescripcion =
-                categoriesDto
-                    .firstWhereOrNull((x) => x.id.contains(article.category))
-                    ?.description;
-
-            return article.copyWith(categoryDescription: categoriaDescripcion);
-          }).toList();
-
-      final csvContent = _generateCsvContent(updatedArticles);
+      final csvContent = _generateCsvContent(articles);
 
       final fileName =
           'articulos_export_${DateTime.now().millisecondsSinceEpoch}.csv';

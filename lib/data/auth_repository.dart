@@ -48,7 +48,6 @@ class AuthRepository {
             'email': email,
             'role': 'viewer', 
             'id': userCredential.user?.uid,
-            'status': 'active',
           });
 
       return userCredential;

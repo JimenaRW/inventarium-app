@@ -150,6 +150,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
               price2: double.tryParse(values[8].trim()) ?? 0.0,
               price3: double.tryParse(values[9].trim()) ?? 0.0,
               iva: double.tryParse(values[10].trim()) ?? 0.0,
+              status: ArticleStatus.active.name,
             );
 
             importedArticles.add(potentialArticle);
@@ -164,7 +165,6 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         validationErrors: errors,
         rawArticleLines: [],
         potentialArticles: errors.isEmpty ? importedArticles : [],
-        importedCount: importedArticles.length,
       );
     } catch (e) {
       state = state.copyWith(
@@ -196,9 +196,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
       final catSnapshot = await categoriesRef.get();
       final Map<String, String> currentCategories = {
         for (var doc in catSnapshot.docs)
-          _normalizeCategoryName(
-                (doc.data()['description'] ?? '').toString().trim(),
-              ):
+          capitalizeFirstLetter((doc.data()['description'] ?? '').toString().trim()):
               doc.id,
       };
 
@@ -210,9 +208,8 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
 
       final Set<String> loadedCategories = currentCategories.keys.toSet();
 
-      final categoriesToInsert = importedCategories.difference(
-        loadedCategories,
-      );
+      final categoriesToInsert = importedCategories.difference(loadedCategories);
+      final categoriesToDelete = loadedCategories.difference(importedCategories);
 
       final List<void Function(WriteBatch)> operationsCategories = [];
 
@@ -220,11 +217,20 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         operationsCategories.add((batch) {
           final ref = categoriesRef.doc();
           batch.set(ref, {
-            'description': _normalizeCategoryName(description.trim()),
+            'description': capitalizeFirstLetter(description.trim()),
             'id': ref.id,
-            'status': CategoryStatus.active.name,
           });
         });
+      }
+
+      for (final description in categoriesToDelete) {
+        final id = currentCategories[description];
+        if (id != null) {
+          final ref = categoriesRef.doc(id);
+          operationsCategories.add((batch) {
+            batch.update(ref, {'status': CategoryStatus.inactive.name});
+          });
+        }
       }
 
       await _runBatch(operationsCategories);
@@ -232,10 +238,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
       final reloadCatSnapshot = await categoriesRef.get();
       final Map<String, String> catDescriptionToId = {
         for (var doc in reloadCatSnapshot.docs)
-          _normalizeCategoryName(
-                (doc.data()['description'] ?? '').toString().trim(),
-              ):
-              doc.id,
+          capitalizeFirstLetter((doc.data()['description'] ?? '').toString().trim()): doc.id,
       };
 
       final artSnapshot = await articlesRef.get();
@@ -250,59 +253,50 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
 
       final articleToInsert = importedArticleSku.difference(loadedArticleSku);
       final articleToUpdate = importedArticleSku.intersection(loadedArticleSku);
+      final articleToDelete = loadedArticleSku.difference(importedArticleSku);
 
-      final List<Article> toInsert = await Future.wait(
-        state.potentialArticles!
-            .where((a) => articleToInsert.contains(a.sku))
-            .map((a) async {
-              final categoryKey = _normalizeCategoryName(
-                a.category?.trim() ?? '',
-              );
-              var catId = catDescriptionToId[categoryKey] ?? '';
+      Article mapCategoryId(Article a) {
+        final catId = catDescriptionToId[a.category.trim()] ?? '';
+        return a.copyWith(category: catId);
+      }
 
-              return a.copyWith(category: catId);
-            })
-            .toList(),
-      );
+      final List<Article> toInsert =
+          state.potentialArticles!
+              .where((a) => articleToInsert.contains(a.sku))
+              .map(mapCategoryId)
+              .toList();
 
-      final List<Article> toUpdate = await Future.wait(
-        state.potentialArticles!
-            .where((a) => articleToUpdate.contains(a.sku))
-            .map((a) async {
-              final categoryKey = _normalizeCategoryName(
-                a.category?.trim() ?? '',
-              );
-              var catId = catDescriptionToId[categoryKey] ?? '';
-
-              return a.copyWith(category: catId);
-            })
-            .toList(),
-      );
+      final List<Article> toUpdate =
+          state.potentialArticles!
+              .where((a) => articleToUpdate.contains(a.sku))
+              .map((a) {
+                final id = currentArticles[a.sku];
+                return mapCategoryId(a.copyWith(id: id));
+              })
+              .toList();
 
       for (final article in toInsert) {
         operations.add((batch) {
           final ref = articlesRef.doc();
-          batch.set(ref, {
-            ...article.toFirestore(),
-            'id': ref.id,
-            'status': ArticleStatus.active,
-            'imageUrl': '',
-          });
+          batch.set(ref, {...article.toFirestore(), 'id': ref.id});
         });
       }
 
-      final querySnapshot = await articlesRef.where('sku').get();
-
-      for (final doc in querySnapshot.docs) {
-        final article = toUpdate.firstWhere((a) => a.sku == doc['sku']);
-
+      for (final article in toUpdate) {
+        final ref = articlesRef.doc(article.id);
         operations.add((batch) {
-          final data = article.toFirestore();
-          data.remove('imageUrl');
-          data.remove('status');
-          data.remove('id');
-          batch.update(doc.reference, data);
+          batch.update(ref, {...article.toFirestore(), 'id': ref.id});
         });
+      }
+
+      for (final sku in articleToDelete) {
+        final id = currentArticles[sku];
+        if (id != null) {
+          final ref = articlesRef.doc(id);
+          operations.add((batch) {
+            batch.update(ref, {'status': ArticleStatus.inactive.name});
+          });
+        }
       }
 
       await _runBatch(operations);
@@ -319,7 +313,9 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
     }
   }
 
-  Future<void> _runBatch(List<void Function(WriteBatch)> operaciones) async {
+  Future<void> _runBatch(
+    List<void Function(WriteBatch)> operaciones,
+  ) async {
     const int maxBatch = 500;
 
     for (int i = 0; i < operaciones.length; i += maxBatch) {
@@ -336,22 +332,5 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
   String capitalizeFirstLetter(String texto) {
     if (texto.isEmpty) return texto;
     return texto[0].toUpperCase() + texto.substring(1).toLowerCase();
-  }
-
-  String _normalizeCategoryName(String? input) {
-    if (input == null || input.isEmpty) return '';
-    return input.trim()[0].toUpperCase() + input.trim().substring(1).toLowerCase();
-  }
-
-  Future<List<String>> getArticlesBySkus(
-    Set<String> skusSet,
-    CollectionReference<Map<String, dynamic>> articlesRef,
-  ) async {
-    final querySnapshot = await articlesRef.get();
-
-    return querySnapshot.docs
-        .where((doc) => skusSet.contains(doc['sku']))
-        .map((article) => article.id)
-        .toList();
   }
 }

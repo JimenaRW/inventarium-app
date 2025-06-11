@@ -13,30 +13,6 @@ class ArticlesImportCsv extends ConsumerWidget {
     final state = ref.watch(articleImportCsvNotifierProvider);
     final notifier = ref.read(articleImportCsvNotifierProvider.notifier);
 
-    Future<void> submitForm() async {
-      final scaffoldMessenger = ScaffoldMessenger.of(context);
-      final navigator = Navigator.of(context);
-
-      try {
-        await ref
-            .read(articleImportCsvNotifierProvider.notifier)
-            .importArticles();
-
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(
-              'Importación de ${state.importedCount} artículos realizada.',
-            ),
-          ),
-        );
-        navigator.pop(true);
-      } catch (e) {
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
-      }
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Importar CSV'),
@@ -67,12 +43,12 @@ class ArticlesImportCsv extends ConsumerWidget {
 
                 if (state.selectedFile != null)
                   Text(
-                    'Archivo: ${state.selectedFile!.path.split(Platform.pathSeparator).last}: un total de ${state.importedCount ?? 0} artículos',
+                    'Archivo: ${state.selectedFile!.path.split(Platform.pathSeparator).last}',
                   ),
 
                 const SizedBox(height: 24),
 
-                if (state.validationErrors.isNotEmpty && state.selectedFile != null) ...[
+                if (state.validationErrors.isNotEmpty) ...[
                   const Text(
                     'Errores de validación:',
                     style: TextStyle(
@@ -91,14 +67,14 @@ class ArticlesImportCsv extends ConsumerWidget {
                           ),
                     ),
                   ),
-                ] else if (state.potentialArticles != null && state.selectedFile != null) ...[
+                ] else if (state.potentialArticles != null) ...[
                   const Text(
                     'Archivo válido ✅',
                     style: TextStyle(color: Colors.green),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
-                    onPressed: () async => await submitForm(),
+                    onPressed: () => notifier.importArticles(),
                     icon: const Icon(Icons.upload),
                     label: const Text('Importar artículos'),
                     style: ElevatedButton.styleFrom(
@@ -108,6 +84,18 @@ class ArticlesImportCsv extends ConsumerWidget {
                     ),
                   ),
                 ],
+
+                if (state.importSuccess)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 24),
+                    child: Text(
+                      'Importación completada exitosamente ✅',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
               ],
             ),
 
