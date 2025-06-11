@@ -285,7 +285,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
           batch.set(ref, {
             ...article.toFirestore(),
             'id': ref.id,
-            'status': ArticleStatus.active,
+            'status': ArticleStatus.active.name,
             'imageUrl': '',
           });
         });
