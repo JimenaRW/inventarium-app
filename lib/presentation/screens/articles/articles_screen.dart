@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/data/article_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/article_status.dart';
 import 'package:inventarium/domain/role.dart';
 import 'package:inventarium/presentation/viewmodels/article/notifiers/article_search_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
@@ -21,6 +22,7 @@ class ArticlesScreen extends ConsumerStatefulWidget {
 
 class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   final _searchController = TextEditingController();
+  ArticleStatus _selectedStatus = ArticleStatus.active;
 
   @override
   void initState() {
@@ -87,13 +89,15 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                       icon: Icons.add_circle_outline,
                       label: 'CREAR\nARTÍCULO',
                       onTap: () {
+                        final currentContext = context;
+                        final articleNotifier = ProviderScope.containerOf(
+                          currentContext,
+                        ).read(articleSearchNotifierProvider.notifier);
+
                         context.push('/articles/create');
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false);
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .loadInitialData();
+                        
+                        articleNotifier.toggleDeleteMode(false);
+                        articleNotifier.loadInitialData();
                         _searchController.clear();
                       },
                     ),
@@ -102,13 +106,14 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                       icon: Icons.upload_file,
                       label: 'IMPORTAR\nCSV',
                       onTap: () {
+                        final currentContext = context;
+                        final articleNotifier = ProviderScope.containerOf(
+                          currentContext,
+                        ).read(articleSearchNotifierProvider.notifier);
+
                         context.push('/articles/import-csv');
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false);
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .loadInitialData();
+                        articleNotifier.toggleDeleteMode(false);
+                        articleNotifier.loadInitialData();
                         _searchController.clear();
                       },
                     ),
@@ -116,19 +121,62 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                     icon: Icons.save_alt,
                     label: 'EXPORTAR\nCSV',
                     onTap: () {
+                      Navigator.pop(context);
+                      final currentContext = context;
+                      final articleNotifier = ProviderScope.containerOf(
+                        currentContext,
+                      ).read(articleSearchNotifierProvider.notifier);
                       context.push('/articles/exports-csv');
-                      ref
-                          .read(articleSearchNotifierProvider.notifier)
-                          .toggleDeleteMode(false);
-                      ref
-                          .read(articleSearchNotifierProvider.notifier)
-                          .loadInitialData();
+                      articleNotifier.toggleDeleteMode(false);
+                      articleNotifier.loadInitialData();
                       _searchController.clear();
                     },
                   ),
                 ],
               ),
             const SizedBox(height: 24),
+            if (enableBotton)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Text('Filtrar por estado:'),
+                  Row(
+                    children: [
+                      Radio<ArticleStatus>(
+                        value: ArticleStatus.active,
+                        groupValue: _selectedStatus,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedStatus = value!;
+                            ref
+                                .read(articleSearchNotifierProvider.notifier)
+                                .loadArticlesByStatus(value);
+                          });
+                        },
+                      ),
+                      const Text('Activos'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Radio<ArticleStatus>(
+                        value: ArticleStatus.inactive,
+                        groupValue: _selectedStatus,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedStatus = value!;
+                            ref
+                                .read(articleSearchNotifierProvider.notifier)
+                                .loadArticlesByStatus(value);
+                          });
+                        },
+                      ),
+                      const Text('Inactivos'),
+                    ],
+                  ),
+                ],
+              ),
+            const SizedBox(height: 5),
             _buildSearchField(notifier, state, currentRol),
             const SizedBox(height: 16),
             Expanded(child: _buildContent(state, notifier)),
@@ -146,11 +194,14 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (FirebaseAuth.instance.currentUser == null) {
         FirebaseAuth.instance.signOut().then(
-          (value) => ScaffoldMessenger.of(context)
-            ..clearSnackBars()
-            ..showSnackBar(
-              const SnackBar(content: Text("Por favor verifica iniciar sesión")),
-            ),
+          (value) =>
+              ScaffoldMessenger.of(context)
+                ..clearSnackBars()
+                ..showSnackBar(
+                  const SnackBar(
+                    content: Text("Por favor verifica iniciar sesión"),
+                  ),
+                ),
         );
       }
     });
@@ -220,7 +271,9 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                         ..clearSnackBars()
                         ..showSnackBar(
                           const SnackBar(
-                            content: Text("Debe seleccionar un artículo a eliminar."),
+                            content: Text(
+                              "Debe seleccionar un artículo a eliminar.",
+                            ),
                           ),
                         );
                     }
@@ -231,9 +284,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                       ..clearSnackBars()
                       ..showSnackBar(
                         SnackBar(
-                          content: Text(
-                            state.errorDeleted ?? e.toString(),
-                          ),
+                          content: Text(state.errorDeleted ?? e.toString()),
                         ),
                       );
                   }
@@ -249,7 +300,10 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     );
   }
 
-  Widget _buildContent(ArticleSearchState state, ArticleSearchNotifier notifier) {
+  Widget _buildContent(
+    ArticleSearchState state,
+    ArticleSearchNotifier notifier,
+  ) {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -289,7 +343,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
       },
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 2),
-        itemCount: state.filteredArticles.length + (state.isLoadingMore ? 1 : 0),
+        itemCount:
+            state.filteredArticles.length + (state.isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index < state.filteredArticles.length) {
             final article = state.filteredArticles[index];
@@ -312,10 +367,15 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     );
   }
 
-  void _showArticleDetails(BuildContext context, Article article, WidgetRef ref) {
+  void _showArticleDetails(
+    BuildContext context,
+    Article article,
+    WidgetRef ref,
+  ) {
     final userState = ref.read(userNotifierProvider);
     final currentRol = userState.user?.role;
-    final enableBotton = currentRol == UserRole.admin || currentRol == UserRole.editor;
+    final enableBotton =
+        currentRol == UserRole.admin || currentRol == UserRole.editor;
 
     showModalBottomSheet(
       context: context,
@@ -373,8 +433,10 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   const SizedBox(height: 20),
                   Consumer(
                     builder: (context, ref, child) {
-                      final deleteState = ref.watch(articleDeleteNotifierProvider);
-                      
+                      final deleteState = ref.watch(
+                        articleDeleteNotifierProvider,
+                      );
+
                       return Column(
                         children: [
                           Row(
@@ -382,99 +444,188 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                             children: <Widget>[
                               if (enableBotton)
                                 ElevatedButton(
-                                  onPressed: deleteState.isLoading ? null : () {
-                                    Navigator.pop(bc);
-                                    context.push('/articles/edit/${article.id}').then((_) {
-                                      ref
-                                          .read(articleSearchNotifierProvider.notifier)
-                                          .loadInitialData();
-                                    });
-                                  },
+                                  onPressed:
+                                      deleteState.isLoading
+                                          ? null
+                                          : () async {
+                                            Navigator.pop(bc);
+                                            final currentContext = context;
+                                            final articleNotifier =
+                                                ProviderScope.containerOf(
+                                                  currentContext,
+                                                ).read(
+                                                  articleSearchNotifierProvider
+                                                      .notifier,
+                                                );
+
+                                            await context.push(
+                                              '/articles/edit/${article.id}',
+                                            );
+
+                                            articleNotifier.loadInitialData();
+                                          },
                                   child: const Text('Editar'),
                                 ),
-                              if (enableBotton)
+                              if (enableBotton && article.status ==
+                                  ArticleStatus.active.name)
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.red,
                                     foregroundColor: Colors.white,
                                   ),
-                                  onPressed: deleteState.isLoading ? null : () async {
-                                    final confirmed = await showDialog<bool>(
-                                      context: context,
-                                      builder: (ctx) {
-                                        return Consumer(
-                                          builder: (context, ref, child) {
-                                            final dialogDeleteState = ref.watch(articleDeleteNotifierProvider);
-                                            
-                                            return AlertDialog(
-                                              title: const Text('¿Eliminar artículo?'),
-                                              content: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  const Text('¿Estás seguro de querer eliminar este artículo?'),
-                                                  const SizedBox(height: 16),
-                                                  Text('ID: ${article.id}'),
-                                                  const SizedBox(height: 16),
-                                                  if (dialogDeleteState.errorMessage != null)
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(top: 8.0),
-                                                      child: Text(
-                                                        dialogDeleteState.errorMessage!,
-                                                        style: const TextStyle(
-                                                          color: Colors.red,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                ],
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () => Navigator.pop(ctx, false),
-                                                  child: const Text('Cancelar'),
-                                                ),
-                                                TextButton(
-                                                  onPressed: dialogDeleteState.isLoading
-                                                      ? null
-                                                      : () => Navigator.pop(ctx, true),
-                                                  child: dialogDeleteState.isLoading
-                                                      ? const CircularProgressIndicator(color: Colors.red)
-                                                      : const Text(
-                                                          'Eliminar',
-                                                          style: TextStyle(color: Colors.red),
-                                                        ),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        );
-                                      },
-                                    );
+                                  onPressed:
+                                      deleteState.isLoading
+                                          ? null
+                                          : () async {
+                                            final confirmed = await showDialog<
+                                              bool
+                                            >(
+                                              context: context,
+                                              builder: (ctx) {
+                                                return Consumer(
+                                                  builder: (
+                                                    context,
+                                                    ref,
+                                                    child,
+                                                  ) {
+                                                    final dialogDeleteState =
+                                                        ref.watch(
+                                                          articleDeleteNotifierProvider,
+                                                        );
 
-                                    if (confirmed == true) {
-                                      await ref
-                                          .read(articleDeleteNotifierProvider.notifier)
-                                          .deleteArticle(article.id!);
-                                      
-                                      if (context.mounted) {
-                                        final currentState = ref.read(articleDeleteNotifierProvider);
-                                        if (currentState.success) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(
-                                              content: Text('Artículo eliminado correctamente.'),
-                                              backgroundColor: Colors.green,
-                                            ),
-                                          );
-                                          ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
-                                          Navigator.pop(bc);
-                                        }
-                                      }
-                                    }
-                                  },
-                                  child: deleteState.isLoading
-                                      ? const CircularProgressIndicator(color: Colors.white)
-                                      : const Text('Eliminar'),
+                                                    return AlertDialog(
+                                                      title: const Text(
+                                                        '¿Eliminar artículo?',
+                                                      ),
+                                                      content: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          const Text(
+                                                            '¿Estás seguro de querer eliminar este artículo?',
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 16,
+                                                          ),
+                                                          Text(
+                                                            'ID: ${article.id}',
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 16,
+                                                          ),
+                                                          if (dialogDeleteState
+                                                                  .errorMessage !=
+                                                              null)
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets.only(
+                                                                    top: 8.0,
+                                                                  ),
+                                                              child: Text(
+                                                                dialogDeleteState
+                                                                    .errorMessage!,
+                                                                style: const TextStyle(
+                                                                  color:
+                                                                      Colors
+                                                                          .red,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                        ],
+                                                      ),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed:
+                                                              () =>
+                                                                  Navigator.pop(
+                                                                    ctx,
+                                                                    false,
+                                                                  ),
+                                                          child: const Text(
+                                                            'Cancelar',
+                                                          ),
+                                                        ),
+                                                        TextButton(
+                                                          onPressed:
+                                                              dialogDeleteState
+                                                                      .isLoading
+                                                                  ? null
+                                                                  : () =>
+                                                                      Navigator.pop(
+                                                                        ctx,
+                                                                        true,
+                                                                      ),
+                                                          child:
+                                                              dialogDeleteState
+                                                                      .isLoading
+                                                                  ? const CircularProgressIndicator(
+                                                                    color:
+                                                                        Colors
+                                                                            .red,
+                                                                  )
+                                                                  : const Text(
+                                                                    'Eliminar',
+                                                                    style: TextStyle(
+                                                                      color:
+                                                                          Colors
+                                                                              .red,
+                                                                    ),
+                                                                  ),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                            );
+
+                                            if (confirmed == true) {
+                                              await ref
+                                                  .read(
+                                                    articleDeleteNotifierProvider
+                                                        .notifier,
+                                                  )
+                                                  .deleteArticle(article.id!);
+
+                                              if (context.mounted) {
+                                                final currentState = ref.read(
+                                                  articleDeleteNotifierProvider,
+                                                );
+                                                if (currentState.success) {
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text(
+                                                        'Artículo eliminado correctamente.',
+                                                      ),
+                                                      backgroundColor:
+                                                          Colors.green,
+                                                    ),
+                                                  );
+                                                  ref
+                                                      .read(
+                                                        articleSearchNotifierProvider
+                                                            .notifier,
+                                                      )
+                                                      .loadInitialData();
+                                                  Navigator.pop(bc);
+                                                }
+                                              }
+                                            }
+                                          },
+                                  child:
+                                      deleteState.isLoading
+                                          ? const CircularProgressIndicator(
+                                            color: Colors.white,
+                                          )
+                                          : const Text('Eliminar'),
                                 ),
                             ],
                           ),
