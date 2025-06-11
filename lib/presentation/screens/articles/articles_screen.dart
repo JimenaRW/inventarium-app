@@ -367,7 +367,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                 showCheckbox: state.isDeleted,
                 checkboxValue: state.articlesDeleted.contains(article.id),
                 onCheckboxChanged: (value) {
-                  notifier.toggleDeleteList(value ?? false, article.id!);
+                    notifier.toggleDeleteList(value ?? false, article.id!);
                 },
               ),
             );
@@ -442,6 +442,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                   ),
                   _buildDetailRow('Stock', article.stock.toString()),
                   _buildDetailRow('Ubicación', article.location),
+                  _buildDetailRow('Estado', article.status == ArticleStatus.active.name ? "Activo" : "Inactivo"),
                   const SizedBox(height: 20),
                   Consumer(
                     builder: (context, ref, child) {
@@ -476,7 +477,8 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                                           },
                                   child: const Text('Editar'),
                                 ),
-                              if (enableBotton)
+                              if (enableBotton &&
+                        article.status == ArticleStatus.active.name)
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.red,
