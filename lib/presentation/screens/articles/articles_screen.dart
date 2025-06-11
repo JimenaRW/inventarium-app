@@ -131,63 +131,64 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                 ],
               ),
             const SizedBox(height: 24),
-            if (enableBotton)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Row(
-                    children: [
-                      Radio<ArticleStatus?>(
-                        value: null,
-                        groupValue: _selectedStatus,
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedStatus = value;
-                            ref
-                                .read(articleSearchNotifierProvider.notifier)
-                                .loadArticlesByStatus(value);
-                          });
-                        },
-                      ),
-                      const Text('Todos'),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Radio<ArticleStatus?>(
-                        value: ArticleStatus.active,
-                        groupValue: _selectedStatus,
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedStatus = value!;
-                            ref
-                                .read(articleSearchNotifierProvider.notifier)
-                                .loadArticlesByStatus(value);
-                          });
-                        },
-                      ),
-                      const Text('Activos'),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Radio<ArticleStatus?>(
-                        value: ArticleStatus.inactive,
-                        groupValue: _selectedStatus,
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedStatus = value!;
-                            ref
-                                .read(articleSearchNotifierProvider.notifier)
-                                .loadArticlesByStatus(value);
-                          });
-                        },
-                      ),
-                      const Text('Inactivos'),
-                    ],
-                  ),
-                ],
-              ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text('Filtrar por estado:'),
+                Row(
+                  children: [
+                    Radio<ArticleStatus?>(
+                      value: null,
+                      groupValue: _selectedStatus,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedStatus = value;
+                          ref
+                              .read(articleSearchNotifierProvider.notifier)
+                              .loadArticlesByStatus(value);
+                        });
+                      },
+                    ),
+                    const Text('Todos'),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Radio<ArticleStatus?>(
+                      value: ArticleStatus.active,
+                      groupValue: _selectedStatus,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedStatus = value!;
+                          ref
+                              .read(articleSearchNotifierProvider.notifier)
+                              .loadArticlesByStatus(value);
+                        });
+                      },
+                    ),
+                    const Text('Activos'),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Radio<ArticleStatus?>(
+                      value: ArticleStatus.inactive,
+                      groupValue: _selectedStatus,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedStatus = value!;
+                          ref
+                              .read(articleSearchNotifierProvider.notifier)
+                              .loadArticlesByStatus(value);
+                        });
+                      },
+                    ),
+                    const Text('Inactivos'),
+                  ],
+                ),
+              ],
+            ),
             const SizedBox(height: 5),
             _buildSearchField(notifier, state, currentRol),
             const SizedBox(height: 16),
