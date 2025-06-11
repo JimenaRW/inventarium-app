@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/category_repository.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/article_status.dart';
+import 'package:inventarium/domain/category.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_import_csv_state.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -162,6 +164,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         validationErrors: errors,
         rawArticleLines: [],
         potentialArticles: errors.isEmpty ? importedArticles : [],
+        importedCount: importedArticles.length,
       );
     } catch (e) {
       state = state.copyWith(
@@ -193,7 +196,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
       final catSnapshot = await categoriesRef.get();
       final Map<String, String> currentCategories = {
         for (var doc in catSnapshot.docs)
-          capitalizeFirstLetter(
+          _normalizeCategoryName(
                 (doc.data()['description'] ?? '').toString().trim(),
               ):
               doc.id,
@@ -217,8 +220,9 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         operationsCategories.add((batch) {
           final ref = categoriesRef.doc();
           batch.set(ref, {
-            'description': capitalizeFirstLetter(description.trim()),
+            'description': _normalizeCategoryName(description.trim()),
             'id': ref.id,
+            'status': CategoryStatus.active.name,
           });
         });
       }
@@ -228,7 +232,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
       final reloadCatSnapshot = await categoriesRef.get();
       final Map<String, String> catDescriptionToId = {
         for (var doc in reloadCatSnapshot.docs)
-          capitalizeFirstLetter(
+          _normalizeCategoryName(
                 (doc.data()['description'] ?? '').toString().trim(),
               ):
               doc.id,
@@ -251,10 +255,12 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         state.potentialArticles!
             .where((a) => articleToInsert.contains(a.sku))
             .map((a) async {
-              var catId = catDescriptionToId[a.category.trim()] ?? '';
+              final categoryKey = _normalizeCategoryName(
+                a.category?.trim() ?? '',
+              );
+              var catId = catDescriptionToId[categoryKey] ?? '';
 
-              a.copyWith(category: catId);
-              return a;
+              return a.copyWith(category: catId);
             })
             .toList(),
       );
@@ -263,10 +269,12 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         state.potentialArticles!
             .where((a) => articleToUpdate.contains(a.sku))
             .map((a) async {
-              var catId = catDescriptionToId[a.category.trim()] ?? '';
-              a.copyWith(category: catId);
+              final categoryKey = _normalizeCategoryName(
+                a.category?.trim() ?? '',
+              );
+              var catId = catDescriptionToId[categoryKey] ?? '';
 
-              return a;
+              return a.copyWith(category: catId);
             })
             .toList(),
       );
@@ -274,17 +282,26 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
       for (final article in toInsert) {
         operations.add((batch) {
           final ref = articlesRef.doc();
-          batch.set(ref, {...article.toFirestore(), 'id': ref.id});
+          batch.set(ref, {
+            ...article.toFirestore(),
+            'id': ref.id,
+            'status': ArticleStatus.active,
+            'imageUrl': '',
+          });
         });
       }
 
-      for (final article in toUpdate) {
-        final ref = articlesRef.doc(article.id);
+      final querySnapshot = await articlesRef.where('sku').get();
+
+      for (final doc in querySnapshot.docs) {
+        final article = toUpdate.firstWhere((a) => a.sku == doc['sku']);
 
         operations.add((batch) {
-          final data = {...article.toFirestore(), 'id': ref.id};
+          final data = article.toFirestore();
           data.remove('imageUrl');
-          batch.update(ref, data);
+          data.remove('status');
+          data.remove('id');
+          batch.update(doc.reference, data);
         });
       }
 
@@ -316,22 +333,25 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
     }
   }
 
-  Future<String?> getImageUrl(String articleId) async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final docSnapshot =
-          await firestore.collection('articles').doc(articleId).get();
-      if (docSnapshot.exists) {
-        return docSnapshot.data()?['imageUrl'] as String?;
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
   String capitalizeFirstLetter(String texto) {
     if (texto.isEmpty) return texto;
     return texto[0].toUpperCase() + texto.substring(1).toLowerCase();
+  }
+
+  String _normalizeCategoryName(String? input) {
+    if (input == null || input.isEmpty) return '';
+    return input.trim()[0].toUpperCase() + input.trim().substring(1).toLowerCase();
+  }
+
+  Future<List<String>> getArticlesBySkus(
+    Set<String> skusSet,
+    CollectionReference<Map<String, dynamic>> articlesRef,
+  ) async {
+    final querySnapshot = await articlesRef.get();
+
+    return querySnapshot.docs
+        .where((doc) => skusSet.contains(doc['sku']))
+        .map((article) => article.id)
+        .toList();
   }
 }
