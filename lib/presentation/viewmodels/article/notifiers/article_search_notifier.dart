@@ -32,7 +32,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
     state = state.copyWith(isLoading: true);
     try {
       final articles = await _articleNotifier.getArticles(
-        page: _currentPage,
+        page: 1,
         limit: _itemsPerPage,
         status: status,
       );
@@ -41,8 +41,9 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
         isLoading: false,
         hasMore: articles.length == _itemsPerPage,
         status: status,
+        currentPage: 1,
       );
-      searchArticles(''); // Reiniciar la búsqueda
+      state = state.copyWith(filteredArticles: filteredArticles);
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
     }
@@ -84,13 +85,12 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       final newArticles = await _articleNotifier.getArticles(
         page: state.currentPage + 1,
         limit: _itemsPerPage,
+        status: state.status,
       );
-
-      final filteredNewArticles = getFilteredArticles(newArticles);
 
       state = state.copyWith(
         articles: [...state.articles, ...newArticles],
-        filteredArticles: [...state.filteredArticles, ...filteredNewArticles],
+        filteredArticles: [...state.filteredArticles, ...newArticles],
         isLoadingMore: false,
         hasMore: newArticles.length == _itemsPerPage,
         currentPage: state.currentPage + 1,
