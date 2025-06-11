@@ -1,5 +1,4 @@
 import 'package:inventarium/domain/article.dart';
-import 'package:inventarium/domain/article_status.dart';
 
 class ArticleSearchState {
   final List<Article> articles;
@@ -15,7 +14,6 @@ class ArticleSearchState {
   final List<String> articlesDeleted;
   final String? errorDeleted;
   final String? successMessage;
-  final ArticleStatus? status;
 
   const ArticleSearchState({
     this.articles = const [],
@@ -31,7 +29,6 @@ class ArticleSearchState {
     this.articlesDeleted = const [],
     this.errorDeleted,
     this.successMessage,
-    this.status,
   });
 
   factory ArticleSearchState.initial() => ArticleSearchState(
@@ -46,7 +43,6 @@ class ArticleSearchState {
     articlesDeleted: [],
     errorDeleted: null,
     successMessage: null,
-    status: ArticleStatus.active,
   );
 
   ArticleSearchState copyWith({
@@ -62,7 +58,6 @@ class ArticleSearchState {
     List<String>? articlesDeleted,
     String? errorDeleted,
     String? successMessage,
-    ArticleStatus? status,
   }) {
     return ArticleSearchState(
       articles: articles ?? this.articles,
@@ -77,7 +72,6 @@ class ArticleSearchState {
       articlesDeleted: articlesDeleted ?? this.articlesDeleted,
       errorDeleted: errorDeleted ?? this.errorDeleted,
       successMessage: successMessage ?? this.successMessage,
-      status: status ?? this.status,
     );
   }
 }

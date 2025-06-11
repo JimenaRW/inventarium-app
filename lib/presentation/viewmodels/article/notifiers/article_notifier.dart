@@ -79,26 +79,21 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
     }
   }
 
-  Future<List<Article>> getArticles({
-    required int page,
-    required int limit,
-    ArticleStatus? status,
-  }) async {
+  Future<List<Article>> getArticles({int page = 1, int limit = 20}) async {
     try {
       final articles = await _repository.getArticlesPaginado(
         page: page,
         limit: limit,
-        status: status,
       );
       final categories = await _repositoryCategories.getAllCategories();
       final updatedArticles =
           articles.map((article) {
-            final categoryDescription =
+            final categoriaDescripcion =
                 categories
                     .firstWhereOrNull((x) => x.id.contains(article.category))
                     ?.description;
 
-            return article.copyWith(categoryDescription: categoryDescription);
+            return article.copyWith(categoryDescription: categoriaDescripcion);
           }).toList();
 
       return updatedArticles;
@@ -166,38 +161,10 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
   }
 
   Future<List<Article>> getArticlesWithNoStock() async {
-    var articles = await _repository.getArticlesWithNoStock();
-
-    final categories = await _repositoryCategories.getAllCategories();
-
-    final updatedArticles =
-        articles.map((article) {
-          final categoryDescription =
-              categories
-                  .firstWhereOrNull((x) => x.id.contains(article.category))
-                  ?.description;
-
-          return article.copyWith(categoryDescription: categoryDescription);
-        }).toList();
-
-    return updatedArticles;
+    return await _repository.getArticlesWithNoStock();
   }
 
   Future<List<Article>> getArticlesWithLowStock(int threshold) async {
-    var articles = await _repository.getArticlesWithLowStock(threshold);
-
-    final categories = await _repositoryCategories.getAllCategories();
-
-    final updatedArticles =
-        articles.map((article) {
-          final categoryDescription =
-              categories
-                  .firstWhereOrNull((x) => x.id.contains(article.category))
-                  ?.description;
-
-          return article.copyWith(categoryDescription: categoryDescription);
-        }).toList();
-
-    return updatedArticles;
+    return await _repository.getArticlesWithLowStock(threshold);
   }
 }
