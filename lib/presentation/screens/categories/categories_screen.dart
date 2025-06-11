@@ -17,7 +17,7 @@ class CategoriesScreen extends ConsumerStatefulWidget {
 
 class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   final _searchController = TextEditingController();
-  CategoryStatus _selectedStatus = CategoryStatus.active;
+  CategoryStatus? _selectedStatus;
 
   Category? _selectedCategory;
 
@@ -94,13 +94,32 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                   Text('Filtrar por estado:'),
                   Row(
                     children: [
-                      Radio<CategoryStatus>(
+                      Radio<CategoryStatus?>(
+                        value: null,
+                        groupValue: _selectedStatus,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedStatus = value;
+                            ref
+                                .read(categoriesNotifierProvider.notifier)
+                                .loadCategoriesByStatus(value);
+                          });
+                        },
+                      ),
+                      const Text('Todos'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Radio<CategoryStatus?>(
                         value: CategoryStatus.active,
                         groupValue: _selectedStatus,
                         onChanged: (value) {
                           setState(() {
-                            _selectedStatus = value!;
-                            notifier.loadCategoriesByStatus(value);
+                            _selectedStatus = value;
+                            ref
+                                .read(categoriesNotifierProvider.notifier)
+                                .loadCategoriesByStatus(value);
                           });
                         },
                       ),
@@ -109,13 +128,15 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                   ),
                   Row(
                     children: [
-                      Radio<CategoryStatus>(
+                      Radio<CategoryStatus?>(
                         value: CategoryStatus.inactive,
                         groupValue: _selectedStatus,
                         onChanged: (value) {
                           setState(() {
-                            _selectedStatus = value!;
-                            notifier.loadCategoriesByStatus(value);
+                            _selectedStatus = value;
+                            ref
+                                .read(categoriesNotifierProvider.notifier)
+                                .loadCategoriesByStatus(value);
                           });
                         },
                       ),
@@ -132,7 +153,6 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: TextField(
-                    controller: _searchController,
                     decoration: InputDecoration(
                       labelText: 'Buscar categoría',
                       prefixIcon: const Icon(Icons.search),
@@ -140,13 +160,18 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
-
-                          notifier.loadCategoriesByStatus(_selectedStatus);
+                          ref
+                              .read(categoriesNotifierProvider.notifier)
+                              .searchCategories('');
                         },
                       ),
                       border: const OutlineInputBorder(),
                     ),
-                    onChanged: (value) => notifier.searchCategories(value),
+                    controller: _searchController,
+                    onChanged:
+                        (value) => ref
+                            .read(categoriesNotifierProvider.notifier)
+                            .searchCategories(value),
                   ),
                 ),
               ),

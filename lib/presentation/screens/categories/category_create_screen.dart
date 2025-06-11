@@ -10,11 +10,7 @@ class CategoryCreateScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text('Nueva categoría')),
-      body: Padding(
-        padding:const EdgeInsets.all(16),
-        child: CategoryForm(),
-      ),
-      );
-
+      body: Padding(padding: const EdgeInsets.all(16), child: CategoryForm()),
+    );
   }
 }

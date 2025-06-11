@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum CategoryStatus { active, inactive }
+enum CategoryStatus { active, inactive, all }
 
 class Category {
   String id;
