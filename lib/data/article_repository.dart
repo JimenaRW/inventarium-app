@@ -150,7 +150,7 @@ class ArticleRepository implements IArticleRepository {
   Future<List<Article>> getArticles() async {
     final docs = db
         .collection('articles')
-        .where('status', isEqualTo: ArticleStatus.active.name)
+        // .where('status', isEqualTo: ArticleStatus.active.name)
         .withConverter<Article>(
           fromFirestore: Article.fromFirestore,
           toFirestore: (Article article, _) => article.toFirestore(),
@@ -220,15 +220,23 @@ class ArticleRepository implements IArticleRepository {
               .get();
 
       final userRole = userDoc.data()!['role'];
+
       final admin = UserRole.admin.name;
-      if (userRole.toLowerCase() != admin.toLowerCase()) {
-        return "";
+      final editor = UserRole.editor.name;
+      final viewer = UserRole.viewer.name;
+
+      if (userRole.toLowerCase() != admin.toLowerCase() &&
+          userRole.toLowerCase() != editor.toLowerCase() &&
+          userRole.toLowerCase() != viewer.toLowerCase()) {
+        throw Exception(
+          'No tienes permisos para exportar artículos',
+        );
       }
 
       final querySnapshot =
           await db
               .collection('articles')
-              .where('status', isEqualTo: ArticleStatus.active.name)
+              // .where('status', isEqualTo: ArticleStatus.active.name)
               .get();
 
       final articles =

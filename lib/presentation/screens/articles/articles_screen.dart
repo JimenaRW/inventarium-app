@@ -89,13 +89,15 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                       icon: Icons.add_circle_outline,
                       label: 'CREAR\nARTÍCULO',
                       onTap: () {
+                        final currentContext = context;
+                        final articleNotifier = ProviderScope.containerOf(
+                          currentContext,
+                        ).read(articleSearchNotifierProvider.notifier);
+
                         context.push('/articles/create');
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false);
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .loadInitialData();
+                        
+                        articleNotifier.toggleDeleteMode(false);
+                        articleNotifier.loadInitialData();
                         _searchController.clear();
                       },
                     ),
@@ -104,13 +106,14 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                       icon: Icons.upload_file,
                       label: 'IMPORTAR\nCSV',
                       onTap: () {
+                        final currentContext = context;
+                        final articleNotifier = ProviderScope.containerOf(
+                          currentContext,
+                        ).read(articleSearchNotifierProvider.notifier);
+
                         context.push('/articles/import-csv');
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .toggleDeleteMode(false);
-                        ref
-                            .read(articleSearchNotifierProvider.notifier)
-                            .loadInitialData();
+                        articleNotifier.toggleDeleteMode(false);
+                        articleNotifier.loadInitialData();
                         _searchController.clear();
                       },
                     ),
@@ -118,13 +121,14 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                     icon: Icons.save_alt,
                     label: 'EXPORTAR\nCSV',
                     onTap: () {
+                      Navigator.pop(context);
+                      final currentContext = context;
+                      final articleNotifier = ProviderScope.containerOf(
+                        currentContext,
+                      ).read(articleSearchNotifierProvider.notifier);
                       context.push('/articles/exports-csv');
-                      ref
-                          .read(articleSearchNotifierProvider.notifier)
-                          .toggleDeleteMode(false);
-                      ref
-                          .read(articleSearchNotifierProvider.notifier)
-                          .loadInitialData();
+                      articleNotifier.toggleDeleteMode(false);
+                      articleNotifier.loadInitialData();
                       _searchController.clear();
                     },
                   ),
@@ -460,20 +464,22 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                                   onPressed:
                                       deleteState.isLoading
                                           ? null
-                                          : () {
+                                          : () async {
                                             Navigator.pop(bc);
-                                            context
-                                                .push(
-                                                  '/articles/edit/${article.id}',
-                                                )
-                                                .then((_) {
-                                                  ref
-                                                      .read(
-                                                        articleSearchNotifierProvider
-                                                            .notifier,
-                                                      )
-                                                      .loadInitialData();
-                                                });
+                                            final currentContext = context;
+                                            final articleNotifier =
+                                                ProviderScope.containerOf(
+                                                  currentContext,
+                                                ).read(
+                                                  articleSearchNotifierProvider
+                                                      .notifier,
+                                                );
+
+                                            await context.push(
+                                              '/articles/edit/${article.id}',
+                                            );
+
+                                            articleNotifier.loadInitialData();
                                           },
                                   child: const Text('Editar'),
                                 ),
