@@ -53,7 +53,6 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(categoriesNotifierProvider);
-    final notifier = ref.read(categoriesNotifierProvider.notifier);
     final userState = ref.read(userNotifierProvider);
     final currentRol = userState.user?.role;
     final showCreateButton =
