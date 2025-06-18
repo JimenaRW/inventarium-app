@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/article_repository_provider.dart';
 
-class TotalArticlesNotifier extends AutoDisposeAsyncNotifier<int> {
+class AllArticlesNotifier extends AutoDisposeAsyncNotifier<int> {
   Future<ArticleRepository> get _articleRepository async =>
       ref.read(articleRepositoryProvider);
 

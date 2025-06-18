@@ -38,20 +38,20 @@ class _EditArticleScreenState extends ConsumerState<EditArticleScreen> {
 
     if (_isLoading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Editar Artículo')),
+        appBar: AppBar(title: const Text('Editar artículo')),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (article == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Editar Artículo')),
+        appBar: AppBar(title: const Text('Editar artículo')),
         body: const Center(child: Text('Artículo no encontrado')),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Editar Artículo')),
+      appBar: AppBar(title: const Text('Editar artículo')),
       body: ArticleEditForm(articleId: widget.id),
     );
   }

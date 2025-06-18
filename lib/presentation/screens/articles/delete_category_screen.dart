@@ -13,7 +13,7 @@ class DeleteCategoryScreen extends ConsumerWidget {
     final categoryState = ref.watch(categoryDeleteNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Eliminar Categoría')),
+      appBar: AppBar(title: const Text('Eliminar categoría')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

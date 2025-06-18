@@ -17,7 +17,7 @@ class CategoriesScreen extends ConsumerStatefulWidget {
 
 class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   final _searchController = TextEditingController();
-  CategoryStatus _selectedStatus = CategoryStatus.active;
+  CategoryStatus? _selectedStatus;
 
   Category? _selectedCategory;
 
@@ -53,7 +53,6 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(categoriesNotifierProvider);
-    final notifier = ref.read(categoriesNotifierProvider.notifier);
     final userState = ref.read(userNotifierProvider);
     final currentRol = userState.user?.role;
     final showCreateButton =
@@ -64,15 +63,6 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
 
       body: Column(
         children: [
-          Text(
-            'ELIJA LA OPCIÓN',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).primaryColor,
-            ),
-          ),
-          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -91,15 +81,35 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             children: [
               Row(
                 children: [
+                  Text('Filtrar por estado:'),
                   Row(
                     children: [
-                      Radio<CategoryStatus>(
+                      Radio<CategoryStatus?>(
+                        value: null,
+                        groupValue: _selectedStatus,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedStatus = value;
+                            ref
+                                .read(categoriesNotifierProvider.notifier)
+                                .loadCategoriesByStatus(value);
+                          });
+                        },
+                      ),
+                      const Text('Todos'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Radio<CategoryStatus?>(
                         value: CategoryStatus.active,
                         groupValue: _selectedStatus,
                         onChanged: (value) {
                           setState(() {
-                            _selectedStatus = value!;
-                            notifier.loadCategoriesByStatus(value);
+                            _selectedStatus = value;
+                            ref
+                                .read(categoriesNotifierProvider.notifier)
+                                .loadCategoriesByStatus(value);
                           });
                         },
                       ),
@@ -108,13 +118,15 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                   ),
                   Row(
                     children: [
-                      Radio<CategoryStatus>(
+                      Radio<CategoryStatus?>(
                         value: CategoryStatus.inactive,
                         groupValue: _selectedStatus,
                         onChanged: (value) {
                           setState(() {
-                            _selectedStatus = value!;
-                            notifier.loadCategoriesByStatus(value);
+                            _selectedStatus = value;
+                            ref
+                                .read(categoriesNotifierProvider.notifier)
+                                .loadCategoriesByStatus(value);
                           });
                         },
                       ),
@@ -131,7 +143,6 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: TextField(
-                    controller: _searchController,
                     decoration: InputDecoration(
                       labelText: 'Buscar categoría',
                       prefixIcon: const Icon(Icons.search),
@@ -139,13 +150,18 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
-
-                          notifier.loadCategoriesByStatus(_selectedStatus);
+                          ref
+                              .read(categoriesNotifierProvider.notifier)
+                              .searchCategories('');
                         },
                       ),
                       border: const OutlineInputBorder(),
                     ),
-                    onChanged: (value) => notifier.searchCategories(value),
+                    controller: _searchController,
+                    onChanged:
+                        (value) => ref
+                            .read(categoriesNotifierProvider.notifier)
+                            .searchCategories(value),
                   ),
                 ),
               ),
@@ -242,17 +258,17 @@ void _showCategoryDetails(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Detalles de la Categoría',
+                  'Detalles de la categoría',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 20),
-                _buildDetailRow('Descripción', category.descripcion),
+                _buildDetailRow('Descripción', category.description),
                 _buildDetailRow(
                   'Estado',
-                  category.estado == CategoryStatus.active.name
+                  category.status == CategoryStatus.active.name
                       ? 'Activo'
                       : 'Inactivo',
                 ),
@@ -268,7 +284,8 @@ void _showCategoryDetails(
                         },
                         child: const Text('Editar'),
                       ),
-                    if (enableBotton && category.estado == CategoryStatus.active.name)
+                    if (enableBotton &&
+                        category.status == CategoryStatus.active.name)
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,

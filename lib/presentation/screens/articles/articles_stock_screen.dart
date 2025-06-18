@@ -175,12 +175,14 @@ class _ArticleCardState extends ConsumerState<_ArticleCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.article.descripcion,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              widget.article.description,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            Text('SKU: ${widget.article.sku}'),
-            const SizedBox(height: 12),
+            Text(
+              'SKU: ${widget.article.sku}',
+              style: const TextStyle(fontSize: 17),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -190,28 +192,38 @@ class _ArticleCardState extends ConsumerState<_ArticleCard> {
                       child: TextField(
                         controller: _stockController,
                         keyboardType: TextInputType.number,
+                        style: const TextStyle(fontSize: 16),
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                         ),
                       ),
                     )
-                    : Text('Stock: ${widget.article.stock}'),
+                    : Text(
+                      'Stock: ${widget.article.stock}',
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                 _editing
                     ? Row(
                       children: [
                         IconButton(
                           icon: const Icon(Icons.check),
                           onPressed: _saveStock,
+                          style: IconButton.styleFrom(iconSize: 30),
                         ),
                         IconButton(
                           icon: const Icon(Icons.close),
                           onPressed: () => setState(() => _editing = false),
+                          style: IconButton.styleFrom(iconSize: 30),
                         ),
                       ],
                     )
                     : IconButton(
                       icon: const Icon(Icons.edit),
                       onPressed: () => setState(() => _editing = true),
+                      style: IconButton.styleFrom(iconSize: 32),
                     ),
               ],
             ),

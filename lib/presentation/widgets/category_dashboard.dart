@@ -22,7 +22,7 @@ class CategoryDashboard extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Text(
-          'Top de Categorías por Cantidad de Artículos',
+          'Top de categorías por cantidad de artículos',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
@@ -40,7 +40,7 @@ class CategoryDashboard extends ConsumerWidget {
         ),
         const SizedBox(height: 20),
         const Text(
-          'Lista de Categorías',
+          'Lista de categorías',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),

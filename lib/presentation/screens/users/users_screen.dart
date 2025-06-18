@@ -39,9 +39,9 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
         state.users
             .where((user) {
               if (_statusFilter == 'Activo') {
-                return user.estado == 'active';
+                return user.status == 'active';
               } else {
-                return user.estado == 'inactive';
+                return user.status == 'inactive';
               }
             })
             .where((user) {
@@ -56,7 +56,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
             .toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Gestión de Usuarios')),
+      appBar: AppBar(title: const Text('Gestión de usuarios')),
       body: Column(
         children: [
           Padding(
@@ -161,7 +161,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Detalles del Usuario',
+                  'Detalles del usuario',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 20),
@@ -169,7 +169,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                 _buildDetailRow('Rol', user.role.toString().split('.').last),
                 _buildDetailRow(
                   'Estado',
-                  user.estado == 'active' ? 'Activo' : 'Inactivo',
+                  user.status == 'active' ? 'Activo' : 'Inactivo',
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -190,7 +190,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                       },
                       child: const Text('Editar'),
                     ),
-                    if (user.estado == 'active')
+                    if (user.status == 'active')
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,

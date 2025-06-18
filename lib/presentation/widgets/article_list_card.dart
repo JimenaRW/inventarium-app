@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/article_status.dart';
 
 class ArticleListCard extends ConsumerWidget {
   final Article article;
@@ -60,7 +61,7 @@ class ArticleListCard extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              article.descripcion,
+                              article.description,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -69,9 +70,9 @@ class ArticleListCard extends ConsumerWidget {
                             const SizedBox(height: 8),
                             Text('SKU: ${article.sku}'),
                             Text('Stock: ${article.stock}'),
-                            if (article.precio1 != null)
+                            if (article.price1 != null)
                               Text(
-                                'Precio: \$${article.precio1!.toStringAsFixed(2)}',
+                                'Precio 1: \$${article.price1!.toStringAsFixed(2)}',
                               ),
                           ],
                         ),
@@ -82,7 +83,7 @@ class ArticleListCard extends ConsumerWidget {
               ),
             ),
 
-            if (showCheckbox)
+            if (showCheckbox && article.status == ArticleStatus.active.name)
               Positioned(
                 right: 8,
                 bottom: 8,

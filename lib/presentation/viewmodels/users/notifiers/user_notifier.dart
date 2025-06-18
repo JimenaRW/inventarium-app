@@ -55,7 +55,7 @@ class UserNotifier extends StateNotifier<UserState> {
         throw "El usuario no se encuentra disponible en la base de datos.";
       }
 
-      if (user.estado == 'inactive') {
+      if (user.status == 'inactive') {
         throw "El usuario ya se encuentra inactivo.";
       }
 
@@ -65,7 +65,7 @@ class UserNotifier extends StateNotifier<UserState> {
         users:
             state.users.map((u) {
               if (u.id == userId) {
-                return u.copyWith(estado: 'inactive');
+                return u.copyWith(status: 'inactive');
               }
               return u;
             }).toList(),
@@ -85,7 +85,7 @@ class UserNotifier extends StateNotifier<UserState> {
     state = state.copyWith(
       users: state.users.map((u) {
         if (u.id == userId) {
-          return u.copyWith(estado: newStatus);
+          return u.copyWith(status: newStatus);
         }
         return u;
       }).toList(),

@@ -13,13 +13,13 @@ class NoStockCard extends ConsumerWidget {
     return noStockState.when(
       data:
           (state) => InventoryCard(
-            title: "Artículos sin Stock",
+            title: "Artículos sin stock",
             count: state.articles.length,
             color: Colors.lightBlue.shade100,
           ),
       loading:
           () => const InventoryCard(
-            title: "Artículos sin Stock",
+            title: "Artículos sin stock",
             count: 0,
             color: Colors.lightBlue,
           ),

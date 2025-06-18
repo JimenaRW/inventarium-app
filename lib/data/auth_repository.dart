@@ -41,14 +41,14 @@ class AuthRepository {
 
       await FirebaseAuth.instance.signOut();
 
-      // 2. Guardar rol en Firestore
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid)
           .set({
             'email': email,
-            'role': 'viewer', // Asignar rol aquí
+            'role': 'viewer', 
             'id': userCredential.user?.uid,
+            'status': 'active',
           });
 
       return userCredential;

@@ -131,7 +131,7 @@ class _EditCategoryFormState extends ConsumerState<EditCategoryForm> {
             child:
                 _isSubmitting
                     ? const CircularProgressIndicator()
-                    : const Text('Guardar Cambios'),
+                    : const Text('Guardar cambios'),
           ),
         ],
       ),

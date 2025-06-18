@@ -75,7 +75,7 @@ class _CategoryCreateState extends ConsumerState<CategoryForm> {
             child:
                 _isSubmitting
                     ? const CircularProgressIndicator()
-                    : const Text('Guardar Categoría'),
+                    : const Text('Guardar categoría'),
           ),
         ],
       ),
