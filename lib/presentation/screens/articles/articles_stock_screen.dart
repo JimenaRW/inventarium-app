@@ -176,12 +176,12 @@ class _ArticleCardState extends ConsumerState<_ArticleCard> {
           children: [
             Text(
               widget.article.description,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               'SKU: ${widget.article.sku}',
-              style: const TextStyle(fontSize: 20),
+              style: const TextStyle(fontSize: 17),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -192,7 +192,7 @@ class _ArticleCardState extends ConsumerState<_ArticleCard> {
                       child: TextField(
                         controller: _stockController,
                         keyboardType: TextInputType.number,
-                        style: const TextStyle(fontSize: 24),
+                        style: const TextStyle(fontSize: 16),
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                         ),
@@ -201,7 +201,7 @@ class _ArticleCardState extends ConsumerState<_ArticleCard> {
                     : Text(
                       'Stock: ${widget.article.stock}',
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 17,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
