@@ -63,15 +63,6 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
 
       body: Column(
         children: [
-          Text(
-            'ELIJA LA OPCIÓN',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).primaryColor,
-            ),
-          ),
-          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
