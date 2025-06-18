@@ -255,9 +255,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         state.potentialArticles!
             .where((a) => articleToInsert.contains(a.sku))
             .map((a) async {
-              final categoryKey = _normalizeCategoryName(
-                a.category ?? '',
-              );
+              final categoryKey = _normalizeCategoryName(a.category ?? '');
               var catId = catDescriptionToId[categoryKey] ?? '';
 
               return a.copyWith(category: catId);
@@ -269,9 +267,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         state.potentialArticles!
             .where((a) => articleToUpdate.contains(a.sku))
             .map((a) async {
-              final categoryKey = _normalizeCategoryName(
-                a.category ?? '',
-              );
+              final categoryKey = _normalizeCategoryName(a.category ?? '');
               var catId = catDescriptionToId[categoryKey] ?? '';
 
               return a.copyWith(category: catId);
@@ -340,7 +336,8 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
 
   String _normalizeCategoryName(String? input) {
     if (input == null || input.isEmpty) return '';
-    return input.trim()[0].toUpperCase() + input.trim().substring(1).toLowerCase();
+    return input.trim()[0].toUpperCase() +
+        input.trim().substring(1).toLowerCase();
   }
 
   Future<List<String>> getArticlesBySkus(
