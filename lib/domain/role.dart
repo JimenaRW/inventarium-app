@@ -1,5 +1,1 @@
-enum UserRole {
-  admin,
-  editor,
-  viewer,
-}
+enum UserRole { admin, editor, viewer, initial }
