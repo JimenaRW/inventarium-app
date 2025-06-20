@@ -2,14 +2,29 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inventarium/data/category_repository_provider.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 
-class ArticlesImportCsv extends ConsumerWidget {
+class ArticlesImportCsv extends ConsumerStatefulWidget {
   static const String name = 'articles_import_csv';
   const ArticlesImportCsv({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ArticlesImportCsv> createState() => _ArticlesImportCsvState();
+}
+
+class _ArticlesImportCsvState extends ConsumerState<ArticlesImportCsv> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(articleImportCsvNotifierProvider);
+      ref.read(articleImportCsvNotifierProvider.notifier).resetStatus();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(articleImportCsvNotifierProvider);
     final notifier = ref.read(articleImportCsvNotifierProvider.notifier);
 
@@ -21,6 +36,9 @@ class ArticlesImportCsv extends ConsumerWidget {
         await ref
             .read(articleImportCsvNotifierProvider.notifier)
             .importArticles();
+
+        ref.read(categoriesNotifierProvider.notifier);
+        ref.read(articleSearchProvider.notifier).loadInitialData();
 
         scaffoldMessenger.showSnackBar(
           SnackBar(
@@ -59,7 +77,19 @@ class ArticlesImportCsv extends ConsumerWidget {
                 const SizedBox(height: 16),
 
                 ElevatedButton(
-                  onPressed: () => notifier.pickCsvFile(),
+                  onPressed: () async {
+                    try {
+                      await notifier.pickCsvFile();
+                    } catch (e) {
+                      final scaffoldMessenger = ScaffoldMessenger.of(context);
+                      scaffoldMessenger.showSnackBar(
+                        SnackBar(
+                          content: Text(e.toString()),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
                   child: const Text('Seleccionar archivo CSV'),
                 ),
 
@@ -72,7 +102,8 @@ class ArticlesImportCsv extends ConsumerWidget {
 
                 const SizedBox(height: 24),
 
-                if (state.validationErrors.isNotEmpty && state.selectedFile != null) ...[
+                if (state.validationErrors.isNotEmpty &&
+                    state.selectedFile != null) ...[
                   const Text(
                     'Errores de validación:',
                     style: TextStyle(
@@ -91,7 +122,8 @@ class ArticlesImportCsv extends ConsumerWidget {
                           ),
                     ),
                   ),
-                ] else if (state.potentialArticles != null && state.selectedFile != null) ...[
+                ] else if (state.potentialArticles != null &&
+                    state.selectedFile != null) ...[
                   const Text(
                     'Archivo válido ✅',
                     style: TextStyle(color: Colors.green),

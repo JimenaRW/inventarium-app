@@ -55,6 +55,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       case 'too-many-requests':
         message = 'Demasiados intentos. Por favor intenta más tarde';
         break;
+      case 'invalid-status':
+      case 'invalid-role':
+        message = e.message!;
       default:
         message = 'Error al iniciar sesión: ${e.message}';
     }

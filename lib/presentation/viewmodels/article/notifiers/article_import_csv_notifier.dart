@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/category_repository.dart';
@@ -18,14 +20,39 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
   ArticleImportCsvNotifier(this._repository, this._repositoryCategories)
     : super(const ArticleImportCsvState());
 
+  void resetStatus() {
+    state = state.copyWith(
+      validationErrors: const [],
+      importSuccess: false,
+      importedCount: null,
+      isLoading: false,
+      potentialArticles: null,
+      rawArticleLines: null,
+      selectedFile: null,
+    );
+  }
+
   Future<void> pickCsvFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv'],
+      withData: true,
     );
+    if (result == null) {
+      throw Exception('No se seleccionó ningún archivo.');
+    }
 
-    if (result != null) {
+    final bytes = result.files.single.bytes;
+
+    if (bytes == null) {
+      throw Exception('No se pudieron leer los datos del archivo.');
+    }
+
+    try {
+      utf8.decode(bytes, allowMalformed: false);
       await _validateCsv(File(result.files.single.path!));
+    } catch (e) {
+      throw ("El archivo csv debe tener codificación utf-8.");
     }
   }
 
