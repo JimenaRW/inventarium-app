@@ -291,9 +291,50 @@ void _showCategoryDetails(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
                         ),
-                        onPressed: () {
+                        onPressed: () async {
                           Navigator.of(context).pop();
-                          context.push('/categories/delete/${category.id}');
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder:
+                                (ctx) => AlertDialog(
+                                  title: const Text('Eliminar categoría'),
+                                  content: Text(
+                                    '¿Seguro que querés eliminar "${category.description}"?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed:
+                                          () => Navigator.pop(ctx, false),
+                                      child: const Text('Cancelar'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      child: const Text(
+                                        'Eliminar',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                          );
+
+                          if (confirmed == true) {
+                            await ref
+                                .read(categoriesNotifierProvider.notifier)
+                                .softDeleteById(category.id);
+
+                            ref
+                                .read(categoriesNotifierProvider.notifier)
+                                .loadCategories();
+                                
+
+                            // ignore: use_build_context_synchronously
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Categoría eliminada"),
+                              ),
+                            );
+                          }
                         },
                         child: const Text('Eliminar'),
                       ),
