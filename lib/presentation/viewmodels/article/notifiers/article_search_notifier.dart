@@ -70,6 +70,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
   }
 
   Future<void> loadInitialData() async {
+    state = state.copyWith(isSpecialFilter: false);
     loadArticlesByStatus(null);
   }
 
@@ -77,7 +78,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
   void clearSuccessMessage() => state = state.copyWith(successMessage: null);
 
   Future<void> loadMoreArticles() async {
-    if (state.isLoadingMore || !state.hasMore) return;
+    if (state.isLoadingMore || !state.hasMore || state.isSpecialFilter) return;
 
     state = state.copyWith(isLoadingMore: true);
     try {
@@ -187,7 +188,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
   }
 
   Future<void> searchArticlesByNoStock() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, isSpecialFilter: true);
     try {
       final articles = await _articleNotifier.getArticlesWithNoStock();
       state = state.copyWith(filteredArticles: articles, isLoading: false);
@@ -197,7 +198,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
   }
 
   Future<void> searchArticlesByLowStock(int threshold) async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, isSpecialFilter: true);
     try {
       final articles = await _articleNotifier.getArticlesWithLowStock(
         threshold,

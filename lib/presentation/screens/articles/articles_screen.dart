@@ -29,21 +29,10 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final state = GoRouterState.of(context);
-      final arguments = state.extra as Map<String, dynamic>?;
-      if (arguments != null && arguments['filter'] != null) {
-        switch (arguments['filter']) {
-          case 'no_stock':
-            ref
-                .read(articleSearchNotifierProvider.notifier)
-                .searchArticlesByNoStock();
-            break;
-          case 'low_stock':
-            ref
-                .read(articleSearchNotifierProvider.notifier)
-                .searchArticlesByLowStock(10);
-            break;
-        }
+      final arguments =
+          GoRouterState.of(context).extra as Map<String, dynamic>?;
+      if (arguments?.containsKey('filter') ?? false) {
+        _handleFilterArgument(arguments!['filter']);
       } else {
         ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
       }
@@ -51,6 +40,21 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     Future.microtask(() {
       ref.read(userNotifierProvider.notifier).loadCurrentUser();
     });
+  }
+
+  void _handleFilterArgument(dynamic filter) {
+    switch (filter) {
+      case 'no_stock':
+        ref
+            .read(articleSearchNotifierProvider.notifier)
+            .searchArticlesByNoStock();
+        break;
+      case 'low_stock':
+        ref
+            .read(articleSearchNotifierProvider.notifier)
+            .searchArticlesByLowStock(10);
+        break;
+    }
   }
 
   @override
