@@ -536,7 +536,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                                                             height: 16,
                                                           ),
                                                           Text(
-                                                            'ID: ${article.id}',
+                                                            'Descripción: ${article.description}',
                                                           ),
                                                           const SizedBox(
                                                             height: 16,
