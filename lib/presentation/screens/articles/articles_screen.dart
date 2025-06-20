@@ -68,6 +68,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     final currentRol = userState.user?.role;
     final enableBotton =
         currentRol == UserRole.admin || currentRol == UserRole.editor;
+    final arguments = GoRouterState.of(context).extra as Map<String, dynamic>?;
 
     return Scaffold(
       appBar: AppBar(
@@ -139,58 +140,62 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Text('Filtrar por estado:'),
-                Row(
-                  children: [
-                    Radio<ArticleStatus?>(
-                      value: null,
-                      groupValue: _selectedStatus,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedStatus = value;
-                          ref
-                              .read(articleSearchNotifierProvider.notifier)
-                              .loadArticlesByStatus(value);
-                        });
-                      },
-                    ),
-                    const Text('Todos'),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Radio<ArticleStatus?>(
-                      value: ArticleStatus.active,
-                      groupValue: _selectedStatus,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedStatus = value;
-                          ref
-                              .read(articleSearchNotifierProvider.notifier)
-                              .loadArticlesByStatus(value);
-                        });
-                      },
-                    ),
-                    const Text('Activos'),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Radio<ArticleStatus?>(
-                      value: ArticleStatus.inactive,
-                      groupValue: _selectedStatus,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedStatus = value;
-                          ref
-                              .read(articleSearchNotifierProvider.notifier)
-                              .loadArticlesByStatus(value);
-                        });
-                      },
-                    ),
-                    const Text('Inactivos'),
-                  ],
-                ),
+                if (arguments == null ||
+                    (arguments['filter'] != 'no_stock' &&
+                        arguments['filter'] != 'low_stock')) ...[
+                  Text('Filtrar por estado:'),
+                  Row(
+                    children: [
+                      Radio<ArticleStatus?>(
+                        value: null,
+                        groupValue: _selectedStatus,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedStatus = value;
+                            ref
+                                .read(articleSearchNotifierProvider.notifier)
+                                .loadArticlesByStatus(value);
+                          });
+                        },
+                      ),
+                      const Text('Todos'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Radio<ArticleStatus?>(
+                        value: ArticleStatus.active,
+                        groupValue: _selectedStatus,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedStatus = value;
+                            ref
+                                .read(articleSearchNotifierProvider.notifier)
+                                .loadArticlesByStatus(value);
+                          });
+                        },
+                      ),
+                      const Text('Activos'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Radio<ArticleStatus?>(
+                        value: ArticleStatus.inactive,
+                        groupValue: _selectedStatus,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedStatus = value;
+                            ref
+                                .read(articleSearchNotifierProvider.notifier)
+                                .loadArticlesByStatus(value);
+                          });
+                        },
+                      ),
+                      const Text('Inactivos'),
+                    ],
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 5),
@@ -352,7 +357,13 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
           final metrics = scrollNotification.metrics;
           if (metrics.pixels >= metrics.maxScrollExtent * 0.9 &&
               metrics.axis == Axis.vertical) {
-            if (state.hasMore) {
+            final state = ref.watch(articleSearchNotifierProvider);
+            final arguments =
+                GoRouterState.of(context).extra as Map<String, dynamic>?;
+            if (state.hasMore &&
+                (arguments == null ||
+                    (arguments['filter'] != 'no_stock' &&
+                        arguments['filter'] != 'low_stock'))) {
               notifier.loadMoreArticles();
             }
           }
