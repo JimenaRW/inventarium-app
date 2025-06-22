@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -274,8 +273,13 @@ class ArticleRepository implements IArticleRepository {
         'exports_csv/${userDoc.data()!['id']}/$fileName',
       );
 
-      await ref.putString(csvContent);
+      final metadata = SettableMetadata(contentType: 'text/csv; charset=utf-8');
 
+      await ref.putString(
+        csvContent,
+        format: PutStringFormat.raw,
+        metadata: metadata,
+      );
       return await ref.getDownloadURL();
     } catch (e) {
       rethrow;
@@ -367,9 +371,10 @@ class ArticleRepository implements IArticleRepository {
   }
 
   Future<int?> getArticleCount() {
-    return db.collection("articles").count().get().then(
-      (res) => res.count,
-      onError: (e) => throw e
-    );
+    return db
+        .collection("articles")
+        .count()
+        .get()
+        .then((res) => res.count, onError: (e) => throw e);
   }
 }
