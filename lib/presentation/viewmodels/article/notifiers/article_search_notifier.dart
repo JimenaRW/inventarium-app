@@ -72,7 +72,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
   void filterArticlesByStatus(ArticleStatus? status) {
     print("filterArticlesByStatus llamado con status: $status");
     if (status == null) {
-      state = state.copyWith(filteredArticles: state.articles, status: null);
+      state = state.copyWith(filteredArticles: state.articles, status: status);
     } else {
       state = state.copyWith(status: status);
       _applyFilters();

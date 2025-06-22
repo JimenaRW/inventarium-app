@@ -328,7 +328,9 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          Text('Artículos encontrados: ${state.filteredArticles.length}'),
+          Text(
+            'Artículos encontrados: ${ref.watch(articleSearchNotifierProvider).filteredArticles.length}',
+          ),
         ],
       ),
     );
