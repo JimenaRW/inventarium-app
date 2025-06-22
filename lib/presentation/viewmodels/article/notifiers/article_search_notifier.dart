@@ -27,18 +27,6 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
     }
   }
 
-  void filterArticlesByStatus(ArticleStatus? status) {
-    if (status == null) {
-      state = state.copyWith(filteredArticles: state.articles);
-    } else {
-      final filteredArticles =
-          state.articles.where((article) {
-            return article.status == status.name;
-          }).toList();
-      state = state.copyWith(filteredArticles: filteredArticles);
-    }
-  }
-
   void loadArticlesByStatus(ArticleStatus? status) async {
     state = state.copyWith(isLoading: true);
     try {
@@ -79,6 +67,47 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
           return terms.every((term) => searchableContent.contains(term));
         }).toList();
     return mappedArticles;
+  }
+
+  void filterArticlesByStatus(ArticleStatus? status) {
+    print("filterArticlesByStatus llamado con status: $status");
+    if (status == null) {
+      state = state.copyWith(filteredArticles: state.articles, status: null);
+    } else {
+      state = state.copyWith(status: status);
+      _applyFilters();
+    }
+  }
+
+  Future<void> searchArticles(String query) async {
+    state = state.copyWith(searchQuery: query);
+    _applyFilters();
+  }
+
+  void _applyFilters() {
+    List<Article> filteredArticles = state.articles;
+
+    if (state.status != null) {
+      filteredArticles =
+          filteredArticles.where((article) {
+            return article.status == state.status!.name;
+          }).toList();
+    }
+
+    if (state.searchQuery.isNotEmpty) {
+      filteredArticles =
+          filteredArticles.where((article) {
+            final searchableContent = [
+              article.description.toLowerCase(),
+              article.sku.toLowerCase(),
+              article.barcode?.toLowerCase() ?? '',
+            ].join(' ');
+
+            return searchableContent.contains(state.searchQuery.toLowerCase());
+          }).toList();
+    }
+
+    state = state.copyWith(filteredArticles: filteredArticles);
   }
 
   Future<void> loadInitialData() async {
@@ -138,26 +167,6 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
 
       return terms.every((term) => searchableContent.contains(term));
     }).toList();
-  }
-
-  Future<void> searchArticles(String query) async {
-    if (query.isEmpty) {
-      state = state.copyWith(filteredArticles: state.articles);
-      return;
-    }
-
-    final filteredArticles =
-        state.articles.where((article) {
-          final searchableContent = [
-            article.description.toLowerCase(),
-            article.sku.toLowerCase(),
-            article.barcode?.toLowerCase() ?? '',
-          ].join(' ');
-
-          return searchableContent.contains(query.toLowerCase());
-        }).toList();
-
-    state = state.copyWith(filteredArticles: filteredArticles);
   }
 
   void updateStock(String id, int newStock) async {

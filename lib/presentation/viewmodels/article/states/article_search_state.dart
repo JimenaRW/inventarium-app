@@ -67,6 +67,7 @@ class ArticleSearchState {
     String? successMessage,
     ArticleStatus? status,
     bool? isSpecialFilter,
+    String? searchQuery,
   }) {
     return ArticleSearchState(
       articles: articles ?? this.articles,
@@ -77,6 +78,7 @@ class ArticleSearchState {
       hasMore: hasMore ?? this.hasMore,
       currentPage: currentPage ?? this.currentPage,
       error: error ?? this.error,
+      searchQuery: searchQuery ?? this.searchQuery,
       isDeleted: isDeleted ?? this.isDeleted,
       articlesDeleted: articlesDeleted ?? this.articlesDeleted,
       errorDeleted: errorDeleted ?? this.errorDeleted,
