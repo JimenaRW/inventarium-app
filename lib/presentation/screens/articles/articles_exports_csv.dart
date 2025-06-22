@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventarium/domain/article.dart';
-import 'package:inventarium/presentation/screens/articles/articles_share_csv.dart';
 import 'package:inventarium/presentation/viewmodels/article/notifiers/article_exports_csv_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_exports_csv_state%20.dart';
@@ -18,12 +17,18 @@ class ArticlesExportsCsv extends ConsumerStatefulWidget {
 
 class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
   final _searchController = TextEditingController();
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    setState(() => isLoading = true);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(articleExportsCsvNotifierProvider.notifier).loadInitialData();
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     });
   }
 
@@ -47,41 +52,52 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'ARTÍCULO',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 16),
-            Text('Esta a punto de exportar ${state.articles.length} artículos'),
-            const SizedBox(height: 16),
-            Center(
-              child: ElevatedButton(
-                onPressed: () => _exportFile(context, notifier),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  minimumSize: const Size(200, 50),
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'ARTÍCULO',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                child: const Text(
-                  'GENERAR REPORTE',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+
+                const SizedBox(height: 16),
+                Text(
+                  'Esta a punto de exportar ${state.exportedCount} artículos',
                 ),
-              ),
+                const SizedBox(height: 16),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () => _exportArticles(notifier),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      minimumSize: const Size(200, 50),
+                    ),
+                    child: const Text(
+                      'GENERAR REPORTE',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Divider(),
+
+                _buildSearchField(notifier),
+                const SizedBox(height: 16),
+
+                Expanded(child: _buildArticlesTable(state, notifier)),
+              ],
             ),
-            const SizedBox(height: 10),
-            const Divider(),
-
-            _buildSearchField(notifier),
-            const SizedBox(height: 16),
-
-            Expanded(child: _buildArticlesTable(state, notifier)),
-          ],
-        ),
+          ),
+          if (isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+        ],
       ),
     );
   }
@@ -157,7 +173,11 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
             final article = state.filteredArticles[index];
             return GestureDetector(
               onTap: () => _showArticleDetails(context, article),
-              child: ArticleListCard(article: article, showCheckbox: false, showImage: false,),
+              child: ArticleListCard(
+                article: article,
+                showCheckbox: false,
+                showImage: false,
+              ),
             );
           } else {
             return const Center(child: CircularProgressIndicator());
@@ -241,32 +261,72 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
     );
   }
 
-  void _exportArticles(
-    BuildContext context,
-    ArticleExportsCsvNotifier notifier,
-  ) {
-    notifier.exportArticles().then((_) {
-      // ignore: use_build_context_synchronously
-      context.pushNamed(ArticlesShareCsv.name);
-    });
-  }
+  Future<void> _exportArticles(ArticleExportsCsvNotifier notifier) async {
+    if (!mounted) return;
 
-  void _exportFile(BuildContext context, ArticleExportsCsvNotifier notifier) {
+    setState(() => isLoading = true);
+
+    await notifier.exportArticles();
+
+    if (!mounted) return;
+
+    setState(() => isLoading = false);
+
+    final exportedCount = ref.watch(
+      articleExportsCsvNotifierProvider.select((state) => state.exportedCount),
+    );
+
+    final lastExportedUrl = ref.watch(
+      articleExportsCsvNotifierProvider.select(
+        (state) => state.lastExportedCsvUrl,
+      ),
+    );
+
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder:
           (ctx) => AlertDialog(
-            title: const Text('Generar reporte'),
+            title: const Text('¡Exportación exitosa!'),
             content: Text(
-              '¿Estar seguro de querer exportar la totalidad de los artículos?',
+              'Los $exportedCount artículos se han exportado correctamente.',
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancelar'),
-              ),
-              TextButton(
-                onPressed: () => _exportArticles(ctx, notifier),
+                onPressed:
+                    lastExportedUrl != null
+                        ? () async {
+                          try {
+                            if (Navigator.of(ctx).canPop()) {
+                              ScaffoldMessenger.of(ctx).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Compartiendo archivo...'),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            }
+
+                            await notifier.shareFileWithDownload(
+                              lastExportedUrl,
+                            );
+
+                            if (mounted && Navigator.of(ctx).canPop()) {
+                              Navigator.of(ctx).pop(); // cerrar diálogo
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(ctx).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Error al compartir: ${e.toString()}',
+                                  ),
+                                ),
+                              );
+                            }
+                          }
+                        }
+                        : null,
                 child: const Text('Compartir'),
               ),
             ],

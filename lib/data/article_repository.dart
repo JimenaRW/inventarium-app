@@ -228,9 +228,7 @@ class ArticleRepository implements IArticleRepository {
       if (userRole.toLowerCase() != admin.toLowerCase() &&
           userRole.toLowerCase() != editor.toLowerCase() &&
           userRole.toLowerCase() != viewer.toLowerCase()) {
-        throw Exception(
-          'No tienes permisos para exportar artículos',
-        );
+        throw Exception('No tienes permisos para exportar artículos');
       }
 
       final querySnapshot =
@@ -366,5 +364,12 @@ class ArticleRepository implements IArticleRepository {
       return '"${str.replaceAll('"', '""')}"';
     }
     return str;
+  }
+
+  Future<int?> getArticleCount() {
+    return db.collection("articles").count().get().then(
+      (res) => res.count,
+      onError: (e) => throw e
+    );
   }
 }

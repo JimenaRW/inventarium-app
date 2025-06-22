@@ -27,10 +27,12 @@ class ArticleExportsCsvNotifier extends StateNotifier<ArticleExportsCsvState> {
         limit: _itemsPerPage,
         status: status,
       );
+      final articleCount = await _articleNotifier.getArticleCount();
       state = state.copyWith(
         articles: articles,
         isLoading: false,
         hasMore: articles.length == _itemsPerPage,
+        exportedCount: articleCount,
         status: status,
         currentPage: 1,
       );
@@ -121,7 +123,6 @@ class ArticleExportsCsvNotifier extends StateNotifier<ArticleExportsCsvState> {
       state = state.copyWith(
         isLoading: false,
         lastExportedCsvUrl: url,
-        exportedCount: state.articles.length,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

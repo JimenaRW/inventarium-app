@@ -209,4 +209,8 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
       rethrow;
     }
   }
+
+  Future<int?> getArticleCount() async {
+    return await _repository.getArticleCount();
+  }
 }
