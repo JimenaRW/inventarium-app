@@ -81,6 +81,7 @@ class _ArticlesImportCsvState extends ConsumerState<ArticlesImportCsv> {
                     try {
                       await notifier.pickCsvFile();
                     } catch (e) {
+                      // ignore: use_build_context_synchronously
                       final scaffoldMessenger = ScaffoldMessenger.of(context);
                       scaffoldMessenger.showSnackBar(
                         SnackBar(

@@ -1,72 +1,114 @@
 import 'dart:io';
-import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:inventarium/data/article_repository.dart';
-import 'package:inventarium/data/category_repository.dart';
 import 'package:inventarium/domain/article.dart';
+import 'package:inventarium/domain/article_status.dart';
+import 'package:inventarium/presentation/viewmodels/article/notifiers/article_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_exports_csv_state%20.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 class ArticleExportsCsvNotifier extends StateNotifier<ArticleExportsCsvState> {
-  final ArticleRepository _repository;
-  final CategoryRepository _repositoryCategories;
+  final ArticleNotifier _articleNotifier;
+  final int _itemsPerPage = 10;
 
-  ArticleExportsCsvNotifier(this._repository, this._repositoryCategories)
-    : super(const ArticleExportsCsvState());
+  ArticleExportsCsvNotifier(this._articleNotifier)
+    : super(ArticleExportsCsvState.initial());
 
-  Future<void> loadArticles() async {
+  Future<void> loadInitialData() async {
+    loadArticlesByStatus(null);
+  }
+
+  void loadArticlesByStatus(ArticleStatus? status) async {
     state = state.copyWith(isLoading: true);
     try {
-      final articles = await _repository.getArticles();
-      final categories = await _repositoryCategories.getAllCategories();
-
-      final updatedArticles =
-          articles.map((article) {
-            final categoryDescription =
-                categories
-                    .firstWhereOrNull((x) => x.id.contains(article.category))
-                    ?.description;
-
-            return article.copyWith(categoryDescription: categoryDescription);
-          }).toList();
-
-      state = state.copyWith(
-        articles: updatedArticles,
-        filteredArticles: updatedArticles,
-        isLoading: false,
+      final articles = await _articleNotifier.getArticles(
+        page: 1,
+        limit: _itemsPerPage,
+        status: status,
       );
+      state = state.copyWith(
+        articles: articles,
+        isLoading: false,
+        hasMore: articles.length == _itemsPerPage,
+        status: status,
+        currentPage: 1,
+      );
+      state = state.copyWith(filteredArticles: filteredArticles);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Error al cargar artículos: ${e.toString()}',
-      );
+      state = state.copyWith(error: e.toString(), isLoading: false);
     }
   }
 
-  void setSearchQuery(String query) {
-    final lowerQuery = query.toLowerCase();
-    final filtered =
-        state.articles.where((article) {
-          return article.sku.toLowerCase().contains(lowerQuery) ||
-              article.description.toLowerCase().contains(lowerQuery) ||
-              (article.barcode != null &&
-                  article.barcode!.toLowerCase().contains(lowerQuery));
-        }).toList();
+  List<Article> get filteredArticles {
+    if (state.searchQuery.isEmpty) return state.articles;
 
-    state = state.copyWith(searchQuery: query, filteredArticles: filtered);
+    final query = state.searchQuery.toLowerCase();
+    final terms = query.split(' ').where((t) => t.isNotEmpty).toList();
+
+    if (terms.isEmpty) return state.articles;
+
+    List<Article> mappedArticles =
+        state.articles.where((article) {
+          final searchableContent = [
+            article.description.toLowerCase(),
+            article.sku.toLowerCase(),
+            article.barcode?.toLowerCase() ?? '',
+          ].join(' ');
+
+          return terms.every((term) => searchableContent.contains(term));
+        }).toList();
+    return mappedArticles;
   }
 
-  Future<List<Article>> getArticles({int page = 1, int limit = 20}) async {
+  Future<void> loadMoreArticles() async {
+    if (state.isLoadingMore || !state.hasMore) return;
+
+    state = state.copyWith(isLoadingMore: true);
     try {
-      final articles = await _repository.getArticlesPaginado(
-        page: page,
-        limit: limit,
+      final newArticles = await _articleNotifier.getArticles(
+        page: state.currentPage + 1,
+        limit: _itemsPerPage,
+        status: state.status,
       );
-      return articles;
+
+      state = state.copyWith(
+        articles: [...state.articles, ...newArticles],
+        filteredArticles: [...state.filteredArticles, ...newArticles],
+        isLoadingMore: false,
+        hasMore: newArticles.length == _itemsPerPage,
+        currentPage: state.currentPage + 1,
+      );
     } catch (e) {
-      throw Exception('Error al cargar artículos: ${e.toString()}');
+      state = state.copyWith(isLoadingMore: false, error: e.toString());
+    }
+  }
+
+  Future<void> searchArticles(String query) async {
+    if (query.isEmpty) {
+      state = state.copyWith(filteredArticles: state.articles);
+      return;
+    }
+
+    state = state.copyWith(isSearching: true);
+    try {
+      final filteredArticles =
+          state.articles.where((article) {
+            final searchableContent = [
+              article.description.toLowerCase(),
+              article.sku.toLowerCase(),
+              article.barcode?.toLowerCase() ?? '',
+            ].join(' ');
+
+            return searchableContent.contains(query.toLowerCase());
+          }).toList();
+
+      state = state.copyWith(
+        filteredArticles: filteredArticles,
+        isSearching: false,
+      );
+    } catch (e) {
+      state = state.copyWith(isSearching: false, error: e.toString());
     }
   }
 
@@ -74,7 +116,7 @@ class ArticleExportsCsvNotifier extends StateNotifier<ArticleExportsCsvState> {
     try {
       state = state.copyWith(isLoading: true);
 
-      String url = await _repository.exportArticles();
+      String url = await _articleNotifier.exportArticles();
 
       state = state.copyWith(
         isLoading: false,

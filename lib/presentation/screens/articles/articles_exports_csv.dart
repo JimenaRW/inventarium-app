@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:inventarium/data/article_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/presentation/screens/articles/articles_share_csv.dart';
 import 'package:inventarium/presentation/viewmodels/article/notifiers/article_exports_csv_notifier.dart';
 import 'package:inventarium/presentation/viewmodels/article/provider.dart';
 import 'package:inventarium/presentation/viewmodels/article/states/article_exports_csv_state%20.dart';
+import 'package:inventarium/presentation/widgets/article_list_card.dart';
 
 class ArticlesExportsCsv extends ConsumerStatefulWidget {
   static const String name = 'articles_exports_csv';
@@ -23,12 +23,13 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(articleExportsCsvNotifierProvider.notifier).loadArticles();
+      ref.read(articleExportsCsvNotifierProvider.notifier).loadInitialData();
     });
   }
 
   @override
   void dispose() {
+    _searchController.clear();
     _searchController.dispose();
     super.dispose();
   }
@@ -78,7 +79,7 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
             _buildSearchField(notifier),
             const SizedBox(height: 16),
 
-            Expanded(child: _buildArticlesTable(state)),
+            Expanded(child: _buildArticlesTable(state, notifier)),
           ],
         ),
       ),
@@ -96,15 +97,20 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
           icon: const Icon(Icons.clear),
           onPressed: () {
             _searchController.clear();
-            notifier.setSearchQuery('');
+            notifier.searchArticles('');
           },
         ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        isDense: true,
       ),
-      onChanged: notifier.setSearchQuery,
+      onChanged: notifier.searchArticles,
     );
   }
 
-  Widget _buildArticlesTable(ArticleExportsCsvState state) {
+  Widget _buildArticlesTable(
+    ArticleExportsCsvState state,
+    ArticleExportsCsvNotifier notifier,
+  ) {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -117,9 +123,7 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
             Text('Error: ${state.error}'),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed:
-                  () =>
-                      ref.read(articleNotifierProvider.notifier).loadArticles(),
+              onPressed: () => notifier.loadInitialData(),
               child: const Text('Reintentar'),
             ),
           ],
@@ -131,29 +135,34 @@ class _ArticlesExportsCsvState extends ConsumerState<ArticlesExportsCsv> {
       return const Center(child: Text('No se encontraron artículos'));
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columns: const [
-          DataColumn(label: Text('SKU')),
-          DataColumn(label: Text('Descripción')),
-          DataColumn(label: Text('Stock'), numeric: true),
-          DataColumn(label: Text('Precio 1'), numeric: true),
-        ],
-        rows:
-            state.filteredArticles.map((article) {
-              return DataRow(
-                cells: [
-                  DataCell(Text(article.sku)),
-                  DataCell(
-                    Text(article.description),
-                    onTap: () => _showArticleDetails(context, article),
-                  ),
-                  DataCell(Text(article.stock.toString())),
-                  DataCell(Text('\$${article.price1?.toStringAsFixed(2)}')),
-                ],
-              );
-            }).toList(),
+    return NotificationListener<ScrollNotification>(
+      onNotification: (scrollNotification) {
+        if (scrollNotification is ScrollEndNotification) {
+          final metrics = scrollNotification.metrics;
+          if (metrics.pixels >= metrics.maxScrollExtent * 0.9 &&
+              metrics.axis == Axis.vertical) {
+            if (state.hasMore) {
+              notifier.loadMoreArticles();
+            }
+          }
+        }
+        return true;
+      },
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 2),
+        itemCount:
+            state.filteredArticles.length + (state.isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index < state.filteredArticles.length) {
+            final article = state.filteredArticles[index];
+            return GestureDetector(
+              onTap: () => _showArticleDetails(context, article),
+              child: ArticleListCard(article: article, showCheckbox: false, showImage: false,),
+            );
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        },
       ),
     );
   }

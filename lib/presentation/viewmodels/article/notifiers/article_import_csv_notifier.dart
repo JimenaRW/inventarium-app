@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/category_repository.dart';
@@ -282,7 +281,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         state.potentialArticles!
             .where((a) => articleToInsert.contains(a.sku))
             .map((a) async {
-              final categoryKey = _normalizeCategoryName(a.category ?? '');
+              final categoryKey = _normalizeCategoryName(a.category);
               var catId = catDescriptionToId[categoryKey] ?? '';
 
               return a.copyWith(category: catId);
@@ -294,7 +293,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         state.potentialArticles!
             .where((a) => articleToUpdate.contains(a.sku))
             .map((a) async {
-              final categoryKey = _normalizeCategoryName(a.category ?? '');
+              final categoryKey = _normalizeCategoryName(a.category);
               var catId = catDescriptionToId[categoryKey] ?? '';
 
               return a.copyWith(category: catId);
