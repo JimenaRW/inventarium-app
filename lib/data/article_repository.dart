@@ -228,9 +228,7 @@ class ArticleRepository implements IArticleRepository {
       if (userRole.toLowerCase() != admin.toLowerCase() &&
           userRole.toLowerCase() != editor.toLowerCase() &&
           userRole.toLowerCase() != viewer.toLowerCase()) {
-        throw Exception(
-          'No tienes permisos para exportar artículos',
-        );
+        throw Exception('No tienes permisos para exportar artículos');
       }
 
       final querySnapshot =
@@ -316,6 +314,23 @@ class ArticleRepository implements IArticleRepository {
               )
               .get();
       return querySnapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Article>> getAllArticlesWithoutPagination() async {
+    try {
+      final docs = db
+          .collection('articles')
+          .withConverter<Article>(
+            fromFirestore: Article.fromFirestore,
+            toFirestore: (Article article, _) => article.toFirestore(),
+          );
+
+      final articles = await docs.get();
+
+      return articles.docs.map((doc) => doc.data()).toList();
     } catch (e) {
       rethrow;
     }

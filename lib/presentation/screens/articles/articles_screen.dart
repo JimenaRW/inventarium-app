@@ -158,7 +158,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                             _selectedStatus = value;
                             ref
                                 .read(articleSearchNotifierProvider.notifier)
-                                .loadArticlesByStatus(value);
+                                .filterArticlesByStatus(value);
                           });
                         },
                       ),
@@ -175,7 +175,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                             _selectedStatus = value;
                             ref
                                 .read(articleSearchNotifierProvider.notifier)
-                                .loadArticlesByStatus(value);
+                                .filterArticlesByStatus(value);
                           });
                         },
                       ),
@@ -192,7 +192,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                             _selectedStatus = value;
                             ref
                                 .read(articleSearchNotifierProvider.notifier)
-                                .loadArticlesByStatus(value);
+                                .filterArticlesByStatus(value);
                           });
                         },
                       ),
@@ -238,90 +238,97 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
 
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 64),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Buscar por SKU o descripción',
-                  prefixIcon: const Icon(Icons.search),
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _searchController.clear();
-                      notifier.searchArticles('');
-                    },
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Buscar por SKU o descripción',
+                      prefixIcon: const Icon(Icons.search),
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          notifier.searchArticles('');
+                        },
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      isDense: true,
+                    ),
+                    onChanged: notifier.searchArticles,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  isDense: true,
                 ),
-                onChanged: notifier.searchArticles,
               ),
-            ),
-          ),
-          if (!state.isDeleted && enableBotton) ...[
-            if (enableBotton)
-              IconButton(
-                onPressed: () => notifier.toggleDeleteMode(true),
-                icon: const Icon(Icons.delete_outline_outlined),
-                tooltip: 'Borrado masivo',
-                padding: const EdgeInsets.all(12),
-              ),
-          ],
-          if (state.isDeleted && enableBotton) ...[
-            IconButton(
-              onPressed: () => notifier.toggleDeleteMode(false),
-              icon: const Icon(Icons.cancel_outlined),
-              tooltip: 'Cancelar',
-              padding: const EdgeInsets.all(12),
-            ),
-            IconButton(
-              onPressed: () async {
-                try {
-                  if (state.articlesDeleted.isNotEmpty) {
-                    await notifier.removeAllArticles();
-                    await notifier.loadInitialData();
-                    if (mounted) {
-                      ScaffoldMessenger.of(context)
-                        ..clearSnackBars()
-                        ..showSnackBar(
-                          SnackBar(content: Text(state.successMessage!)),
-                        );
-                    }
-                  } else {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context)
-                        ..clearSnackBars()
-                        ..showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Debe seleccionar un artículo a eliminar.",
+              if (!state.isDeleted && enableBotton) ...[
+                if (enableBotton)
+                  IconButton(
+                    onPressed: () => notifier.toggleDeleteMode(true),
+                    icon: const Icon(Icons.delete_outline_outlined),
+                    tooltip: 'Borrado masivo',
+                    padding: const EdgeInsets.all(12),
+                  ),
+              ],
+              if (state.isDeleted && enableBotton) ...[
+                IconButton(
+                  onPressed: () => notifier.toggleDeleteMode(false),
+                  icon: const Icon(Icons.cancel_outlined),
+                  tooltip: 'Cancelar',
+                  padding: const EdgeInsets.all(12),
+                ),
+                IconButton(
+                  onPressed: () async {
+                    try {
+                      if (state.articlesDeleted.isNotEmpty) {
+                        await notifier.removeAllArticles();
+                        await notifier.loadInitialData();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context)
+                            ..clearSnackBars()
+                            ..showSnackBar(
+                              SnackBar(content: Text(state.successMessage!)),
+                            );
+                        }
+                      } else {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context)
+                            ..clearSnackBars()
+                            ..showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Debe seleccionar un artículo a eliminar.",
+                                ),
+                              ),
+                            );
+                        }
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context)
+                          ..clearSnackBars()
+                          ..showSnackBar(
+                            SnackBar(
+                              content: Text(state.errorDeleted ?? e.toString()),
                             ),
-                          ),
-                        );
+                          );
+                      }
                     }
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context)
-                      ..clearSnackBars()
-                      ..showSnackBar(
-                        SnackBar(
-                          content: Text(state.errorDeleted ?? e.toString()),
-                        ),
-                      );
-                  }
-                }
-              },
-              icon: const Icon(Icons.delete_sharp),
-              tooltip: 'Confirmar borrado masivo',
-              padding: const EdgeInsets.all(12),
-            ),
-          ],
+                  },
+                  icon: const Icon(Icons.delete_sharp),
+                  tooltip: 'Confirmar borrado masivo',
+                  padding: const EdgeInsets.all(12),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text('Artículos encontrados: ${state.filteredArticles.length}'),
         ],
       ),
     );

@@ -27,6 +27,18 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
     }
   }
 
+  void filterArticlesByStatus(ArticleStatus? status) {
+    if (status == null) {
+      state = state.copyWith(filteredArticles: state.articles);
+    } else {
+      final filteredArticles =
+          state.articles.where((article) {
+            return article.status == status.name;
+          }).toList();
+      state = state.copyWith(filteredArticles: filteredArticles);
+    }
+  }
+
   void loadArticlesByStatus(ArticleStatus? status) async {
     state = state.copyWith(isLoading: true);
     try {
@@ -70,8 +82,17 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
   }
 
   Future<void> loadInitialData() async {
-    state = state.copyWith(isSpecialFilter: false);
-    loadArticlesByStatus(null);
+    state = state.copyWith(isLoading: true, isSpecialFilter: false);
+    try {
+      final articles = await _articleNotifier.getAllArticlesWithoutPagination();
+      state = state.copyWith(
+        articles: articles,
+        filteredArticles: articles,
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
   }
 
   void clearErrorDeleted() => state = state.copyWith(errorDeleted: null);
@@ -125,26 +146,18 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       return;
     }
 
-    state = state.copyWith(isSearching: true);
-    try {
-      final filteredArticles =
-          state.articles.where((article) {
-            final searchableContent = [
-              article.description.toLowerCase(),
-              article.sku.toLowerCase(),
-              article.barcode?.toLowerCase() ?? '',
-            ].join(' ');
+    final filteredArticles =
+        state.articles.where((article) {
+          final searchableContent = [
+            article.description.toLowerCase(),
+            article.sku.toLowerCase(),
+            article.barcode?.toLowerCase() ?? '',
+          ].join(' ');
 
-            return searchableContent.contains(query.toLowerCase());
-          }).toList();
+          return searchableContent.contains(query.toLowerCase());
+        }).toList();
 
-      state = state.copyWith(
-        filteredArticles: filteredArticles,
-        isSearching: false,
-      );
-    } catch (e) {
-      state = state.copyWith(isSearching: false, error: e.toString());
-    }
+    state = state.copyWith(filteredArticles: filteredArticles);
   }
 
   void updateStock(String id, int newStock) async {
