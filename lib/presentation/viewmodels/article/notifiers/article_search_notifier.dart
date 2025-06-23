@@ -8,6 +8,9 @@ import 'package:inventarium/presentation/viewmodels/article/states/article_searc
 class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
   final ArticleNotifier _articleNotifier;
   final int _itemsPerPage = 10;
+  List<Article> _all = [];
+  List<Article> _active = [];
+  List<Article> _inactive = [];
 
   ArticleSearchNotifier(this._articleNotifier)
     : super(ArticleSearchState.initial());
@@ -87,13 +90,6 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
   void _applyFilters() {
     List<Article> filteredArticles = state.articles;
 
-    if (state.status != null) {
-      filteredArticles =
-          filteredArticles.where((article) {
-            return article.status == state.status!.name;
-          }).toList();
-    }
-
     if (state.searchQuery.isNotEmpty) {
       filteredArticles =
           filteredArticles.where((article) {
@@ -114,14 +110,41 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
     state = state.copyWith(isLoading: true, isSpecialFilter: false);
     try {
       final articles = await _articleNotifier.getAllArticlesWithoutPagination();
-      state = state.copyWith(
-        articles: articles,
-        filteredArticles: articles,
-        isLoading: false,
-      );
+
+      _all = articles;
+      _active =
+          articles.where((a) => a.status == ArticleStatus.active.name).toList();
+      _inactive =
+          articles
+              .where((a) => a.status == ArticleStatus.inactive.name)
+              .toList();
+
+      selectFilterStatus(null); // fuerza filtro a "Todos"
+      state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
+  }
+
+  void selectFilterStatus(ArticleStatus? status) {
+    List<Article> baseList;
+
+    if (status == null) {
+      baseList = _all;
+    } else if (status == ArticleStatus.active) {
+      baseList = _active;
+    } else {
+      baseList = _inactive;
+    }
+
+    final filtered = getFilteredArticles(baseList);
+
+    state = state.copyWith(
+      status: status,
+      articles: baseList, // ← 🔥 Esto es clave
+      filteredArticles: filtered, // ← y esto
+      searchQuery: '',
+    );
   }
 
   void clearErrorDeleted() => state = state.copyWith(errorDeleted: null);

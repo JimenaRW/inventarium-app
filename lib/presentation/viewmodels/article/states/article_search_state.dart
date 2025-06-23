@@ -48,7 +48,7 @@ class ArticleSearchState {
     articlesDeleted: [],
     errorDeleted: null,
     successMessage: null,
-    status: ArticleStatus.active,
+    status: null,
     isSpecialFilter: false,
   );
 

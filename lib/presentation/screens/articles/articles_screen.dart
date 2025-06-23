@@ -156,10 +156,11 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                         onChanged: (value) {
                           setState(() {
                             _selectedStatus = value;
-                            ref
-                                .read(articleSearchNotifierProvider.notifier)
-                                .filterArticlesByStatus(value);
                           });
+                          _searchController.clear();
+                          ref
+                              .read(articleSearchNotifierProvider.notifier)
+                              .selectFilterStatus(value);
                         },
                       ),
                       const Text('Todos'),
@@ -173,10 +174,11 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                         onChanged: (value) {
                           setState(() {
                             _selectedStatus = value;
-                            ref
-                                .read(articleSearchNotifierProvider.notifier)
-                                .filterArticlesByStatus(value);
                           });
+                          _searchController.clear();
+                          ref
+                              .read(articleSearchNotifierProvider.notifier)
+                              .selectFilterStatus(value);
                         },
                       ),
                       const Text('Activos'),
@@ -190,10 +192,11 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                         onChanged: (value) {
                           setState(() {
                             _selectedStatus = value;
-                            ref
-                                .read(articleSearchNotifierProvider.notifier)
-                                .filterArticlesByStatus(value);
                           });
+                          _searchController.clear();
+                          ref
+                              .read(articleSearchNotifierProvider.notifier)
+                              .selectFilterStatus(value);
                         },
                       ),
                       const Text('Inactivos'),
@@ -377,7 +380,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                 (arguments == null ||
                     (arguments['filter'] != 'no_stock' &&
                         arguments['filter'] != 'low_stock'))) {
-              notifier.loadMoreArticles();
+              //notifier.loadMoreArticles();
             }
           }
         }
