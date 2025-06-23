@@ -26,36 +26,17 @@ class TopCategoriesNotifier
   final Ref _ref;
 
   TopCategoriesNotifier(this._ref) : super(const AsyncValue.loading()) {
-    _init();
+    build(); // lo llamás al iniciar
   }
 
-  Future<void> _init() async {
+  Future<void> build() async {
     try {
-      final articlesState = _ref.watch(allArticlesProvider);
-      final categoriesState = _ref.watch(categoriesNotifierProvider);
+      state = const AsyncValue.loading();
 
-      if (articlesState is AsyncLoading || categoriesState is AsyncLoading) {
-        state = const AsyncValue.loading();
-        return;
-      }
-
-      if (articlesState is AsyncError) {
-        state = AsyncValue.error(
-          articlesState.error!,
-          articlesState.stackTrace!,
-        );
-        return;
-      }
-      if (categoriesState is AsyncError) {
-        state = AsyncValue.error(
-          categoriesState.error!,
-          categoriesState.stackTrace!,
-        );
-        return;
-      }
-
-      final List<Article> articles = articlesState.value ?? [];
-      final List<Category> categories = categoriesState.value ?? [];
+      final articles =
+          await _ref.read(articleRepositoryProvider).getAllArticles();
+      final categories =
+          await _ref.read(categoryRepositoryProvider).getAllCategories();
 
       final categoryIdCounts = <String, int>{};
       for (final article in articles) {
@@ -80,6 +61,7 @@ class TopCategoriesNotifier
       final topCategoriesData = Map.fromEntries(
         sortedCategoryCounts.where((entry) => entry.value > 0).take(5),
       );
+
       state = AsyncValue.data(topCategoriesData);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
