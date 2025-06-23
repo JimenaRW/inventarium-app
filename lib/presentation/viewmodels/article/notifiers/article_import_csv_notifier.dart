@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:diacritic/diacritic.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository.dart';
@@ -68,7 +69,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         final line = lines[i].trim();
         if (line.isEmpty) continue;
 
-        final values = line.split(',');
+        final values = removeDiacritics(line).split(',');
 
         if (values.length != 11) {
           errors.add('Fila ${i + 1}: cantidad insuficiente de columnas.');
@@ -160,7 +161,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
           final line = lines[i].trim();
           if (line.isEmpty) continue;
 
-          final values = line.split(',');
+          final values = removeDiacritics(line).split(',');
 
           try {
             final potentialArticle = Article(
