@@ -107,9 +107,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
         if (scrollNotification is ScrollEndNotification) {
           final metrics = scrollNotification.metrics;
           if (metrics.pixels >= metrics.maxScrollExtent * 0.9 &&
-              metrics.axis == Axis.vertical) {
-            if (state.hasMore) notifier.loadMoreArticles();
-          }
+              metrics.axis == Axis.vertical) {}
         }
         return true;
       },

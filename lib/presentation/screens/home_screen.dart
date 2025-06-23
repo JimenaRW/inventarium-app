@@ -8,7 +8,7 @@ import 'package:inventarium/data/navigation_provider.dart';
 import 'package:inventarium/data/no_stock_provider.dart';
 import 'package:inventarium/data/top_categories_provider.dart';
 import 'package:inventarium/data/total_articles_provider.dart'
-    as allarticlesprovider;
+    as total_articles;
 import 'package:inventarium/presentation/widgets/all_articles_card.dart';
 import 'package:inventarium/presentation/widgets/category_dashboard.dart';
 import 'package:inventarium/presentation/widgets/low_stock_card.dart';
@@ -36,7 +36,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
   Future<void> _loadInitialData() async {
     await ref.read(noStockProvider.notifier).build();
     await ref.read(lowStockProvider.notifier).build();
-    await ref.read(allarticlesprovider.allArticlesProvider.notifier).build();
+    await ref.read(total_articles.allArticlesProvider.notifier).build();
   }
 
   @override
@@ -53,6 +53,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
   }
 
   @override
+  void didPop() {
+    Future.microtask(_reloadData);
+  }
+
+  @override
   void didPush() {
     Future.microtask(_reloadData);
   }
@@ -60,7 +65,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
   Future<void> _reloadData() async {
     ref.invalidate(noStockProvider);
     ref.invalidate(lowStockProvider);
-    ref.invalidate(allArticlesProvider);
+    ref.invalidate(total_articles.allArticlesProvider);
     ref.invalidate(topCategoriesProvider);
     ref.invalidate(categoriesNotifierProvider);
   }
