@@ -456,4 +456,14 @@ class ArticleRepository implements IArticleRepository {
         .get()
         .then((res) => res.count, onError: (e) => throw e);
   }
+
+  Future<String?> regenerateImageUrl(Article article) async {
+    try {
+      final bucket = _storage.refFromURL(article.imageUrl!);
+      final newUrl = await bucket.getDownloadURL();
+      return newUrl;
+    } catch (e) {
+      return null; // Falla el nuevo intento
+    }
+  }
 }

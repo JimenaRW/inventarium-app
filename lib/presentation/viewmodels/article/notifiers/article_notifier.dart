@@ -217,4 +217,13 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
   Future<int?> getArticleCount() async {
     return await _repository.getArticleCount();
   }
+
+  Future<String?> regenerateImageUrl(Article article) async {
+    try {
+      
+      return _repository.regenerateImageUrl(article);
+    } catch (e) {
+      return null; // Falla el nuevo intento
+    }
+  }
 }

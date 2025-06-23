@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:inventarium/data/article_repository_provider.dart';
 import 'package:inventarium/domain/article.dart';
 import 'package:inventarium/domain/article_status.dart';
 
@@ -21,6 +22,10 @@ class ArticleListCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    bool hasRetried = false;
+
+    String? fallbackUrl = article.imageUrl;
+
     return SizedBox(
       width: double.infinity,
       child: Card(
@@ -38,18 +43,55 @@ class ArticleListCard extends ConsumerWidget {
                         if (article.imageUrl != null &&
                             article.imageUrl!.isNotEmpty)
                           Padding(
-                            padding: EdgeInsets.only(right: 12.0),
+                            padding: const EdgeInsets.only(right: 12.0),
                             child: SizedBox(
                               width: MediaQuery.of(context).size.width * 0.15,
-                              child: Image.network(
-                                article.imageUrl!,
-                                fit: BoxFit.contain,
+                              child: StatefulBuilder(
+                                builder:
+                                    (context, setState) => Image.network(
+                                      fallbackUrl!,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (
+                                        context,
+                                        error,
+                                        stackTrace,
+                                      ) {
+                                        if (!hasRetried &&
+                                            error.toString().contains('403')) {
+                                          hasRetried = true;
+
+                                          // Reintenta una sola vez
+                                          ref
+                                              .read(
+                                                articleSearchNotifierProvider
+                                                    .notifier,
+                                              )
+                                              .loadImageWithTokenRetry(article)
+                                              .then((newUrl) {
+                                                if (newUrl != null) {
+                                                  setState(
+                                                    () => fallbackUrl = newUrl,
+                                                  );
+                                                } else {
+                                                  setState(
+                                                    () => fallbackUrl = null,
+                                                  );
+                                                }
+                                              });
+                                        }
+
+                                        return Image.asset(
+                                          'assets/images/no_image.png',
+                                          fit: BoxFit.contain,
+                                        );
+                                      },
+                                    ),
                               ),
                             ),
                           )
                         else
                           Padding(
-                            padding: EdgeInsets.only(right: 12.0),
+                            padding: const EdgeInsets.only(right: 12.0),
                             child: SizedBox(
                               width: MediaQuery.of(context).size.width * 0.15,
                               child: Image.asset(

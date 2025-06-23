@@ -27,6 +27,14 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
     }
   }
 
+  Future<String?> loadImageWithTokenRetry(Article article) async {
+    try {
+      return await _articleNotifier.regenerateImageUrl(article);
+    } catch (e) {
+      return null;
+    }
+  }
+
   void loadArticlesByStatus(ArticleStatus? status) async {
     state = state.copyWith(isLoading: true);
     try {
