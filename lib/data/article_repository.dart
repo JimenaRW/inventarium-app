@@ -380,6 +380,13 @@ class ArticleRepository implements IArticleRepository {
 
   Future<List<Article>> getAllArticlesWithoutPagination() async {
     try {
+      final articlesRef = db.collection('articles');
+      final snapshot = await articlesRef.get();
+
+      if (snapshot.docs.isEmpty) {
+        return[];
+      }
+
       final docs = db
           .collection('articles')
           .withConverter<Article>(
