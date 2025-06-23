@@ -248,34 +248,52 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
       final articlesRef = firestore.collection('articles');
 
       final allowedStates = [
-        ArticleStatus.active.toString(),
-        ArticleStatus.suspended.toString(),
+        ArticleStatus.active.name,
+        ArticleStatus.suspended.name,
       ];
 
-      final querySnapshot =
-          await articlesRef
-              .where(FieldPath.documentId, whereIn: state.articlesDeleted)
-              .where('status', whereIn: allowedStates)
-              .get();
+      final ids = state.articlesDeleted;
+      if (ids.isEmpty) {
+        state = state.copyWith(
+          isLoading: false,
+          errorDeleted: "No hay artículos seleccionados para eliminar.",
+        );
+        return;
+      }
 
-      if (querySnapshot.docs.isEmpty) {
+      // Dividir en chunks de 10 por limitación de Firestore
+      const chunkSize = 10;
+      final chunks = List.generate(
+        (ids.length / chunkSize).ceil(),
+        (i) => ids.skip(i * chunkSize).take(chunkSize).toList(),
+      );
+
+      List<DocumentSnapshot> allDocs = [];
+
+      for (final chunk in chunks) {
+        final snapshot =
+            await articlesRef
+                .where(FieldPath.documentId, whereIn: chunk)
+                .where('status', whereIn: allowedStates)
+                .get();
+        allDocs.addAll(snapshot.docs);
+      }
+
+      if (allDocs.isEmpty) {
         state = state.copyWith(
           isLoading: false,
           errorDeleted:
               "No existen artículos en estado activo o suspendido que eliminar.",
         );
-
         return;
       }
 
       const maxBatchSize = 500;
-      final totalBatches = (querySnapshot.docs.length / maxBatchSize).ceil();
+      final totalBatches = (allDocs.length / maxBatchSize).ceil();
 
       for (int i = 0; i < totalBatches; i++) {
         final batch = firestore.batch();
-        final batchDocs = querySnapshot.docs
-            .skip(i * maxBatchSize)
-            .take(maxBatchSize);
+        final batchDocs = allDocs.skip(i * maxBatchSize).take(maxBatchSize);
 
         for (final doc in batchDocs) {
           batch.update(doc.reference, {'status': ArticleStatus.inactive.name});

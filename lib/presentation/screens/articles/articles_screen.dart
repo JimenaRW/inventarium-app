@@ -113,14 +113,14 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                       label: 'IMPORTAR\nCSV',
                       onTap: () async {
                         if (!mounted) return;
-                        
+
                         final currentContext = context;
                         final articleNotifier = ProviderScope.containerOf(
                           currentContext,
                         ).read(articleSearchNotifierProvider.notifier);
 
                         await context.push('/articles/import-csv');
-                        
+
                         if (mounted) {
                           articleNotifier.toggleDeleteMode(false);
                           articleNotifier.loadInitialData();
@@ -293,29 +293,33 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                 ),
                 IconButton(
                   onPressed: () async {
-                    try {
-                      if (state.articlesDeleted.isNotEmpty) {
-                        await notifier.removeAllArticles();
-                        await notifier.loadInitialData();
-                        if (mounted) {
-                          ScaffoldMessenger.of(context)
-                            ..clearSnackBars()
-                            ..showSnackBar(
-                              SnackBar(content: Text(state.successMessage!)),
-                            );
-                        }
-                      } else {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context)
-                            ..clearSnackBars()
-                            ..showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  "Debe seleccionar un artículo a eliminar.",
-                                ),
+                    if (state.articlesDeleted.isEmpty) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context)
+                          ..clearSnackBars()
+                          ..showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Debe seleccionar un artículo a eliminar.",
                               ),
-                            );
-                        }
+                            ),
+                          );
+                      }
+                      return;
+                    }
+                    try {
+                      await notifier.removeAllArticles();
+                      await notifier.loadInitialData();
+                      if (mounted) {
+                        ScaffoldMessenger.of(context)
+                          ..clearSnackBars()
+                          ..showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                state.successMessage ?? 'Borrado masivo exitoso!',
+                              ),
+                            ),
+                          );
                       }
                     } catch (e) {
                       if (mounted) {
