@@ -8,6 +8,7 @@ class ArticleListCard extends ConsumerWidget {
   final bool showCheckbox;
   final bool? checkboxValue;
   final ValueChanged<bool?>? onCheckboxChanged;
+  final bool showImage;
 
   const ArticleListCard({
     super.key,
@@ -15,6 +16,7 @@ class ArticleListCard extends ConsumerWidget {
     required this.showCheckbox,
     this.checkboxValue,
     this.onCheckboxChanged,
+    this.showImage = true,
   });
 
   @override
@@ -32,29 +34,30 @@ class ArticleListCard extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
-                      if (article.imageUrl != null &&
-                          article.imageUrl!.isNotEmpty)
-                        Padding(
-                          padding: EdgeInsets.only(right: 12.0),
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.15,
-                            child: Image.network(
-                              article.imageUrl!,
-                              fit: BoxFit.contain,
+                      if (showImage)
+                        if (article.imageUrl != null &&
+                            article.imageUrl!.isNotEmpty)
+                          Padding(
+                            padding: EdgeInsets.only(right: 12.0),
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.15,
+                              child: Image.network(
+                                article.imageUrl!,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          )
+                        else
+                          Padding(
+                            padding: EdgeInsets.only(right: 12.0),
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.15,
+                              child: Image.asset(
+                                'assets/images/no_image.png',
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
-                        )
-                      else
-                        Padding(
-                          padding: EdgeInsets.only(right: 12.0),
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.15,
-                            child: Image.asset(
-                              'assets/images/no_image.png',
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
 
                       Expanded(
                         child: Column(

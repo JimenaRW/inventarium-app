@@ -200,4 +200,17 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
 
     return updatedArticles;
   }
+
+  Future<String> exportArticles() async {
+    try {
+      String url = await _repository.exportArticles();
+      return url;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<int?> getArticleCount() async {
+    return await _repository.getArticleCount();
+  }
 }

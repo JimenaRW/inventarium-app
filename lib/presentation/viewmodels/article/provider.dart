@@ -41,8 +41,7 @@ Provider<ArticleRepository> articleRepositoryProvider =
 final articleExportsCsvNotifierProvider =
     StateNotifierProvider<ArticleExportsCsvNotifier, ArticleExportsCsvState>(
       (ref) => ArticleExportsCsvNotifier(
-        ref.read(articleRepositoryProvider),
-        ref.read(categoryRepositoryProvider),
+        ref.read(articleNotifierProvider.notifier)
       ),
     );
 

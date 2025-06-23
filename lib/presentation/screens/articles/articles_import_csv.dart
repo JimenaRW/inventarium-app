@@ -21,6 +21,7 @@ class _ArticlesImportCsvState extends ConsumerState<ArticlesImportCsv> {
       ref.invalidate(articleImportCsvNotifierProvider);
       ref.read(articleImportCsvNotifierProvider.notifier).resetStatus();
     });
+    
   }
 
   @override
@@ -36,18 +37,25 @@ class _ArticlesImportCsvState extends ConsumerState<ArticlesImportCsv> {
         await ref
             .read(articleImportCsvNotifierProvider.notifier)
             .importArticles();
+        final state = ref.watch(articleImportCsvNotifierProvider);
 
-        ref.read(categoriesNotifierProvider.notifier);
-        ref.read(articleSearchProvider.notifier).loadInitialData();
+        if (state.validationErrors.isNotEmpty) {
+          throw state.validationErrors.first;
+        }
 
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(
-              'Importación de ${state.importedCount} artículos realizada.',
+        ref.invalidate(categoriesNotifierProvider);
+        ref.invalidate(articleSearchProvider);
+
+         if (mounted) { // Check mounted before showing snackbar
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                'Importación de ${state.importedCount} artículos realizada.',
+              ),
             ),
-          ),
-        );
-        navigator.pop(true);
+          );
+          navigator.pop(true);
+        }
       } catch (e) {
         scaffoldMessenger.showSnackBar(
           SnackBar(content: Text('Error: ${e.toString()}')),
@@ -81,6 +89,7 @@ class _ArticlesImportCsvState extends ConsumerState<ArticlesImportCsv> {
                     try {
                       await notifier.pickCsvFile();
                     } catch (e) {
+                      // ignore: use_build_context_synchronously
                       final scaffoldMessenger = ScaffoldMessenger.of(context);
                       scaffoldMessenger.showSnackBar(
                         SnackBar(

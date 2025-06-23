@@ -30,19 +30,20 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
   void loadArticlesByStatus(ArticleStatus? status) async {
     state = state.copyWith(isLoading: true);
     try {
-      final articles = await _articleNotifier.getArticles(
-        page: 1,
-        limit: _itemsPerPage,
-        status: status,
-      );
-      state = state.copyWith(
-        articles: articles,
-        isLoading: false,
-        hasMore: articles.length == _itemsPerPage,
-        status: status,
-        currentPage: 1,
-      );
-      state = state.copyWith(filteredArticles: filteredArticles);
+      await _articleNotifier
+          .getArticles(page: 1, limit: _itemsPerPage, status: status)
+          .then(
+            (value) => {
+              state = state.copyWith(
+                articles: value,
+                isLoading: false,
+                hasMore: value.length == _itemsPerPage,
+                status: status,
+                currentPage: 1,
+              ),
+              state = state.copyWith(filteredArticles: filteredArticles),
+            },
+          );
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
     }

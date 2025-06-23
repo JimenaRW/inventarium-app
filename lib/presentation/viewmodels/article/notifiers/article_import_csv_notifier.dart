@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventarium/data/article_repository.dart';
 import 'package:inventarium/data/category_repository.dart';
@@ -166,12 +165,16 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
           try {
             final potentialArticle = Article(
               id: '',
-              barcode: values[0].trim(),
-              sku: values[1].trim(),
-              description: capitalizeFirstLetter(values[2].trim()),
-              category: values[3].trim(), // descripcion futura
-              fabricator: capitalizeFirstLetter(values[4].trim()),
-              location: capitalizeFirstLetter(values[5].trim()),
+              barcode: cleanCsvValue(values[0].trim()),
+              sku: cleanCsvValue(values[1].trim()),
+              description: capitalizeFirstLetter(cleanCsvValue(
+                values[2].trim()),
+              ),
+              category: capitalizeFirstLetter(cleanCsvValue(values[3].trim())),
+              fabricator: capitalizeFirstLetter(cleanCsvValue(
+                values[4].trim()),
+              ),
+              location: capitalizeFirstLetter(cleanCsvValue(values[5].trim())),
               stock: int.tryParse(values[6].trim()) ?? 0,
               price1: double.tryParse(values[7].trim()) ?? 0.0,
               price2: double.tryParse(values[8].trim()) ?? 0.0,
@@ -282,7 +285,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         state.potentialArticles!
             .where((a) => articleToInsert.contains(a.sku))
             .map((a) async {
-              final categoryKey = _normalizeCategoryName(a.category ?? '');
+              final categoryKey = _normalizeCategoryName(a.category);
               var catId = catDescriptionToId[categoryKey] ?? '';
 
               return a.copyWith(category: catId);
@@ -294,7 +297,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         state.potentialArticles!
             .where((a) => articleToUpdate.contains(a.sku))
             .map((a) async {
-              final categoryKey = _normalizeCategoryName(a.category ?? '');
+              final categoryKey = _normalizeCategoryName(a.category);
               var catId = catDescriptionToId[categoryKey] ?? '';
 
               return a.copyWith(category: catId);
@@ -313,19 +316,30 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
           });
         });
       }
+      
+      final skuToArticleMap = <String, Article>{
+        for (final article in toUpdate) article.sku: article,
+      };
 
-      final querySnapshot = await articlesRef.where('sku').get();
+      final querySnapshot =
+          await articlesRef
+              .where('sku', whereIn: articleToUpdate.toList())
+              .get();
 
       for (final doc in querySnapshot.docs) {
-        final article = toUpdate.firstWhere((a) => a.sku == doc['sku']);
+        final docSku = doc.data()['sku'] as String?;
 
-        operations.add((batch) {
-          final data = article.toFirestore();
-          data.remove('imageUrl');
-          data.remove('status');
-          data.remove('id');
-          batch.update(doc.reference, data);
-        });
+        if (docSku != null && skuToArticleMap.containsKey(docSku)) {
+          final article = skuToArticleMap[docSku]!;
+
+          operations.add((batch) {
+            final data = article.toFirestore();
+            data.remove('imageUrl');
+            data.remove('status');
+            data.remove('id');
+            batch.update(doc.reference, data);
+          });
+        }
       }
 
       await _runBatch(operations);
@@ -377,5 +391,17 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
         .where((doc) => skusSet.contains(doc['sku']))
         .map((article) => article.id)
         .toList();
+  }
+
+  String cleanCsvValue(String value) {
+    String cleaned = value.trim();
+
+    if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+      cleaned = cleaned.substring(1, cleaned.length - 1);
+    }
+
+    cleaned = cleaned.replaceAll('""', '"');
+
+    return cleaned.trim();
   }
 }

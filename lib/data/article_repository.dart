@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
-
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -228,9 +229,7 @@ class ArticleRepository implements IArticleRepository {
       if (userRole.toLowerCase() != admin.toLowerCase() &&
           userRole.toLowerCase() != editor.toLowerCase() &&
           userRole.toLowerCase() != viewer.toLowerCase()) {
-        throw Exception(
-          'No tienes permisos para exportar artículos',
-        );
+        throw Exception('No tienes permisos para exportar artículos');
       }
 
       final querySnapshot =
@@ -271,12 +270,70 @@ class ArticleRepository implements IArticleRepository {
       final csvContent = _generateCsvContent(updatedArticles);
 
       final fileName =
-          'articulos_export_${DateTime.now().millisecondsSinceEpoch}.csv';
+          'articulos_UTF8_export_${DateTime.now().millisecondsSinceEpoch}.csv';
       final ref = _storage.ref().child(
         'exports_csv/${userDoc.data()!['id']}/$fileName',
       );
 
-      await ref.putString(csvContent);
+      final csvWithBom = Uint8List.fromList([
+        0xEF, 0xBB, 0xBF, // BOM
+        ...utf8.encode(csvContent),
+      ]);
+
+      final metadata = SettableMetadata(
+        // MIME type estándar que Google Sheets Android reconoce
+        contentType: 'text/csv; charset=utf-8',
+
+        // Headers específicos para Android Google Sheets
+        contentEncoding: 'utf-8',
+        contentLanguage: 'es',
+
+        // Formato RFC 2231 para nombres de archivo con UTF-8
+        contentDisposition: 'attachment; filename*=UTF-8\'\'$fileName',
+
+        // Metadatos específicos para Google Sheets Android BOM detection
+        customMetadata: {
+          // Codificación principal
+          'charset': 'utf-8',
+          'encoding': 'UTF-8',
+          'content-encoding': 'utf-8',
+
+          // BOM markers que Google Sheets Android busca
+          'bom': 'EF BB BF', // Bytes hexadecimales del BOM UTF-8
+          'bom-present': 'true',
+          'utf8-bom': 'true',
+          'has-bom': '1',
+
+          // MIME types específicos
+          'content-type': 'text/csv; charset=utf-8',
+          'mime-type': 'text/csv',
+          'media-type': 'text/csv',
+
+          // Identificadores de archivo
+          'file-extension': 'csv',
+          'format': 'CSV',
+          'file-type': 'csv',
+
+          // Headers que Google usa internamente
+          'google-sheets-compatible': 'true',
+          'android-compatible': 'true',
+          'utf8-encoded': 'true',
+
+          // Metadatos adicionales para detección
+          'character-encoding': 'UTF-8',
+          'text-encoding': 'utf-8',
+          'file-encoding': 'UTF-8',
+
+          // Información del archivo
+          'original-filename': fileName,
+          'download-name': fileName,
+        },
+
+        // Cache control para evitar problemas de codificación
+        cacheControl: 'no-cache, no-store, must-revalidate',
+      );
+
+      await ref.putData(csvWithBom, metadata);
 
       return await ref.getDownloadURL();
     } catch (e) {
@@ -325,38 +382,45 @@ class ArticleRepository implements IArticleRepository {
     final buffer = StringBuffer();
 
     buffer.writeAll([
-      'Código de Barras,',
-      'SKU,',
-      'Descripción,',
-      'Descripción Categoría,',
-      'Fabricante,',
-      'Ubicación,',
-      'Stock,',
-      'Precio1,',
-      'Precio2,',
-      'Precio3,',
-      'IVA',
-    ], '\t');
+      '"Código de Barras"',
+      '"SKU"',
+      '"Descripción"',
+      '"Descripción Categoría"',
+      '"Fabricante"',
+      '"Ubicación"',
+      '"Stock"',
+      '"Precio1"',
+      '"Precio2"',
+      '"Precio3"',
+      '"IVA"',
+    ], ',');
     buffer.writeln();
 
     for (final article in articles) {
       buffer.writeAll([
-        article.barcode ?? '',
-        article.sku,
-        _escapeCsvField(article.description),
-        article.categoryDescription ?? '',
-        article.fabricator,
-        article.location,
-        article.stock,
-        article.price1?.toStringAsFixed(2) ?? '0.00',
-        article.price2?.toStringAsFixed(2) ?? '0.00',
-        article.price3?.toStringAsFixed(2) ?? '0.00',
-        article.iva?.toStringAsFixed(2) ?? '0.00',
+        '"${_cleanField(article.barcode ?? '')}"',
+        '"${_cleanField(article.sku)}"',
+        '"${_cleanField(_escapeCsvField(article.description))}"',
+        '"${_cleanField(article.categoryDescription ?? '')}"',
+        '"${_cleanField(article.fabricator)}"',
+        '"${_cleanField(article.location)}"',
+        '${article.stock}',
+        '${article.price1?.toStringAsFixed(2) ?? '0.00'}',
+        '${article.price2?.toStringAsFixed(2) ?? '0.00'}',
+        '${article.price3?.toStringAsFixed(2) ?? '0.00'}',
+        '${article.iva?.toStringAsFixed(2) ?? '0.00'}',
       ], ',');
       buffer.writeln();
     }
 
     return buffer.toString();
+  }
+
+  String _cleanField(String field) {
+    return field
+        .replaceAll('"', '""')
+        .replaceAll('\n', ' ')
+        .replaceAll('\r', ' ');
   }
 
   String _escapeCsvField(dynamic field) {
@@ -366,5 +430,13 @@ class ArticleRepository implements IArticleRepository {
       return '"${str.replaceAll('"', '""')}"';
     }
     return str;
+  }
+
+  Future<int?> getArticleCount() {
+    return db
+        .collection("articles")
+        .count()
+        .get()
+        .then((res) => res.count, onError: (e) => throw e);
   }
 }
