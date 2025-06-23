@@ -167,12 +167,12 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
               id: '',
               barcode: cleanCsvValue(values[0].trim()),
               sku: cleanCsvValue(values[1].trim()),
-              description: capitalizeFirstLetter(cleanCsvValue(
-                values[2].trim()),
+              description: capitalizeFirstLetter(
+                cleanCsvValue(values[2].trim()),
               ),
               category: capitalizeFirstLetter(cleanCsvValue(values[3].trim())),
-              fabricator: capitalizeFirstLetter(cleanCsvValue(
-                values[4].trim()),
+              fabricator: capitalizeFirstLetter(
+                cleanCsvValue(values[4].trim()),
               ),
               location: capitalizeFirstLetter(cleanCsvValue(values[5].trim())),
               stock: int.tryParse(values[6].trim()) ?? 0,
@@ -316,29 +316,30 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
           });
         });
       }
-      
-      final skuToArticleMap = <String, Article>{
-        for (final article in toUpdate) article.sku: article,
-      };
+      if (articleToUpdate.isNotEmpty) {
+        final skuToArticleMap = <String, Article>{
+          for (final article in toUpdate) article.sku: article,
+        };
 
-      final querySnapshot =
-          await articlesRef
-              .where('sku', whereIn: articleToUpdate.toList())
-              .get();
+        final querySnapshot =
+            await articlesRef
+                .where('sku', whereIn: articleToUpdate.toList())
+                .get();
 
-      for (final doc in querySnapshot.docs) {
-        final docSku = doc.data()['sku'] as String?;
+        for (final doc in querySnapshot.docs) {
+          final docSku = doc.data()['sku'] as String?;
 
-        if (docSku != null && skuToArticleMap.containsKey(docSku)) {
-          final article = skuToArticleMap[docSku]!;
+          if (docSku != null && skuToArticleMap.containsKey(docSku)) {
+            final article = skuToArticleMap[docSku]!;
 
-          operations.add((batch) {
-            final data = article.toFirestore();
-            data.remove('imageUrl');
-            data.remove('status');
-            data.remove('id');
-            batch.update(doc.reference, data);
-          });
+            operations.add((batch) {
+              final data = article.toFirestore();
+              data.remove('imageUrl');
+              data.remove('status');
+              data.remove('id');
+              batch.update(doc.reference, data);
+            });
+          }
         }
       }
 
