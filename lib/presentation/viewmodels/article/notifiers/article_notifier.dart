@@ -183,6 +183,10 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
     return updatedArticles;
   }
 
+  Future<List<Article>> getAllArticlesWithoutPagination() async {
+    return await _repository.getAllArticlesWithoutPagination();
+  }
+
   Future<List<Article>> getArticlesWithLowStock(int threshold) async {
     var articles = await _repository.getArticlesWithLowStock(threshold);
 

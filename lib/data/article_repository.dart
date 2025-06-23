@@ -378,6 +378,23 @@ class ArticleRepository implements IArticleRepository {
     }
   }
 
+  Future<List<Article>> getAllArticlesWithoutPagination() async {
+    try {
+      final docs = db
+          .collection('articles')
+          .withConverter<Article>(
+            fromFirestore: Article.fromFirestore,
+            toFirestore: (Article article, _) => article.toFirestore(),
+          );
+
+      final articles = await docs.get();
+
+      return articles.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   String _generateCsvContent(List<Article> articles) {
     final buffer = StringBuffer();
 

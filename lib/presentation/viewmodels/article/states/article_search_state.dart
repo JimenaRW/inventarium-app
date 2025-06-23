@@ -16,6 +16,7 @@ class ArticleSearchState {
   final String? errorDeleted;
   final String? successMessage;
   final ArticleStatus? status;
+  final bool isSpecialFilter;
 
   const ArticleSearchState({
     this.articles = const [],
@@ -32,6 +33,7 @@ class ArticleSearchState {
     this.errorDeleted,
     this.successMessage,
     this.status,
+    this.isSpecialFilter = false,
   });
 
   factory ArticleSearchState.initial() => ArticleSearchState(
@@ -47,6 +49,7 @@ class ArticleSearchState {
     errorDeleted: null,
     successMessage: null,
     status: ArticleStatus.active,
+    isSpecialFilter: false,
   );
 
   ArticleSearchState copyWith({
@@ -63,6 +66,8 @@ class ArticleSearchState {
     String? errorDeleted,
     String? successMessage,
     ArticleStatus? status,
+    bool? isSpecialFilter,
+    String? searchQuery,
   }) {
     return ArticleSearchState(
       articles: articles ?? this.articles,
@@ -73,11 +78,13 @@ class ArticleSearchState {
       hasMore: hasMore ?? this.hasMore,
       currentPage: currentPage ?? this.currentPage,
       error: error ?? this.error,
+      searchQuery: searchQuery ?? this.searchQuery,
       isDeleted: isDeleted ?? this.isDeleted,
       articlesDeleted: articlesDeleted ?? this.articlesDeleted,
       errorDeleted: errorDeleted ?? this.errorDeleted,
       successMessage: successMessage ?? this.successMessage,
       status: status ?? this.status,
+      isSpecialFilter: isSpecialFilter ?? this.isSpecialFilter,
     );
   }
 }

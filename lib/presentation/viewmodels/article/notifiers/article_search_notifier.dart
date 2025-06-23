@@ -70,15 +70,66 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
     return mappedArticles;
   }
 
+  void filterArticlesByStatus(ArticleStatus? status) {
+    print("filterArticlesByStatus llamado con status: $status");
+    if (status == null) {
+      state = state.copyWith(filteredArticles: state.articles, status: null);
+    } else {
+      state = state.copyWith(status: status);
+      _applyFilters();
+    }
+  }
+
+  Future<void> searchArticles(String query) async {
+    state = state.copyWith(searchQuery: query);
+    _applyFilters();
+  }
+
+  void _applyFilters() {
+    List<Article> filteredArticles = state.articles;
+
+    if (state.status != null) {
+      filteredArticles =
+          filteredArticles.where((article) {
+            return article.status == state.status!.name;
+          }).toList();
+    }
+
+    if (state.searchQuery.isNotEmpty) {
+      filteredArticles =
+          filteredArticles.where((article) {
+            final searchableContent = [
+              article.description.toLowerCase(),
+              article.sku.toLowerCase(),
+              article.barcode?.toLowerCase() ?? '',
+            ].join(' ');
+
+            return searchableContent.contains(state.searchQuery.toLowerCase());
+          }).toList();
+    }
+
+    state = state.copyWith(filteredArticles: filteredArticles);
+  }
+
   Future<void> loadInitialData() async {
-    loadArticlesByStatus(null);
+    state = state.copyWith(isLoading: true, isSpecialFilter: false);
+    try {
+      final articles = await _articleNotifier.getAllArticlesWithoutPagination();
+      state = state.copyWith(
+        articles: articles,
+        filteredArticles: articles,
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
   }
 
   void clearErrorDeleted() => state = state.copyWith(errorDeleted: null);
   void clearSuccessMessage() => state = state.copyWith(successMessage: null);
 
   Future<void> loadMoreArticles() async {
-    if (state.isLoadingMore || !state.hasMore) return;
+    if (state.isLoadingMore || !state.hasMore || state.isSpecialFilter) return;
 
     state = state.copyWith(isLoadingMore: true);
     try {
@@ -117,34 +168,6 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
 
       return terms.every((term) => searchableContent.contains(term));
     }).toList();
-  }
-
-  Future<void> searchArticles(String query) async {
-    if (query.isEmpty) {
-      state = state.copyWith(filteredArticles: state.articles);
-      return;
-    }
-
-    state = state.copyWith(isSearching: true);
-    try {
-      final filteredArticles =
-          state.articles.where((article) {
-            final searchableContent = [
-              article.description.toLowerCase(),
-              article.sku.toLowerCase(),
-              article.barcode?.toLowerCase() ?? '',
-            ].join(' ');
-
-            return searchableContent.contains(query.toLowerCase());
-          }).toList();
-
-      state = state.copyWith(
-        filteredArticles: filteredArticles,
-        isSearching: false,
-      );
-    } catch (e) {
-      state = state.copyWith(isSearching: false, error: e.toString());
-    }
   }
 
   void updateStock(String id, int newStock) async {
@@ -188,7 +211,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
   }
 
   Future<void> searchArticlesByNoStock() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, isSpecialFilter: true);
     try {
       final articles = await _articleNotifier.getArticlesWithNoStock();
       state = state.copyWith(filteredArticles: articles, isLoading: false);
@@ -198,7 +221,7 @@ class ArticleSearchNotifier extends StateNotifier<ArticleSearchState> {
   }
 
   Future<void> searchArticlesByLowStock(int threshold) async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, isSpecialFilter: true);
     try {
       final articles = await _articleNotifier.getArticlesWithLowStock(
         threshold,
