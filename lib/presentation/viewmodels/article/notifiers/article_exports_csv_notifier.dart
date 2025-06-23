@@ -120,10 +120,7 @@ class ArticleExportsCsvNotifier extends StateNotifier<ArticleExportsCsvState> {
 
       String url = await _articleNotifier.exportArticles();
 
-      state = state.copyWith(
-        isLoading: false,
-        lastExportedCsvUrl: url,
-      );
+      state = state.copyWith(isLoading: false, lastExportedCsvUrl: url);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
       rethrow;
@@ -134,20 +131,48 @@ class ArticleExportsCsvNotifier extends StateNotifier<ArticleExportsCsvState> {
     try {
       final response = await http.get(Uri.parse(storagePath));
 
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/documento.csv');
+      final responseBytes = response.bodyBytes;
+      bool hasBom =
+          responseBytes.length >= 3 &&
+          responseBytes[0] == 0xEF &&
+          responseBytes[1] == 0xBB &&
+          responseBytes[2] == 0xBF;
 
-      await tempFile.writeAsBytes(response.bodyBytes);
+      final fileBytes =
+          hasBom ? responseBytes : <int>[0xEF, 0xBB, 0xBF, ...responseBytes];
+
+      final tempDir = await getTemporaryDirectory();
+      final now = DateTime.now();
+      final formatted = formatDate(
+        now,
+      ); 
+      final tempFile = File('${tempDir.path}/artículos-$formatted.csv');
+
+      await tempFile.writeAsBytes(fileBytes);
 
       // ignore: deprecated_member_use
       await Share.shareXFiles([
-        XFile(tempFile.path),
+        XFile(
+          tempFile.path,
+          mimeType: 'text/csv',
+          name: 'articulos-$formatted.csv',
+        ),
       ], text: 'Compartir archivo');
     } catch (e) {
       state = state.copyWith(
         error: 'Error al compartir archivo: ${e.toString()}',
       );
     }
+  }
+
+  String formatDate(DateTime date) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+
+    final day = twoDigits(date.day);
+    final month = twoDigits(date.month);
+    final year = date.year.toString();
+
+    return '$day-$month-$year';
   }
 
   String convertPublicUrlToGsUrl(String publicUrl) {

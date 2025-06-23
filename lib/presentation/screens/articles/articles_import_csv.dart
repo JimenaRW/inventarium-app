@@ -36,7 +36,11 @@ class _ArticlesImportCsvState extends ConsumerState<ArticlesImportCsv> {
         await ref
             .read(articleImportCsvNotifierProvider.notifier)
             .importArticles();
+        final state = ref.watch(articleImportCsvNotifierProvider);
 
+        if (state.validationErrors.isNotEmpty) {
+          throw state.validationErrors.first;
+        }
         ref.read(categoriesNotifierProvider.notifier);
         ref.read(articleSearchProvider.notifier).loadInitialData();
 
