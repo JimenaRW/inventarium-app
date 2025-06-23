@@ -21,6 +21,7 @@ class _ArticlesImportCsvState extends ConsumerState<ArticlesImportCsv> {
       ref.invalidate(articleImportCsvNotifierProvider);
       ref.read(articleImportCsvNotifierProvider.notifier).resetStatus();
     });
+    
   }
 
   @override
@@ -41,17 +42,20 @@ class _ArticlesImportCsvState extends ConsumerState<ArticlesImportCsv> {
         if (state.validationErrors.isNotEmpty) {
           throw state.validationErrors.first;
         }
-        ref.read(categoriesNotifierProvider.notifier);
-        ref.read(articleSearchProvider.notifier).loadInitialData();
 
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(
-              'Importación de ${state.importedCount} artículos realizada.',
+        ref.invalidate(categoriesNotifierProvider);
+        ref.invalidate(articleSearchProvider);
+
+         if (mounted) { // Check mounted before showing snackbar
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                'Importación de ${state.importedCount} artículos realizada.',
+              ),
             ),
-          ),
-        );
-        navigator.pop(true);
+          );
+          navigator.pop(true);
+        }
       } catch (e) {
         scaffoldMessenger.showSnackBar(
           SnackBar(content: Text('Error: ${e.toString()}')),

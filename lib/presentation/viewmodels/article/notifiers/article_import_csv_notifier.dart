@@ -167,14 +167,14 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
               id: '',
               barcode: cleanCsvValue(values[0].trim()),
               sku: cleanCsvValue(values[1].trim()),
-              description: cleanCsvValue(
-                capitalizeFirstLetter(values[2].trim()),
+              description: capitalizeFirstLetter(cleanCsvValue(
+                values[2].trim()),
               ),
-              category: cleanCsvValue(values[3].trim()),
-              fabricator: cleanCsvValue(
-                capitalizeFirstLetter(values[4].trim()),
+              category: capitalizeFirstLetter(cleanCsvValue(values[3].trim())),
+              fabricator: capitalizeFirstLetter(cleanCsvValue(
+                values[4].trim()),
               ),
-              location: cleanCsvValue(capitalizeFirstLetter(values[5].trim())),
+              location: capitalizeFirstLetter(cleanCsvValue(values[5].trim())),
               stock: int.tryParse(values[6].trim()) ?? 0,
               price1: double.tryParse(values[7].trim()) ?? 0.0,
               price2: double.tryParse(values[8].trim()) ?? 0.0,
@@ -316,7 +316,7 @@ class ArticleImportCsvNotifier extends StateNotifier<ArticleImportCsvState> {
           });
         });
       }
-      // Crear un mapa de SKU -> Article para búsqueda eficiente
+      
       final skuToArticleMap = <String, Article>{
         for (final article in toUpdate) article.sku: article,
       };

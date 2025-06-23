@@ -106,31 +106,40 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                     _ActionButton(
                       icon: Icons.upload_file,
                       label: 'IMPORTAR\nCSV',
-                      onTap: () {
+                      onTap: () async {
+                        if (!mounted) return;
+                        
                         final currentContext = context;
                         final articleNotifier = ProviderScope.containerOf(
                           currentContext,
                         ).read(articleSearchNotifierProvider.notifier);
 
-                        context.push('/articles/import-csv');
-                        articleNotifier.toggleDeleteMode(false);
-                        articleNotifier.loadInitialData();
-                        _searchController.clear();
+                        await context.push('/articles/import-csv');
+                        
+                        if (mounted) {
+                          articleNotifier.toggleDeleteMode(false);
+                          articleNotifier.loadInitialData();
+                          _searchController.clear();
+                        }
                       },
                     ),
                   _ActionButton(
                     icon: Icons.save_alt,
                     label: 'EXPORTAR\nCSV',
-                    onTap: () {
-                      Navigator.pop(context);
-                      final currentContext = context;
-                      final articleNotifier = ProviderScope.containerOf(
-                        currentContext,
-                      ).read(articleSearchNotifierProvider.notifier);
-                      context.push('/articles/exports-csv');
-                      articleNotifier.toggleDeleteMode(false);
-                      articleNotifier.loadInitialData();
-                      _searchController.clear();
+                    onTap: () async {
+                      final result = await context.push(
+                        '/articles/exports-csv',
+                      );
+                      if (result == true) {
+                        ref.invalidate(articleSearchProvider);
+                        ref
+                            .read(articleSearchProvider.notifier)
+                            .toggleDeleteMode(false);
+                        ref
+                            .read(articleSearchProvider.notifier)
+                            .loadInitialData();
+                        _searchController.clear();
+                      }
                     },
                   ),
                 ],
