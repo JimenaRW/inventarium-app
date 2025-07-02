@@ -378,6 +378,30 @@ class ArticleRepository implements IArticleRepository {
     }
   }
 
+  Future<List<Article>> getAllArticlesWithoutPagination() async {
+    try {
+      final articlesRef = db.collection('articles');
+      final snapshot = await articlesRef.get();
+
+      if (snapshot.docs.isEmpty) {
+        return[];
+      }
+
+      final docs = db
+          .collection('articles')
+          .withConverter<Article>(
+            fromFirestore: Article.fromFirestore,
+            toFirestore: (Article article, _) => article.toFirestore(),
+          );
+
+      final articles = await docs.get();
+
+      return articles.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   String _generateCsvContent(List<Article> articles) {
     final buffer = StringBuffer();
 
@@ -438,5 +462,15 @@ class ArticleRepository implements IArticleRepository {
         .count()
         .get()
         .then((res) => res.count, onError: (e) => throw e);
+  }
+
+  Future<String?> regenerateImageUrl(Article article) async {
+    try {
+      final bucket = _storage.refFromURL(article.imageUrl!);
+      final newUrl = await bucket.getDownloadURL();
+      return newUrl;
+    } catch (e) {
+      return null; // Falla el nuevo intento
+    }
   }
 }

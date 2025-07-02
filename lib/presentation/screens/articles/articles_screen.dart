@@ -29,21 +29,10 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final state = GoRouterState.of(context);
-      final arguments = state.extra as Map<String, dynamic>?;
-      if (arguments != null && arguments['filter'] != null) {
-        switch (arguments['filter']) {
-          case 'no_stock':
-            ref
-                .read(articleSearchNotifierProvider.notifier)
-                .searchArticlesByNoStock();
-            break;
-          case 'low_stock':
-            ref
-                .read(articleSearchNotifierProvider.notifier)
-                .searchArticlesByLowStock(10);
-            break;
-        }
+      final arguments =
+          GoRouterState.of(context).extra as Map<String, dynamic>?;
+      if (arguments?.containsKey('filter') ?? false) {
+        _handleFilterArgument(arguments!['filter']);
       } else {
         ref.read(articleSearchNotifierProvider.notifier).loadInitialData();
       }
@@ -51,6 +40,21 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     Future.microtask(() {
       ref.read(userNotifierProvider.notifier).loadCurrentUser();
     });
+  }
+
+  void _handleFilterArgument(dynamic filter) {
+    switch (filter) {
+      case 'no_stock':
+        ref
+            .read(articleSearchNotifierProvider.notifier)
+            .searchArticlesByNoStock();
+        break;
+      case 'low_stock':
+        ref
+            .read(articleSearchNotifierProvider.notifier)
+            .searchArticlesByLowStock(10);
+        break;
+    }
   }
 
   @override
@@ -68,6 +72,7 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
     final currentRol = userState.user?.role;
     final enableBotton =
         currentRol == UserRole.admin || currentRol == UserRole.editor;
+    final arguments = GoRouterState.of(context).extra as Map<String, dynamic>?;
 
     return Scaffold(
       appBar: AppBar(
@@ -108,14 +113,14 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
                       label: 'IMPORTAR\nCSV',
                       onTap: () async {
                         if (!mounted) return;
-                        
+
                         final currentContext = context;
                         final articleNotifier = ProviderScope.containerOf(
                           currentContext,
                         ).read(articleSearchNotifierProvider.notifier);
 
                         await context.push('/articles/import-csv');
-                        
+
                         if (mounted) {
                           articleNotifier.toggleDeleteMode(false);
                           articleNotifier.loadInitialData();
@@ -148,58 +153,65 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Text('Filtrar por estado:'),
-                Row(
-                  children: [
-                    Radio<ArticleStatus?>(
-                      value: null,
-                      groupValue: _selectedStatus,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedStatus = value;
+                if (arguments == null ||
+                    (arguments['filter'] != 'no_stock' &&
+                        arguments['filter'] != 'low_stock')) ...[
+                  Text('Filtrar por estado:'),
+                  Row(
+                    children: [
+                      Radio<ArticleStatus?>(
+                        value: null,
+                        groupValue: _selectedStatus,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedStatus = value;
+                          });
+                          _searchController.clear();
                           ref
                               .read(articleSearchNotifierProvider.notifier)
-                              .loadArticlesByStatus(value);
-                        });
-                      },
-                    ),
-                    const Text('Todos'),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Radio<ArticleStatus?>(
-                      value: ArticleStatus.active,
-                      groupValue: _selectedStatus,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedStatus = value;
+                              .selectFilterStatus(value);
+                        },
+                      ),
+                      const Text('Todos'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Radio<ArticleStatus?>(
+                        value: ArticleStatus.active,
+                        groupValue: _selectedStatus,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedStatus = value;
+                          });
+                          _searchController.clear();
                           ref
                               .read(articleSearchNotifierProvider.notifier)
-                              .loadArticlesByStatus(value);
-                        });
-                      },
-                    ),
-                    const Text('Activos'),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Radio<ArticleStatus?>(
-                      value: ArticleStatus.inactive,
-                      groupValue: _selectedStatus,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedStatus = value;
+                              .selectFilterStatus(value);
+                        },
+                      ),
+                      const Text('Activos'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Radio<ArticleStatus?>(
+                        value: ArticleStatus.inactive,
+                        groupValue: _selectedStatus,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedStatus = value;
+                          });
+                          _searchController.clear();
                           ref
                               .read(articleSearchNotifierProvider.notifier)
-                              .loadArticlesByStatus(value);
-                        });
-                      },
-                    ),
-                    const Text('Inactivos'),
-                  ],
-                ),
+                              .selectFilterStatus(value);
+                        },
+                      ),
+                      const Text('Inactivos'),
+                    ],
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 5),
@@ -238,90 +250,103 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
 
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 64),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Buscar por SKU o descripción',
-                  prefixIcon: const Icon(Icons.search),
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _searchController.clear();
-                      notifier.searchArticles('');
-                    },
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Buscar por SKU o descripción',
+                      prefixIcon: const Icon(Icons.search),
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          notifier.searchArticles('');
+                        },
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      isDense: true,
+                    ),
+                    onChanged: notifier.searchArticles,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  isDense: true,
                 ),
-                onChanged: notifier.searchArticles,
               ),
-            ),
-          ),
-          if (!state.isDeleted && enableBotton) ...[
-            if (enableBotton)
-              IconButton(
-                onPressed: () => notifier.toggleDeleteMode(true),
-                icon: const Icon(Icons.delete_outline_outlined),
-                tooltip: 'Borrado masivo',
-                padding: const EdgeInsets.all(12),
-              ),
-          ],
-          if (state.isDeleted && enableBotton) ...[
-            IconButton(
-              onPressed: () => notifier.toggleDeleteMode(false),
-              icon: const Icon(Icons.cancel_outlined),
-              tooltip: 'Cancelar',
-              padding: const EdgeInsets.all(12),
-            ),
-            IconButton(
-              onPressed: () async {
-                try {
-                  if (state.articlesDeleted.isNotEmpty) {
-                    await notifier.removeAllArticles();
-                    await notifier.loadInitialData();
-                    if (mounted) {
-                      ScaffoldMessenger.of(context)
-                        ..clearSnackBars()
-                        ..showSnackBar(
-                          SnackBar(content: Text(state.successMessage!)),
-                        );
-                    }
-                  } else {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context)
-                        ..clearSnackBars()
-                        ..showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Debe seleccionar un artículo a eliminar.",
+              if (!state.isDeleted && enableBotton) ...[
+                if (enableBotton)
+                  IconButton(
+                    onPressed: () => notifier.toggleDeleteMode(true),
+                    icon: const Icon(Icons.delete_outline_outlined),
+                    tooltip: 'Borrado masivo',
+                    padding: const EdgeInsets.all(12),
+                  ),
+              ],
+              if (state.isDeleted && enableBotton) ...[
+                IconButton(
+                  onPressed: () => notifier.toggleDeleteMode(false),
+                  icon: const Icon(Icons.cancel_outlined),
+                  tooltip: 'Cancelar',
+                  padding: const EdgeInsets.all(12),
+                ),
+                IconButton(
+                  onPressed: () async {
+                    if (state.articlesDeleted.isEmpty) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context)
+                          ..clearSnackBars()
+                          ..showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Debe seleccionar un artículo a eliminar.",
+                              ),
                             ),
-                          ),
-                        );
+                          );
+                      }
+                      return;
                     }
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context)
-                      ..clearSnackBars()
-                      ..showSnackBar(
-                        SnackBar(
-                          content: Text(state.errorDeleted ?? e.toString()),
-                        ),
-                      );
-                  }
-                }
-              },
-              icon: const Icon(Icons.delete_sharp),
-              tooltip: 'Confirmar borrado masivo',
-              padding: const EdgeInsets.all(12),
-            ),
-          ],
+                    try {
+                      await notifier.removeAllArticles();
+                      await notifier.loadInitialData();
+                      if (mounted) {
+                        ScaffoldMessenger.of(context)
+                          ..clearSnackBars()
+                          ..showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                state.successMessage ?? 'Borrado masivo exitoso!',
+                              ),
+                            ),
+                          );
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context)
+                          ..clearSnackBars()
+                          ..showSnackBar(
+                            SnackBar(
+                              content: Text(state.errorDeleted ?? e.toString()),
+                            ),
+                          );
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.delete_sharp),
+                  tooltip: 'Confirmar borrado masivo',
+                  padding: const EdgeInsets.all(12),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Artículos encontrados: ${ref.watch(articleSearchNotifierProvider).filteredArticles.length}',
+          ),
         ],
       ),
     );
@@ -361,8 +386,14 @@ class _ArticlesScreenState extends ConsumerState<ArticlesScreen> {
           final metrics = scrollNotification.metrics;
           if (metrics.pixels >= metrics.maxScrollExtent * 0.9 &&
               metrics.axis == Axis.vertical) {
-            if (state.hasMore) {
-              notifier.loadMoreArticles();
+            final state = ref.watch(articleSearchNotifierProvider);
+            final arguments =
+                GoRouterState.of(context).extra as Map<String, dynamic>?;
+            if (state.hasMore &&
+                (arguments == null ||
+                    (arguments['filter'] != 'no_stock' &&
+                        arguments['filter'] != 'low_stock'))) {
+              //notifier.loadMoreArticles();
             }
           }
         }

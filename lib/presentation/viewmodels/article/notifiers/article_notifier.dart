@@ -110,7 +110,18 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
   Future<List<Article>> searchArticles(String query) async {
     try {
       final articles = await _repository.searchArticles(query);
-      return articles;
+      final categories = await _repositoryCategories.getAllCategories();
+      final updatedArticles =
+          articles.map((article) {
+            final categoryDescription =
+                categories
+                    .firstWhereOrNull((x) => x.id.contains(article.category))
+                    ?.description;
+
+            return article.copyWith(categoryDescription: categoryDescription);
+          }).toList();
+
+      return updatedArticles;
     } catch (e) {
       throw Exception('Error en búsqueda: ${e.toString()}');
     }
@@ -183,6 +194,23 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
     return updatedArticles;
   }
 
+  Future<List<Article>> getAllArticlesWithoutPagination() async {
+    final articles = await _repository.getAllArticlesWithoutPagination();
+
+    final categories = await _repositoryCategories.getAllCategories();
+    final updatedArticles =
+        articles.map((article) {
+          final categoryDescription =
+              categories
+                  .firstWhereOrNull((x) => x.id.contains(article.category))
+                  ?.description;
+
+          return article.copyWith(categoryDescription: categoryDescription);
+        }).toList();
+
+    return updatedArticles;
+  }
+
   Future<List<Article>> getArticlesWithLowStock(int threshold) async {
     var articles = await _repository.getArticlesWithLowStock(threshold);
 
@@ -212,5 +240,13 @@ class ArticleNotifier extends StateNotifier<ArticleState> {
 
   Future<int?> getArticleCount() async {
     return await _repository.getArticleCount();
+  }
+
+  Future<String?> regenerateImageUrl(Article article) async {
+    try {
+      return _repository.regenerateImageUrl(article);
+    } catch (e) {
+      return null; // Falla el nuevo intento
+    }
   }
 }

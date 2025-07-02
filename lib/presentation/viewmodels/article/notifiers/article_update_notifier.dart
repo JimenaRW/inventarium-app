@@ -12,6 +12,10 @@ class ArticleUpdateNotifier extends StateNotifier<ArticleUpdateState> {
   ArticleUpdateNotifier(this._articleRepository, this._ref)
     : super(ArticleUpdateState.initial());
 
+  void load(bool value){
+    state = state.copyWith(isLoading: value);
+  }
+
   Future<void> updateArticle(Article article) async {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {

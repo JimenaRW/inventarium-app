@@ -137,8 +137,24 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
   }
 
   Future<void> _submitForm() async {
+    
+    ref.read(articleUpdateProvider.notifier).load(true);
+                      
+    final currentCategory =
+        _selectedCategory ??
+        ref
+            .read(categoriesNotifierProvider)
+            .when(
+              data:
+                  (categorias) => categorias.firstWhereOrNull(
+                    (c) => c.id == _article?.category,
+                  ),
+              loading: () => null,
+              error: (_, __) => null,
+            );
+
     if (_formKey.currentState!.validate() &&
-        _selectedCategory != null &&
+        currentCategory != null &&
         _article != null) {
       String? imageUrl;
       if (_imageUrl != null) {
@@ -154,7 +170,7 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
         description: _descriptionController.text,
         barcode:
             _barcodeController.text.isNotEmpty ? _barcodeController.text : null,
-        category: _selectedCategory!.id.toString(),
+        category: currentCategory.id.toString(),
         location: _locationController.text,
         fabricator: _fabricatorController.text,
         iva: double.tryParse(_ivaController.text) ?? 0.00,
@@ -174,6 +190,8 @@ class _ArticleEditState extends ConsumerState<ArticleEditForm> {
       if (state.isSuccess && mounted) {
         Navigator.pop(context);
       }
+    
+    ref.read(articleUpdateProvider.notifier).load(false);
     }
   }
 
